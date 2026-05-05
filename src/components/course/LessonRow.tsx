@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Play } from "lucide-react";
+import { CheckCircle2, Circle, Play, FileText } from "lucide-react";
 import type { Lesson } from "@/data/course-data";
 
 interface LessonRowProps {
@@ -10,6 +10,8 @@ interface LessonRowProps {
 }
 
 export function LessonRow({ lesson, index, isCompleted, isActive, onClick }: LessonRowProps) {
+  const isPdf = lesson.type === "pdf" || lesson.type === "info";
+
   return (
     <button
       onClick={onClick}
@@ -23,14 +25,17 @@ export function LessonRow({ lesson, index, isCompleted, isActive, onClick }: Les
         {isCompleted ? (
           <CheckCircle2 className="h-5 w-5 text-success" />
         ) : isActive ? (
-          <Play className="h-5 w-5 text-primary fill-primary" />
+          isPdf ? <FileText className="h-5 w-5 text-primary" /> : <Play className="h-5 w-5 text-primary fill-primary" />
         ) : (
           <Circle className="h-5 w-5 text-muted-foreground/50" />
         )}
       </div>
-      <span className={`flex-1 text-sm ${isCompleted ? "text-muted-foreground line-through" : "text-foreground"} ${isActive ? "font-medium text-primary" : ""}`}>
-        {lesson.title}
-      </span>
+      <div className="flex-1 min-w-0">
+        <span className={`text-sm block truncate ${isCompleted ? "text-muted-foreground line-through" : "text-foreground"} ${isActive ? "font-medium text-primary" : ""}`}>
+          {lesson.title}
+        </span>
+        <span className="text-[10px] uppercase text-muted-foreground/60">{isPdf ? "PDF" : "Vídeo"}</span>
+      </div>
       <span className="text-xs text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
     </button>
   );

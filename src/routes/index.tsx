@@ -54,13 +54,13 @@ function AuthPage() {
             Domine técnicas profissionais de massoterapia com mais de 100 aulas em vídeo.
             Do iniciante ao especialista.
           </p>
-          <div className="mt-8 flex justify-center gap-6 text-primary-foreground/60 text-sm">
+           <div className="mt-8 flex justify-center gap-6 text-primary-foreground/60 text-sm">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary-foreground">14</p>
+              <p className="text-2xl font-bold text-primary-foreground">19</p>
               <p>Módulos</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary-foreground">100+</p>
+              <p className="text-2xl font-bold text-primary-foreground">120+</p>
               <p>Aulas</p>
             </div>
             <div className="text-center">
@@ -119,7 +119,7 @@ function AuthPage() {
 
 function Dashboard() {
   const { user, logout } = useAuth();
-  const { getModuleProgress, isModuleUnlocked, overallProgress, loading } = useProgress(user?.id);
+  const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading } = useProgress(user?.id);
 
   if (loading) {
     return (
@@ -162,12 +162,13 @@ function Dashboard() {
         <div className="space-y-3">
           {courseModules.map((mod, i) => {
             const unlocked = isModuleUnlocked(i);
+            const daysLeft = daysUntilUnlock(i);
             return unlocked ? (
               <Link key={mod.id} to="/modulo/$moduleId" params={{ moduleId: mod.id }} className="block">
-                <ModuleCard module={mod} index={i} unlocked progress={getModuleProgress(mod.id)} onOpen={() => {}} />
+                <ModuleCard module={mod} index={i} unlocked progress={getModuleProgress(mod.id)} onOpen={() => {}} daysLeft={daysLeft} />
               </Link>
             ) : (
-              <ModuleCard key={mod.id} module={mod} index={i} unlocked={false} progress={getModuleProgress(mod.id)} onOpen={() => {}} />
+              <ModuleCard key={mod.id} module={mod} index={i} unlocked={false} progress={getModuleProgress(mod.id)} onOpen={() => {}} daysLeft={daysLeft} />
             );
           })}
         </div>

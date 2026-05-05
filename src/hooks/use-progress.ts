@@ -5,21 +5,31 @@ import { courseModules } from "@/data/course-data";
 export function useProgress(userId: string | undefined) {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [purchasedAt, setPurchasedAt] = useState<Date | null>(null);
 
-  // Load progress from database
+  // Load progress + purchase date from database
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
-    
-    supabase
-      .from("lesson_progress")
-      .select("lesson_id")
-      .eq("user_id", userId)
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setCompleted(new Set(data.map((r) => r.lesson_id)));
-        }
-        setLoading(false);
-      });
+
+    Promise.all([
+      supabase
+        .from("lesson_progress")
+        .select("lesson_id")
+        .eq("user_id", userId),
+      supabase
+        .from("profiles")
+        .select("purchased_at")
+        .eq("id", userId)
+        .single(),
+    ]).then(([progressRes, profileRes]) => {
+      if (!progressRes.error && progressRes.data) {
+        setCompleted(new Set(progressRes.data.map((r) => r.lesson_id)));
+      }
+      if (!profileRes.error && profileRes.data?.purchased_at) {
+        setPurchasedAt(new Date(profileRes.data.purchased_at));
+      }
+      setLoading(false);
+    });
   }, [userId]);
 
   const toggleLesson = useCallback(async (lessonId: string) => {
@@ -28,11 +38,9 @@ export function useProgress(userId: string | undefined) {
     const isCompleted = completed.has(lessonId);
 
     if (isCompleted) {
-      // Remove
       setCompleted((prev) => { const n = new Set(prev); n.delete(lessonId); return n; });
       await supabase.from("lesson_progress").delete().eq("user_id", userId).eq("lesson_id", lessonId);
     } else {
-      // Add
       setCompleted((prev) => new Set(prev).add(lessonId));
       await supabase.from("lesson_progress").insert({ user_id: userId, lesson_id: lessonId });
     }
@@ -55,11 +63,40 @@ export function useProgress(userId: string | undefined) {
 
   const isModuleUnlocked = useCallback(
     (moduleIndex: number) => {
-      if (moduleIndex === 0) return true;
-      const prevModule = courseModules[moduleIndex - 1];
-      return prevModule.lessons.every((l) => completed.has(l.id));
+      const mod = courseModules[moduleIndex];
+      if (!mod) return false;
+
+      const rule = mod.unlock;
+
+      if (rule.kind === "immediate") return true;
+
+      if (rule.kind === "days_after_purchase") {
+        if (!purchasedAt) return false;
+        const unlockDate = new Date(purchasedAt.getTime() + rule.days * 24 * 60 * 60 * 1000);
+        return new Date() >= unlockDate;
+      }
+
+      if (rule.kind === "after_previous") {
+        if (moduleIndex === 0) return true;
+        const prevModule = courseModules[moduleIndex - 1];
+        return prevModule.lessons.every((l) => completed.has(l.id));
+      }
+
+      return false;
     },
-    [completed]
+    [completed, purchasedAt]
+  );
+
+  const daysUntilUnlock = useCallback(
+    (moduleIndex: number) => {
+      const mod = courseModules[moduleIndex];
+      if (!mod || mod.unlock.kind !== "days_after_purchase" || !purchasedAt) return null;
+      const unlockDate = new Date(purchasedAt.getTime() + mod.unlock.days * 24 * 60 * 60 * 1000);
+      const diff = unlockDate.getTime() - Date.now();
+      if (diff <= 0) return 0;
+      return Math.ceil(diff / (24 * 60 * 60 * 1000));
+    },
+    [purchasedAt]
   );
 
   const overallProgress = (() => {
@@ -68,5 +105,5 @@ export function useProgress(userId: string | undefined) {
     return { completed: completed.size, total: totalLessons, percent };
   })();
 
-  return { completed, loading, toggleLesson, isLessonCompleted, getModuleProgress, isModuleUnlocked, overallProgress };
+  return { completed, loading, toggleLesson, isLessonCompleted, getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress };
 }

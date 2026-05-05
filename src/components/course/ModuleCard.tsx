@@ -1,17 +1,18 @@
-import { courseModules } from "@/data/course-data";
-import { useProgress } from "@/hooks/use-progress";
-import { Lock, CheckCircle2, ChevronRight, Play } from "lucide-react";
+import type { Module } from "@/data/course-data";
+import { Lock, CheckCircle2, ChevronRight, Clock } from "lucide-react";
 
 interface ModuleCardProps {
-  module: (typeof courseModules)[0];
+  module: Module;
   index: number;
   unlocked: boolean;
   progress: { completed: number; total: number; percent: number };
   onOpen: (moduleId: string) => void;
+  daysLeft?: number | null;
 }
 
-export function ModuleCard({ module, index, unlocked, progress, onOpen }: ModuleCardProps) {
+export function ModuleCard({ module, index, unlocked, progress, onOpen, daysLeft }: ModuleCardProps) {
   const isComplete = progress.percent === 100;
+  const isTimeLocked = !unlocked && daysLeft != null && daysLeft > 0;
 
   return (
     <button
@@ -44,6 +45,11 @@ export function ModuleCard({ module, index, unlocked, progress, onOpen }: Module
           <p className="mt-1 text-xs text-muted-foreground">
             {module.lessons.length} aulas • {progress.completed}/{module.lessons.length} concluídas
           </p>
+          {isTimeLocked && (
+            <p className="mt-1 flex items-center gap-1 text-xs text-amber-600">
+              <Clock className="h-3 w-3" /> Libera em {daysLeft} dia{daysLeft > 1 ? "s" : ""}
+            </p>
+          )}
           {unlocked && (
             <div className="mt-3 flex items-center gap-3">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
