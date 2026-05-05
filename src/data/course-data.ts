@@ -30,7 +30,7 @@ export const courseModules: Module[] = [
     unlock: { kind: "immediate" },
     lessons: [
       { id: "mia-1", title: "Importante – Leia Antes de Começar", type: "pdf" },
-      { id: "mia-2", title: "Avisos", type: "video" },
+      { id: "mia-2", title: "Avisos", type: "video", url: "" },
     ],
   },
   // ─── Matérias Complementares 1 ───
@@ -93,8 +93,8 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "5-1", title: "Utensílios, Materiais e Produtos", type: "video" },
-      { id: "5-2", title: "Higiene do Local", type: "video" },
+      { id: "5-1", title: "Utensílios, Materiais e Produtos", type: "video", url: "" },
+      { id: "5-2", title: "Higiene do Local", type: "video", url: "" },
     ],
   },
   // ─── Módulo 6 ───
@@ -104,10 +104,10 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "6-1", title: "Sistema Esquelético", type: "video" },
-      { id: "6-2", title: "Sistema Muscular", type: "video" },
-      { id: "6-3", title: "Sistema Circulatório", type: "video" },
-      { id: "6-4", title: "Sistema Tegumentar (pele)", type: "video" },
+      { id: "6-1", title: "Sistema Esquelético", type: "video", url: "" },
+      { id: "6-2", title: "Sistema Muscular", type: "video", url: "" },
+      { id: "6-3", title: "Sistema Circulatório", type: "video", url: "" },
+      { id: "6-4", title: "Sistema Tegumentar (pele)", type: "video", url: "" },
     ],
   },
   // ─── Módulo 7 ───
@@ -117,10 +117,10 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "7-1", title: "Código de Ética e Conduta do Terapeuta", type: "video" },
-      { id: "7-2", title: "Importância da Confidencialidade", type: "video" },
-      { id: "7-3", title: "Limites Profissionais e Relacionamento com Clientes", type: "video" },
-      { id: "7-4", title: "Construindo uma Prática Profissional Sustentável", type: "video" },
+      { id: "7-1", title: "Código de Ética e Conduta do Terapeuta", type: "video", url: "" },
+      { id: "7-2", title: "Importância da Confidencialidade", type: "video", url: "" },
+      { id: "7-3", title: "Limites Profissionais e Relacionamento com Clientes", type: "video", url: "" },
+      { id: "7-4", title: "Construindo uma Prática Profissional Sustentável", type: "video", url: "" },
     ],
   },
   // ─── Módulo 8 ───
@@ -130,11 +130,11 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "8-1", title: "Introdução à Massagem Relaxante", type: "video" },
-      { id: "8-2", title: "Massagem Relaxante Facial", type: "video" },
-      { id: "8-3", title: "Massagem Relaxante Membros Superiores", type: "video" },
-      { id: "8-4", title: "Massagem Relaxante nas Pernas", type: "video" },
-      { id: "8-5", title: "Massagem Relaxante Costas", type: "video" },
+      { id: "8-1", title: "Introdução à Massagem Relaxante", type: "video", url: "" },
+      { id: "8-2", title: "Massagem Relaxante Facial", type: "video", url: "" },
+      { id: "8-3", title: "Massagem Relaxante Membros Superiores", type: "video", url: "" },
+      { id: "8-4", title: "Massagem Relaxante nas Pernas", type: "video", url: "" },
+      { id: "8-5", title: "Massagem Relaxante Costas", type: "video", url: "" },
     ],
   },
   // ─── Módulo 9 ───
@@ -144,13 +144,13 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "9-1", title: "Introdução à Drenagem Linfática", type: "video" },
-      { id: "9-2", title: "Ativação da Linfa", type: "video" },
-      { id: "9-3", title: "Drenagem Pernas", type: "video" },
-      { id: "9-4", title: "Drenagem Braços e Tórax", type: "video" },
-      { id: "9-5", title: "Drenagem Pernas Superiores", type: "video" },
-      { id: "9-6", title: "Drenagem Abdômen e Fechamento", type: "video" },
-      { id: "9-7", title: "Drenagem Linfática Costas", type: "video" },
+      { id: "9-1", title: "Introdução à Drenagem Linfática", type: "video", url: "" },
+      { id: "9-2", title: "Ativação da Linfa", type: "video", url: "" },
+      { id: "9-3", title: "Drenagem Pernas", type: "video", url: "" },
+      { id: "9-4", title: "Drenagem Braços e Tórax", type: "video", url: "" },
+      { id: "9-5", title: "Drenagem Pernas Superiores", type: "video", url: "" },
+      { id: "9-6", title: "Drenagem Abdômen e Fechamento", type: "video", url: "" },
+      { id: "9-7", title: "Drenagem Linfática Costas", type: "video", url: "" },
     ],
   },
   // ─── Módulo 10 ───
@@ -160,8 +160,8 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "days_after_purchase", days: 7 },
     lessons: [
-      { id: "10-1", title: "Início Reflexologia Podal", type: "video" },
-      { id: "10-2", title: "Reflexologia Podal 2", type: "video" },
+      { id: "10-1", title: "Início Reflexologia Podal", type: "video", url: "" },
+      { id: "10-2", title: "Reflexologia Podal 2", type: "video", url: "" },
     ],
   },
   // ─── Módulo 12 ───
@@ -171,11 +171,11 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "days_after_purchase", days: 7 },
     lessons: [
-      { id: "12-1", title: "Massagem Modeladora Pernas", type: "video" },
-      { id: "12-2", title: "Massagem Modeladora Abdômen", type: "video" },
-      { id: "12-3", title: "Massagem Modeladora Braços", type: "video" },
-      { id: "12-4", title: "Massagem Modeladora Pernas 2", type: "video" },
-      { id: "12-5", title: "Massagem Modeladora Costas", type: "video" },
+      { id: "12-1", title: "Massagem Modeladora Pernas", type: "video", url: "" },
+      { id: "12-2", title: "Massagem Modeladora Abdômen", type: "video", url: "" },
+      { id: "12-3", title: "Massagem Modeladora Braços", type: "video", url: "" },
+      { id: "12-4", title: "Massagem Modeladora Pernas 2", type: "video", url: "" },
+      { id: "12-5", title: "Massagem Modeladora Costas", type: "video", url: "" },
     ],
   },
   // ─── Módulo 13 ───
@@ -185,8 +185,8 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "days_after_purchase", days: 7 },
     lessons: [
-      { id: "13-1", title: "Introdução Auriculoterapia", type: "video" },
-      { id: "13-2", title: "Auriculoterapia 2", type: "video" },
+      { id: "13-1", title: "Introdução Auriculoterapia", type: "video", url: "" },
+      { id: "13-2", title: "Auriculoterapia 2", type: "video", url: "" },
     ],
   },
   // ─── Módulo 14 ───
@@ -196,8 +196,8 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "days_after_purchase", days: 7 },
     lessons: [
-      { id: "14-1", title: "Introdução ao Moxabustão", type: "video" },
-      { id: "14-2", title: "Moxabustão Prática", type: "video" },
+      { id: "14-1", title: "Introdução ao Moxabustão", type: "video", url: "" },
+      { id: "14-2", title: "Moxabustão Prática", type: "video", url: "" },
     ],
   },
   // ─── Módulo 15 ───
