@@ -165,11 +165,36 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "8-1", title: "Introdução à Massagem Relaxante", type: "video", url: "..." },
-      { id: "8-2", title: "Massagem Relaxante Facial", type: "video", url: "..." },
-      { id: "8-3", title: "Massagem Relaxante Membros Superiores", type: "video", url: "..." },
-      { id: "8-4", title: "Massagem Relaxante nas Pernas", type: "video", url: "..." },
-      { id: "8-5", title: "Massagem Relaxante Costas", type: "video", url: "..." },
+      {
+        id: "8-1",
+        title: "Introdução à Massagem Relaxante",
+        type: "video",
+        url: "https://www.youtube.com/embed/uxzt2M6oxkU",
+      },
+      {
+        id: "8-2",
+        title: "Massagem Relaxante Facial",
+        type: "video",
+        url: "https://www.youtube.com/embed/GJY4UrxiET0",
+      },
+      {
+        id: "8-3",
+        title: "Massagem Relaxante Membros Superiores",
+        type: "video",
+        url: "https://www.youtube.com/embed/EVE_s14HyNM",
+      },
+      {
+        id: "8-4",
+        title: "Massagem Relaxante nas Pernas",
+        type: "video",
+        url: "https://www.youtube.com/embed/kWDJTqMZomY",
+      },
+      {
+        id: "8-5",
+        title: "Massagem Relaxante Costas",
+        type: "video",
+        url: "https://www.youtube.com/embed/T_rcWdPJnSc",
+      },
     ],
   },
   // ─── Módulo 9 ───
