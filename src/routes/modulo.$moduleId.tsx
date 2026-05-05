@@ -20,7 +20,7 @@ export const Route = createFileRoute("/modulo/$moduleId")({
 function ModulePage() {
   const { moduleId } = Route.useParams();
   const { user } = useAuth();
-  const { isLessonCompleted, toggleLesson, getModuleProgress, isModuleUnlocked } = useProgress();
+  const { isLessonCompleted, toggleLesson, getModuleProgress, isModuleUnlocked } = useProgress(user?.id);
 
   const moduleIndex = courseModules.findIndex((m) => m.id === moduleId);
   const mod = courseModules[moduleIndex];
