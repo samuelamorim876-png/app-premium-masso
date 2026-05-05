@@ -1,37 +1,42 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { courseModules } from "@/data/course-data";
 
-const STORAGE_KEY = "massoterapia-progress";
+export function useProgress(userId: string | undefined) {
+  const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
 
-function loadProgress(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? new Set(JSON.parse(raw)) : new Set();
-  } catch {
-    return new Set();
-  }
-}
+  // Load progress from database
+  useEffect(() => {
+    if (!userId) { setLoading(false); return; }
+    
+    supabase
+      .from("lesson_progress")
+      .select("lesson_id")
+      .eq("user_id", userId)
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setCompleted(new Set(data.map((r) => r.lesson_id)));
+        }
+        setLoading(false);
+      });
+  }, [userId]);
 
-function saveProgress(completed: Set<string>) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...completed]));
-}
+  const toggleLesson = useCallback(async (lessonId: string) => {
+    if (!userId) return;
 
-export function useProgress() {
-  const [completed, setCompleted] = useState<Set<string>>(loadProgress);
+    const isCompleted = completed.has(lessonId);
 
-  const toggleLesson = useCallback((lessonId: string) => {
-    setCompleted((prev) => {
-      const next = new Set(prev);
-      if (next.has(lessonId)) {
-        next.delete(lessonId);
-      } else {
-        next.add(lessonId);
-      }
-      saveProgress(next);
-      return next;
-    });
-  }, []);
+    if (isCompleted) {
+      // Remove
+      setCompleted((prev) => { const n = new Set(prev); n.delete(lessonId); return n; });
+      await supabase.from("lesson_progress").delete().eq("user_id", userId).eq("lesson_id", lessonId);
+    } else {
+      // Add
+      setCompleted((prev) => new Set(prev).add(lessonId));
+      await supabase.from("lesson_progress").insert({ user_id: userId, lesson_id: lessonId });
+    }
+  }, [userId, completed]);
 
   const isLessonCompleted = useCallback(
     (lessonId: string) => completed.has(lessonId),
@@ -63,5 +68,5 @@ export function useProgress() {
     return { completed: completed.size, total: totalLessons, percent };
   })();
 
-  return { completed, toggleLesson, isLessonCompleted, getModuleProgress, isModuleUnlocked, overallProgress };
+  return { completed, loading, toggleLesson, isLessonCompleted, getModuleProgress, isModuleUnlocked, overallProgress };
 }
