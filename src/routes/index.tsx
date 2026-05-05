@@ -119,7 +119,7 @@ function AuthPage() {
 
 function Dashboard() {
   const { user, logout } = useAuth();
-  const { getModuleProgress, isModuleUnlocked, overallProgress, loading } = useProgress(user?.id);
+  const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading } = useProgress(user?.id);
 
   if (loading) {
     return (
