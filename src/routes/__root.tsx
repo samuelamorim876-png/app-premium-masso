@@ -80,5 +80,8 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  if (typeof window !== "undefined") {
+    import("../pwa-register");
+  }
   return <Outlet />;
 }
