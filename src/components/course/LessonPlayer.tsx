@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, FileDown } from "lucide-react";
+import { CheckCircle2, Circle, FileDown, Play } from "lucide-react";
 import type { Lesson } from "@/data/course-data";
 
 interface LessonPlayerProps {
@@ -13,38 +13,36 @@ export function LessonPlayer({ lesson, moduleName, isCompleted, onToggle }: Less
   const isPdf = lesson.type === "pdf" || lesson.type === "info";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 animate-fade-in">
       <div>
-        <p className="text-xs font-medium uppercase tracking-wider text-primary">{moduleName}</p>
-        <h2 className="mt-1 font-heading text-xl font-bold text-foreground">{lesson.title}</h2>
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary">{moduleName}</p>
+        <h2 className="mt-2 font-heading text-xl font-bold text-foreground leading-tight">{lesson.title}</h2>
       </div>
 
       {/* Content area */}
       {isPdf ? (
-        /* PDF / info lesson */
-        <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <FileDown className="h-8 w-8 text-primary" />
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-10 text-center">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
+            <FileDown className="h-10 w-10 text-primary" />
           </div>
           {lesson.url ? (
             <a
               href={lesson.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all duration-200 shadow-lg shadow-primary/20"
             >
               <FileDown className="h-4 w-4" /> Baixar PDF
             </a>
           ) : (
             <>
               <p className="text-sm text-muted-foreground">Material em PDF</p>
-              <p className="mt-1 text-xs text-muted-foreground/70">O PDF será disponibilizado em breve</p>
+              <p className="mt-1 text-xs text-muted-foreground/60">O PDF será disponibilizado em breve</p>
             </>
           )}
         </div>
       ) : (
-        /* Video lesson */
-        <div className="aspect-video w-full overflow-hidden rounded-xl bg-foreground/5 border border-border">
+        <div className="aspect-video w-full overflow-hidden rounded-2xl bg-card border border-border shadow-xl shadow-black/20">
           {lesson.url ? (
             <iframe
               src={lesson.url}
@@ -54,15 +52,13 @@ export function LessonPlayer({ lesson, moduleName, isCompleted, onToggle }: Less
               title={lesson.title}
             />
           ) : (
-            <div className="flex h-full items-center justify-center">
+            <div className="flex h-full items-center justify-center bg-gradient-to-br from-card to-accent">
               <div className="text-center">
-                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                  <svg className="h-8 w-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
+                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/15 backdrop-blur-md">
+                  <Play className="h-10 w-10 text-primary fill-primary" />
                 </div>
-                <p className="text-sm text-muted-foreground">Vídeo da aula</p>
-                <p className="mt-1 text-xs text-muted-foreground/70">O vídeo será adicionado em breve</p>
+                <p className="text-sm font-medium text-foreground/80">Vídeo da aula</p>
+                <p className="mt-1 text-xs text-muted-foreground">O vídeo será adicionado em breve</p>
               </div>
             </div>
           )}
@@ -70,7 +66,7 @@ export function LessonPlayer({ lesson, moduleName, isCompleted, onToggle }: Less
       )}
 
       {/* Description */}
-      <div className="rounded-lg border border-border bg-card p-4">
+      <div className="rounded-xl border border-border bg-card p-5">
         <h4 className="font-heading text-sm font-semibold text-card-foreground">Sobre esta aula</h4>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {isPdf
@@ -83,7 +79,11 @@ export function LessonPlayer({ lesson, moduleName, isCompleted, onToggle }: Less
       <Button
         onClick={onToggle}
         size="lg"
-        className="w-full"
+        className={`w-full rounded-xl text-base transition-all duration-200 ${
+          isCompleted
+            ? "border-success/30 hover:border-success/50"
+            : "shadow-lg shadow-primary/20"
+        }`}
         variant={isCompleted ? "outline" : "default"}
       >
         {isCompleted ? (
