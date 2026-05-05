@@ -74,7 +74,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <Scripts />
-        <script type="module" dangerouslySetInnerHTML={{ __html: `import("/pwa-register.js").catch(()=>{})` }} />
       </body>
     </html>
   );
