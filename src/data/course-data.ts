@@ -240,8 +240,13 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "days_after_purchase", days: 7 },
     lessons: [
-      { id: "10-1", title: "Início Reflexologia Podal", type: "video", url: "..." },
-      { id: "10-2", title: "Reflexologia Podal 2", type: "video", url: "..." },
+      {
+        id: "10-1",
+        title: "Início Reflexologia Podal",
+        type: "video",
+        url: "https://www.youtube.com/watch?v=HRoE5K8hGmo",
+      },
+      { id: "10-2", title: "Reflexologia Podal 2", type: "video", url: "https://www.youtube.com/embed/Z4Nuzd3b67U" },
     ],
   },
   // ─── Módulo 12 ───
