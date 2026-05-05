@@ -40,7 +40,12 @@ export const courseModules: Module[] = [
     emoji: "📄",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "mc1-1", title: "Introdução à Massoterapia e o Poder do Toque", type: "pdf" },
+      {
+        id: "mc1-1",
+        title: "Introdução à Massoterapia e o Poder do Toque",
+        type: "pdf",
+        url: "https://drive.google.com/file/d/1nRhVxNoOMMLma6icsyxV36HP-jrHsZ9i/view?usp=drive_link",
+      },
       { id: "mc1-2", title: "Ética e Postura Profissional do Massoterapeuta", type: "pdf" },
       { id: "mc1-3", title: "Anatomia e Fisiologia Básica para Massoterapeutas", type: "pdf" },
       { id: "mc1-4", title: "História e Evolução da Massoterapia no Mundo", type: "pdf" },
