@@ -118,10 +118,7 @@ export const courseModules: Module[] = [
     unlock: { kind: "immediate" },
     lessons: [
 { 
-  id: "7-1", 
-  title: "Código de Ética e Conduta do Terapeuta", 
-  type: "video",
-  url: "https://www.youtube.com/embed/2DeoiByPSM8"
+  { id: "7-1", title: "Código de Ética e Conduta do Terapeuta", type: "video" }
       { id: "7-2", title: "Importância da Confidencialidade", type: "video" },
       { id: "7-3", title: "Limites Profissionais e Relacionamento com Clientes", type: "video" },
       { id: "7-4", title: "Construindo uma Prática Profissional Sustentável", type: "video" },
