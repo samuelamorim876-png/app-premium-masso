@@ -41,11 +41,22 @@ export const Route = createRootRoute({
       { name: "twitter:description", content: "Massoterapia Masterclass is a premium online course application for learning massage therapy techniques." },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KRA0TDlwwDVu1knW7gxn2vuKou63/social-images/social-1777946802460-Captura_de_tela_2026-05-04_131732.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KRA0TDlwwDVu1knW7gxn2vuKou63/social-images/social-1777946802460-Captura_de_tela_2026-05-04_131732.webp" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "theme-color", content: "#2d8a4e" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "manifest",
+        href: "/manifest.json",
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/icon-192.png",
       },
     ],
   }),
@@ -68,6 +79,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+let pwaRegistered = false;
 function RootComponent() {
+  if (typeof window !== "undefined" && !pwaRegistered) {
+    pwaRegistered = true;
+    import("../pwa-register").then((m) => m.registerPWA());
+  }
   return <Outlet />;
 }
