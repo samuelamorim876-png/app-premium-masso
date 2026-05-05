@@ -46,14 +46,14 @@ export const courseModules: Module[] = [
         type: "pdf",
         url: "https://drive.google.com/file/d/1nRhVxNoOMMLma6icsyxV36HP-jrHsZ9i/view?usp=drive_link",
       },
-      { id: "mc1-2", title: "Ética e Postura Profissional do Massoterapeuta", type: "pdf" },
+      { id: "mc1-2", title: "Ética e Postura Profissional do Massoterapeuta", type: "pdf", url: "..." },
       {
         id: "mc1-3",
         title: "Anatomia e Fisiologia Básica para Massoterapeutas",
         type: "pdf",
         url: "https://drive.google.com/file/d/1-prMas1etja4UB0otz6QH70dA6LVEgf8/view?usp=drive_link",
       },
-      { id: "mc1-4", title: "História e Evolução da Massoterapia no Mundo", type: "pdf" },
+      { id: "mc1-4", title: "História e Evolução da Massoterapia no Mundo", type: "pdf", url: "..." },
     ],
   },
   // ─── Matérias Complementares 2 ───
@@ -63,10 +63,15 @@ export const courseModules: Module[] = [
     emoji: "📄",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "mc2-1", title: "Princípios e Efeitos da Massagem Relaxante", type: "pdf" },
-      { id: "mc2-2", title: "Manobras Básicas da Massagem Relaxante: Deslizes, Amassamentos e Fricções", type: "pdf" },
-      { id: "mc2-3", title: "Sequência Completa de Massagem Relaxante Corporal", type: "pdf" },
-      { id: "mc2-4", title: "Indicações, Contraindicações e Cuidados Essenciais", type: "pdf" },
+      { id: "mc2-1", title: "Princípios e Efeitos da Massagem Relaxante", type: "pdf", url: "..." },
+      {
+        id: "mc2-2",
+        title: "Manobras Básicas da Massagem Relaxante: Deslizes, Amassamentos e Fricções",
+        type: "pdf",
+        url: "...",
+      },
+      { id: "mc2-3", title: "Sequência Completa de Massagem Relaxante Corporal", type: "pdf", url: "..." },
+      { id: "mc2-4", title: "Indicações, Contraindicações e Cuidados Essenciais", type: "pdf", url: "..." },
     ],
   },
   // ─── Matérias Complementares 3 ───
@@ -76,10 +81,15 @@ export const courseModules: Module[] = [
     emoji: "📄",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "mc3-1", title: "Avaliação e Anamnese: Entendendo as Queixas do Cliente", type: "pdf" },
-      { id: "mc3-2", title: "Massagem para Dores Musculares e Tensão Crônica", type: "pdf" },
-      { id: "mc3-3", title: "Abordagem Massoterapêutica para Lesões e Inflamações Comuns", type: "pdf" },
-      { id: "mc3-4", title: "Técnicas Complementares: Alongamentos e Mobilizações Articulares", type: "pdf" },
+      { id: "mc3-1", title: "Avaliação e Anamnese: Entendendo as Queixas do Cliente", type: "pdf", url: "..." },
+      { id: "mc3-2", title: "Massagem para Dores Musculares e Tensão Crônica", type: "pdf", url: "..." },
+      { id: "mc3-3", title: "Abordagem Massoterapêutica para Lesões e Inflamações Comuns", type: "pdf", url: "..." },
+      {
+        id: "mc3-4",
+        title: "Técnicas Complementares: Alongamentos e Mobilizações Articulares",
+        type: "pdf",
+        url: "...",
+      },
     ],
   },
   // ─── Matérias Complementares 4 ───
@@ -89,11 +99,26 @@ export const courseModules: Module[] = [
     emoji: "📄",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "mc4-1", title: "Introdução à Massagem Desportiva: Preparação e Recuperação", type: "pdf" },
-      { id: "mc4-2", title: "Massagem Modeladora e Drenagem Linfática: Conceitos e Aplicações", type: "pdf" },
-      { id: "mc4-3", title: "Reflexologia Podal: Pontos e Benefícios Terapêuticos", type: "pdf" },
-      { id: "mc4-4", title: "Massagem em Gestantes e Idosos: Adaptações e Cuidados Especiais", type: "pdf" },
-      { id: "mc4-5", title: "Biossegurança na Massoterapia: Higiene e Prevenção de Contaminações", type: "pdf" },
+      { id: "mc4-1", title: "Introdução à Massagem Desportiva: Preparação e Recuperação", type: "pdf", url: "..." },
+      {
+        id: "mc4-2",
+        title: "Massagem Modeladora e Drenagem Linfática: Conceitos e Aplicações",
+        type: "pdf",
+        url: "...",
+      },
+      { id: "mc4-3", title: "Reflexologia Podal: Pontos e Benefícios Terapêuticos", type: "pdf", url: "..." },
+      {
+        id: "mc4-4",
+        title: "Massagem em Gestantes e Idosos: Adaptações e Cuidados Especiais",
+        type: "pdf",
+        url: "...",
+      },
+      {
+        id: "mc4-5",
+        title: "Biossegurança na Massoterapia: Higiene e Prevenção de Contaminações",
+        type: "pdf",
+        url: "...",
+      },
     ],
   },
   // ─── Módulo 5 ───
