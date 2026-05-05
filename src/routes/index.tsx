@@ -275,9 +275,7 @@ function Dashboard() {
             target="_blank"
             rel="noopener noreferrer"
             className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3.5 text-sm font-medium text-foreground transition-all hover:bg-accent hover:border-success/30"
-          >
-            <MessageCircle className="h-4 w-4 text-success" />
-          </a>
+          ></a>
         </div>
       </main>
     </div>
