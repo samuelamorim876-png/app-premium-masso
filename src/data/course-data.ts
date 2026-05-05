@@ -93,7 +93,7 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "5-1", title: "Utensílios, Materiais e Produtos", type: "video", url: "..." },
+      { id: "5-1", title: "Utensílios, Materiais e Produtos", type: "video", url: "https://www.youtube.com/embed/2DeoiByPSM8" },
       { id: "5-2", title: "Higiene do Local", type: "video", url: "..." },
     ],
   },
