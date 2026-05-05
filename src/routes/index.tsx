@@ -162,12 +162,13 @@ function Dashboard() {
         <div className="space-y-3">
           {courseModules.map((mod, i) => {
             const unlocked = isModuleUnlocked(i);
+            const daysLeft = daysUntilUnlock(i);
             return unlocked ? (
               <Link key={mod.id} to="/modulo/$moduleId" params={{ moduleId: mod.id }} className="block">
-                <ModuleCard module={mod} index={i} unlocked progress={getModuleProgress(mod.id)} onOpen={() => {}} />
+                <ModuleCard module={mod} index={i} unlocked progress={getModuleProgress(mod.id)} onOpen={() => {}} daysLeft={daysLeft} />
               </Link>
             ) : (
-              <ModuleCard key={mod.id} module={mod} index={i} unlocked={false} progress={getModuleProgress(mod.id)} onOpen={() => {}} />
+              <ModuleCard key={mod.id} module={mod} index={i} unlocked={false} progress={getModuleProgress(mod.id)} onOpen={() => {}} daysLeft={daysLeft} />
             );
           })}
         </div>
