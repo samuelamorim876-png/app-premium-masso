@@ -5,7 +5,7 @@ export function useLessonNotes(userId: string | undefined, lessonId: string | un
   const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     if (!userId || !lessonId) return;
