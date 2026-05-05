@@ -5,11 +5,10 @@ import { Label } from "@/components/ui/label";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<string | null>;
-  onSwitchToRegister: () => void;
   onSwitchToForgot: () => void;
 }
 
-export function LoginForm({ onLogin, onSwitchToRegister, onSwitchToForgot }: LoginFormProps) {
+export function LoginForm({ onLogin, onSwitchToForgot }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -37,12 +36,9 @@ export function LoginForm({ onLogin, onSwitchToRegister, onSwitchToForgot }: Log
       <Button type="submit" className="w-full" size="lg" disabled={submitting}>
         {submitting ? "Entrando..." : "Entrar"}
       </Button>
-      <div className="flex flex-col items-center gap-2 text-sm">
+      <div className="flex justify-center text-sm">
         <button type="button" onClick={onSwitchToForgot} className="text-primary hover:underline">
           Esqueci minha senha
-        </button>
-        <button type="button" onClick={onSwitchToRegister} className="text-muted-foreground hover:text-foreground">
-          Não tem conta? <span className="text-primary font-medium">Cadastre-se</span>
         </button>
       </div>
     </form>
