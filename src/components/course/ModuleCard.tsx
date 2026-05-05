@@ -1,4 +1,5 @@
-import { courseModules } from "@/data/course-data";
+import type { courseModules } from "@/data/course-data";
+import type { Module } from "@/data/course-data";
 import { Lock, CheckCircle2, ChevronRight, Clock } from "lucide-react";
 
 interface ModuleCardProps {
