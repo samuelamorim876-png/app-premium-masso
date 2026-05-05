@@ -109,7 +109,12 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "6-1", title: "Sistema Esquelético", type: "video", url: "https://www.youtube.com/embed/BdOZuePswlo" },
+      {
+        id: "6-1",
+        title: "Sistema Esquelético",
+        type: "video",
+        url: "https://www.youtube-nocookie.com/embed/BdOZuePswlo",
+      },
       { id: "6-2", title: "Sistema Muscular", type: "video", url: "https://www.youtube.com/embed/PU8mvYEHSXU" },
       { id: "6-3", title: "Sistema Circulatório", type: "video", url: "https://www.youtube.com/embed/GDbEdkGSy6U" },
       {
