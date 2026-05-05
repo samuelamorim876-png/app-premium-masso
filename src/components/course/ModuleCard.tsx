@@ -2,7 +2,7 @@ import type { Module } from "@/data/course-data";
 import { Lock, CheckCircle2, ChevronRight, Clock } from "lucide-react";
 
 interface ModuleCardProps {
-  module: (typeof courseModules)[0];
+  module: Module;
   index: number;
   unlocked: boolean;
   progress: { completed: number; total: number; percent: number };
