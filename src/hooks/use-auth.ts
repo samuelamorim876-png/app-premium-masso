@@ -1,67 +1,73 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { User, Session } from "@supabase/supabase-js";
 
 interface AuthUser {
+  id: string;
   email: string;
   name: string;
 }
 
-const AUTH_KEY = "massoterapia-auth";
-const USERS_KEY = "massoterapia-users";
-
-function getStoredUsers(): Record<string, { email: string; name: string; password: string }> {
-  if (typeof window === "undefined") return {};
-  try {
-    return JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function getStoredAuth(): AuthUser | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(AUTH_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+function mapUser(user: User): AuthUser {
+  return {
+    id: user.id,
+    email: user.email ?? "",
+    name: user.user_metadata?.name ?? user.email?.split("@")[0] ?? "",
+  };
 }
 
 export function useAuth() {
-  const [user, setUser] = useState<AuthUser | null>(getStoredAuth);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = (email: string, password: string): string | null => {
-    const users = getStoredUsers();
-    const u = users[email];
-    if (!u) return "E-mail não encontrado.";
-    if (u.password !== password) return "Senha incorreta.";
-    const authUser = { email: u.email, name: u.name };
-    localStorage.setItem(AUTH_KEY, JSON.stringify(authUser));
-    setUser(authUser);
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(mapUser(session.user));
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(mapUser(session.user));
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = useCallback(async (email: string, password: string): Promise<string | null> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return error.message;
     return null;
-  };
+  }, []);
 
-  const register = (name: string, email: string, password: string): string | null => {
-    const users = getStoredUsers();
-    if (users[email]) return "E-mail já cadastrado.";
-    users[email] = { email, name, password };
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-    const authUser = { email, name };
-    localStorage.setItem(AUTH_KEY, JSON.stringify(authUser));
-    setUser(authUser);
+  const register = useCallback(async (name: string, email: string, password: string): Promise<string | null> => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name }, emailRedirectTo: window.location.origin },
+    });
+    if (error) return error.message;
     return null;
-  };
+  }, []);
 
-  const logout = () => {
-    localStorage.removeItem(AUTH_KEY);
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
-  };
+  }, []);
 
-  const resetPassword = (email: string): string | null => {
-    const users = getStoredUsers();
-    if (!users[email]) return "E-mail não encontrado.";
-    return null; // In a real app, would send email
-  };
+  const resetPassword = useCallback(async (email: string): Promise<string | null> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) return error.message;
+    return null;
+  }, []);
 
-  return { user, login, register, logout, resetPassword };
+  return { user, loading, login, register, logout, resetPassword };
 }
