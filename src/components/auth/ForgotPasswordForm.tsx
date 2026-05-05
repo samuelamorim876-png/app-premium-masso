@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface ForgotPasswordFormProps {
-  onReset: (email: string) => string | null;
+  onReset: (email: string) => Promise<string | null>;
   onSwitchToLogin: () => void;
 }
 
@@ -12,12 +12,15 @@ export function ForgotPasswordForm({ onReset, onSwitchToLogin }: ForgotPasswordF
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const err = onReset(email);
-    if (err) { setError(err); return; }
+    setSubmitting(true);
+    const err = await onReset(email);
+    if (err) { setError(err); setSubmitting(false); return; }
     setSent(true);
+    setSubmitting(false);
   };
 
   if (sent) {
@@ -41,7 +44,9 @@ export function ForgotPasswordForm({ onReset, onSwitchToLogin }: ForgotPasswordF
         <Input id="forgot-email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" className="w-full" size="lg">Enviar link</Button>
+      <Button type="submit" className="w-full" size="lg" disabled={submitting}>
+        {submitting ? "Enviando..." : "Enviar link"}
+      </Button>
       <div className="text-center">
         <button type="button" onClick={onSwitchToLogin} className="text-sm text-primary hover:underline">Voltar ao login</button>
       </div>
