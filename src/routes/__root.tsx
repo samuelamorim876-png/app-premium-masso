@@ -29,14 +29,18 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Curso de Massoterapia" },
+      { name: "description", content: "Massoterapia Masterclass is a premium online course application for learning massage therapy techniques." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Curso de Massoterapia" },
+      { property: "og:description", content: "Massoterapia Masterclass is a premium online course application for learning massage therapy techniques." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Curso de Massoterapia" },
+      { name: "twitter:description", content: "Massoterapia Masterclass is a premium online course application for learning massage therapy techniques." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KRA0TDlwwDVu1knW7gxn2vuKou63/social-images/social-1777946802460-Captura_de_tela_2026-05-04_131732.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KRA0TDlwwDVu1knW7gxn2vuKou63/social-images/social-1777946802460-Captura_de_tela_2026-05-04_131732.webp" },
     ],
     links: [
       {
