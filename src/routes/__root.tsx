@@ -41,6 +41,9 @@ export const Route = createRootRoute({
       { name: "twitter:description", content: "Massoterapia Masterclass is a premium online course application for learning massage therapy techniques." },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KRA0TDlwwDVu1knW7gxn2vuKou63/social-images/social-1777946802460-Captura_de_tela_2026-05-04_131732.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/KRA0TDlwwDVu1knW7gxn2vuKou63/social-images/social-1777946802460-Captura_de_tela_2026-05-04_131732.webp" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "theme-color", content: "#2d8a4e" },
     ],
     links: [
       {
