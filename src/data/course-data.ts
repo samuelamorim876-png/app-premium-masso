@@ -17,6 +17,7 @@ export interface Module {
   id: string;
   title: string;
   emoji: string;
+  image?: string;
   lessons: Lesson[];
   unlock: UnlockRule;
 }
