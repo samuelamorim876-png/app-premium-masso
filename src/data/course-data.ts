@@ -1,200 +1,295 @@
+export type LessonType = "video" | "pdf" | "info";
+
 export interface Lesson {
   id: string;
   title: string;
+  type: LessonType;
+  /** URL for video or PDF — set later by the course admin */
+  url?: string;
 }
+
+export type UnlockRule =
+  | { kind: "immediate" }
+  | { kind: "days_after_purchase"; days: number }
+  | { kind: "after_previous" };
 
 export interface Module {
   id: string;
   title: string;
   emoji: string;
   lessons: Lesson[];
+  unlock: UnlockRule;
 }
 
 export const courseModules: Module[] = [
+  // ─── MI-A ───
   {
-    id: "mod-1",
-    title: "Fundamentos da Massoterapia",
+    id: "mi-a",
+    title: "Módulo Inicial – Apresentação",
     emoji: "🔹",
+    unlock: { kind: "immediate" },
     lessons: [
-      { id: "1-1", title: "Introdução à Massoterapia" },
-      { id: "1-2", title: "Utensílios, Materiais e Produtos" },
-      { id: "1-3", title: "Higiene e Organização do Local" },
-      { id: "1-4", title: "Biossegurança" },
+      { id: "mia-1", title: "Importante – Leia Antes de Começar", type: "pdf" },
+      { id: "mia-2", title: "Avisos", type: "video" },
     ],
   },
+  // ─── Matérias Complementares 1 ───
   {
-    id: "mod-2",
-    title: "Anatomia Básica",
-    emoji: "🔹",
+    id: "mc-1",
+    title: "Matérias Complementares 1",
+    emoji: "📄",
+    unlock: { kind: "immediate" },
     lessons: [
-      { id: "2-1", title: "Sistema Esquelético" },
-      { id: "2-2", title: "Sistema Muscular" },
-      { id: "2-3", title: "Sistema Circulatório" },
-      { id: "2-4", title: "Sistema Tegumentar (Pele)" },
+      { id: "mc1-1", title: "Introdução à Massoterapia e o Poder do Toque", type: "pdf" },
+      { id: "mc1-2", title: "Ética e Postura Profissional do Massoterapeuta", type: "pdf" },
+      { id: "mc1-3", title: "Anatomia e Fisiologia Básica para Massoterapeutas", type: "pdf" },
+      { id: "mc1-4", title: "História e Evolução da Massoterapia no Mundo", type: "pdf" },
     ],
   },
+  // ─── Matérias Complementares 2 ───
   {
-    id: "mod-3",
-    title: "Ética Profissional",
-    emoji: "🔹",
+    id: "mc-2",
+    title: "Matérias Complementares 2",
+    emoji: "📄",
+    unlock: { kind: "immediate" },
     lessons: [
-      { id: "3-1", title: "Código de Ética e Conduta do Terapeuta" },
-      { id: "3-2", title: "Importância da Confidencialidade" },
-      { id: "3-3", title: "Limites Profissionais e Relacionamento com Clientes" },
-      { id: "3-4", title: "Consentimento Informado em Massoterapia" },
-      { id: "3-5", title: "Construindo uma Prática Sustentável" },
+      { id: "mc2-1", title: "Princípios e Efeitos da Massagem Relaxante", type: "pdf" },
+      { id: "mc2-2", title: "Manobras Básicas da Massagem Relaxante: Deslizes, Amassamentos e Fricções", type: "pdf" },
+      { id: "mc2-3", title: "Sequência Completa de Massagem Relaxante Corporal", type: "pdf" },
+      { id: "mc2-4", title: "Indicações, Contraindicações e Cuidados Essenciais", type: "pdf" },
     ],
   },
+  // ─── Matérias Complementares 3 ───
   {
-    id: "mod-4",
-    title: "Início da Prática (Massagem Relaxante)",
-    emoji: "🔹",
+    id: "mc-3",
+    title: "Matérias Complementares 3",
+    emoji: "📄",
+    unlock: { kind: "immediate" },
     lessons: [
-      { id: "4-1", title: "Introdução à Massagem Relaxante" },
-      { id: "4-2", title: "Massagem Facial" },
-      { id: "4-3", title: "Membros Superiores" },
-      { id: "4-4", title: "Pernas" },
-      { id: "4-5", title: "Pés" },
-      { id: "4-6", title: "Costas" },
+      { id: "mc3-1", title: "Avaliação e Anamnese: Entendendo as Queixas do Cliente", type: "pdf" },
+      { id: "mc3-2", title: "Massagem para Dores Musculares e Tensão Crônica", type: "pdf" },
+      { id: "mc3-3", title: "Abordagem Massoterapêutica para Lesões e Inflamações Comuns", type: "pdf" },
+      { id: "mc3-4", title: "Técnicas Complementares: Alongamentos e Mobilizações Articulares", type: "pdf" },
     ],
   },
+  // ─── Matérias Complementares 4 ───
+  {
+    id: "mc-4",
+    title: "Matérias Complementares 4",
+    emoji: "📄",
+    unlock: { kind: "immediate" },
+    lessons: [
+      { id: "mc4-1", title: "Introdução à Massagem Desportiva: Preparação e Recuperação", type: "pdf" },
+      { id: "mc4-2", title: "Massagem Modeladora e Drenagem Linfática: Conceitos e Aplicações", type: "pdf" },
+      { id: "mc4-3", title: "Reflexologia Podal: Pontos e Benefícios Terapêuticos", type: "pdf" },
+      { id: "mc4-4", title: "Massagem em Gestantes e Idosos: Adaptações e Cuidados Especiais", type: "pdf" },
+      { id: "mc4-5", title: "Biossegurança na Massoterapia: Higiene e Prevenção de Contaminações", type: "pdf" },
+    ],
+  },
+  // ─── Módulo 5 ───
   {
     id: "mod-5",
-    title: "Drenagem Linfática",
+    title: "Módulo 5 – Início do Curso",
     emoji: "🔹",
+    unlock: { kind: "immediate" },
     lessons: [
-      { id: "5-1", title: "Introdução" },
-      { id: "5-2", title: "Ativação da Linfa" },
-      { id: "5-3", title: "Pernas (Frente)" },
-      { id: "5-4", title: "Braço e Tórax" },
-      { id: "5-5", title: "Pernas (Posterior)" },
-      { id: "5-6", title: "Abdômen e Fechamento" },
-      { id: "5-7", title: "Costas" },
+      { id: "5-1", title: "Utensílios, Materiais e Produtos", type: "video" },
+      { id: "5-2", title: "Higiene do Local", type: "video" },
     ],
   },
+  // ─── Módulo 6 ───
   {
     id: "mod-6",
-    title: "Massagem Modeladora",
+    title: "Módulo 6 – Anatomia Aplicada",
     emoji: "🔹",
+    unlock: { kind: "immediate" },
     lessons: [
-      { id: "6-1", title: "Introdução" },
-      { id: "6-2", title: "Esfoliação" },
-      { id: "6-3", title: "Pernas (Frente)" },
-      { id: "6-4", title: "Abdômen" },
-      { id: "6-5", title: "Braços" },
-      { id: "6-6", title: "Pernas (Posterior e Glúteos)" },
-      { id: "6-7", title: "Costas" },
+      { id: "6-1", title: "Sistema Esquelético", type: "video" },
+      { id: "6-2", title: "Sistema Muscular", type: "video" },
+      { id: "6-3", title: "Sistema Circulatório", type: "video" },
+      { id: "6-4", title: "Sistema Tegumentar (pele)", type: "video" },
     ],
   },
+  // ─── Módulo 7 ───
   {
     id: "mod-7",
-    title: "Reflexologia Podal",
+    title: "Módulo 7 – Ética Profissional",
     emoji: "🔹",
+    unlock: { kind: "immediate" },
     lessons: [
-      { id: "7-1", title: "Introdução" },
-      { id: "7-2", title: "Prática" },
+      { id: "7-1", title: "Código de Ética e Conduta do Terapeuta", type: "video" },
+      { id: "7-2", title: "Importância da Confidencialidade", type: "video" },
+      { id: "7-3", title: "Limites Profissionais e Relacionamento com Clientes", type: "video" },
+      { id: "7-4", title: "Construindo uma Prática Profissional Sustentável", type: "video" },
     ],
   },
+  // ─── Módulo 8 ───
   {
     id: "mod-8",
-    title: "Auriculoterapia",
+    title: "Módulo 8 – Massagem Relaxante",
     emoji: "🔹",
+    unlock: { kind: "immediate" },
     lessons: [
-      { id: "8-1", title: "Introdução" },
-      { id: "8-2", title: "Prática" },
+      { id: "8-1", title: "Introdução à Massagem Relaxante", type: "video" },
+      { id: "8-2", title: "Massagem Relaxante Facial", type: "video" },
+      { id: "8-3", title: "Massagem Relaxante Membros Superiores", type: "video" },
+      { id: "8-4", title: "Massagem Relaxante nas Pernas", type: "video" },
+      { id: "8-5", title: "Massagem Relaxante Costas", type: "video" },
     ],
   },
+  // ─── Módulo 9 ───
   {
     id: "mod-9",
-    title: "Moxabustão",
+    title: "Módulo 9 – Drenagem Linfática",
     emoji: "🔹",
+    unlock: { kind: "immediate" },
     lessons: [
-      { id: "9-1", title: "Introdução" },
-      { id: "9-2", title: "Prática" },
+      { id: "9-1", title: "Introdução à Drenagem Linfática", type: "video" },
+      { id: "9-2", title: "Ativação da Linfa", type: "video" },
+      { id: "9-3", title: "Drenagem Pernas", type: "video" },
+      { id: "9-4", title: "Drenagem Braços e Tórax", type: "video" },
+      { id: "9-5", title: "Drenagem Pernas Superiores", type: "video" },
+      { id: "9-6", title: "Drenagem Abdômen e Fechamento", type: "video" },
+      { id: "9-7", title: "Drenagem Linfática Costas", type: "video" },
     ],
   },
+  // ─── Módulo 10 ───
   {
     id: "mod-10",
-    title: "Técnicas Especializadas",
+    title: "Módulo 10 – Estudos Práticos (Reflexologia)",
     emoji: "🔹",
+    unlock: { kind: "days_after_purchase", days: 7 },
     lessons: [
-      { id: "10-1", title: "Massagem Reflexológica" },
-      { id: "10-2", title: "Massagem Neuromuscular" },
-      { id: "10-3", title: "Craniofacial" },
-      { id: "10-4", title: "Miofascial" },
-      { id: "10-5", title: "Correção Postural" },
-      { id: "10-6", title: "Gestantes" },
-      { id: "10-7", title: "Ayurvédica" },
-      { id: "10-8", title: "Aromaterapia" },
+      { id: "10-1", title: "Início Reflexologia Podal", type: "video" },
+      { id: "10-2", title: "Reflexologia Podal 2", type: "video" },
     ],
   },
-  {
-    id: "mod-11",
-    title: "Aplicações Profissionais",
-    emoji: "🔹",
-    lessons: [
-      { id: "11-1", title: "Massagem Energética" },
-      { id: "11-2", title: "Massagem para Idosos" },
-      { id: "11-3", title: "Velas Quentes" },
-      { id: "11-4", title: "Desintoxicante" },
-      { id: "11-5", title: "Bambus" },
-      { id: "11-6", title: "Corporativo" },
-      { id: "11-7", title: "Enxaquecas" },
-      { id: "11-8", title: "Cicatrização" },
-      { id: "11-9", title: "Recuperação Muscular" },
-      { id: "11-10", title: "Pacientes Oncológicos" },
-      { id: "11-11", title: "Técnicas de Respiração" },
-    ],
-  },
+  // ─── Módulo 12 ───
   {
     id: "mod-12",
-    title: "Técnicas Avançadas",
+    title: "Módulo 12 – Estudo Prático (Modeladora)",
     emoji: "🔹",
+    unlock: { kind: "days_after_purchase", days: 7 },
     lessons: [
-      { id: "12-1", title: "Bioenergética" },
-      { id: "12-2", title: "Atletas de Alta Performance" },
-      { id: "12-3", title: "Reabilitação Ortopédica" },
-      { id: "12-4", title: "Óleos Essenciais" },
-      { id: "12-5", title: "Lomi Lomi" },
-      { id: "12-6", title: "Pindas Herbais" },
-      { id: "12-7", title: "Antiestresse" },
-      { id: "12-8", title: "Celulite" },
-      { id: "12-9", title: "Conchas" },
-      { id: "12-10", title: "Tailandesa" },
+      { id: "12-1", title: "Massagem Modeladora Pernas", type: "video" },
+      { id: "12-2", title: "Massagem Modeladora Abdômen", type: "video" },
+      { id: "12-3", title: "Massagem Modeladora Braços", type: "video" },
+      { id: "12-4", title: "Massagem Modeladora Pernas 2", type: "video" },
+      { id: "12-5", title: "Massagem Modeladora Costas", type: "video" },
     ],
   },
+  // ─── Módulo 13 ───
   {
     id: "mod-13",
-    title: "Terapias Clínicas",
+    title: "Módulo 13 – Estudos Práticos (Auriculoterapia)",
     emoji: "🔹",
+    unlock: { kind: "days_after_purchase", days: 7 },
     lessons: [
-      { id: "13-1", title: "Fibromialgia" },
-      { id: "13-2", title: "Espasmos Musculares" },
-      { id: "13-3", title: "Ervas Aromáticas" },
-      { id: "13-4", title: "Tensão no Pescoço e Ombros" },
-      { id: "13-5", title: "Alongamento Passivo" },
-      { id: "13-6", title: "Flexibilidade" },
-      { id: "13-7", title: "Lesões Desportivas" },
-      { id: "13-8", title: "Fascite Plantar" },
-      { id: "13-9", title: "Artrite" },
-      { id: "13-10", title: "Técnicas de Percussão" },
-      { id: "13-11", title: "Pós-operatório" },
-      { id: "13-12", title: "Problemas Respiratórios" },
-      { id: "13-13", title: "Sistema Imunológico" },
+      { id: "13-1", title: "Introdução Auriculoterapia", type: "video" },
+      { id: "13-2", title: "Auriculoterapia 2", type: "video" },
     ],
   },
+  // ─── Módulo 14 ───
   {
     id: "mod-14",
-    title: "Especializações e Bônus",
-    emoji: "🎁",
+    title: "Módulo 14 – Estudo Prático (Moxabustão)",
+    emoji: "🔹",
+    unlock: { kind: "days_after_purchase", days: 7 },
     lessons: [
-      { id: "14-1", title: "Bambuterapia" },
-      { id: "14-2", title: "Pantalas" },
-      { id: "14-3", title: "Ventosaterapia Aplicada" },
-      { id: "14-4", title: "Modeladora Turbinada" },
-      { id: "14-5", title: "Outras Técnicas" },
-      { id: "14-6", title: "Precificação" },
-      { id: "14-7", title: "Apostila Completa (PDF)" },
+      { id: "14-1", title: "Introdução ao Moxabustão", type: "video" },
+      { id: "14-2", title: "Moxabustão Prática", type: "video" },
+    ],
+  },
+  // ─── Módulo 15 ───
+  {
+    id: "mod-15",
+    title: "Módulo 15 – Estudos Práticos (Técnicas Especializadas)",
+    emoji: "📄",
+    unlock: { kind: "days_after_purchase", days: 7 },
+    lessons: [
+      { id: "15-1", title: "Técnicas de Massagem Reflexológica", type: "pdf" },
+      { id: "15-2", title: "Massagem Neuromuscular", type: "pdf" },
+      { id: "15-3", title: "Massagem Craniofacial", type: "pdf" },
+      { id: "15-4", title: "Massagem Miofascial", type: "pdf" },
+      { id: "15-5", title: "Massagem para Correção Postural", type: "pdf" },
+      { id: "15-6", title: "Massagem para Gestantes", type: "pdf" },
+      { id: "15-7", title: "Massagem Ayurvédica", type: "pdf" },
+      { id: "15-8", title: "Aromaterapia na Massoterapia", type: "pdf" },
+    ],
+  },
+  // ─── Módulo 16 ───
+  {
+    id: "mod-16",
+    title: "Módulo 16 – Estudos Práticos (Aplicações Profissionais)",
+    emoji: "📄",
+    unlock: { kind: "days_after_purchase", days: 7 },
+    lessons: [
+      { id: "16-1", title: "Massagem Energética", type: "pdf" },
+      { id: "16-2", title: "Massagem para Idosos", type: "pdf" },
+      { id: "16-3", title: "Massagem com Velas Quentes", type: "pdf" },
+      { id: "16-4", title: "Massagem Desintoxicante", type: "pdf" },
+      { id: "16-5", title: "Massagem com Bambus", type: "pdf" },
+      { id: "16-6", title: "Massagem em Ambientes Corporativos", type: "pdf" },
+      { id: "16-7", title: "Técnicas de Massagem para Alívio de Enxaquecas", type: "pdf" },
+      { id: "16-8", title: "Massagem para Cicatrização de Tecidos", type: "pdf" },
+      { id: "16-9", title: "Massagem para Recuperação Muscular", type: "pdf" },
+      { id: "16-10", title: "Massagem em Pacientes Oncológicos", type: "pdf" },
+      { id: "16-11", title: "Técnicas de Respiração Aplicadas à Massoterapia", type: "pdf" },
+    ],
+  },
+  // ─── Módulo 17 ───
+  {
+    id: "mod-17",
+    title: "Módulo 17 – Estudos Práticos (Técnicas Avançadas)",
+    emoji: "📄",
+    unlock: { kind: "days_after_purchase", days: 7 },
+    lessons: [
+      { id: "17-1", title: "Massagem Bioenergética", type: "pdf" },
+      { id: "17-2", title: "Massagem para Atletas de Alta Performance", type: "pdf" },
+      { id: "17-3", title: "Massagem para Reabilitação Ortopédica", type: "pdf" },
+      { id: "17-4", title: "Massagem Terapêutica com Óleos Essenciais", type: "pdf" },
+      { id: "17-5", title: "Massagem Lomi Lomi", type: "pdf" },
+      { id: "17-6", title: "Massagem com Pindas Herbais", type: "pdf" },
+      { id: "17-7", title: "Massagem para Tratamento de Celulite", type: "pdf" },
+      { id: "17-8", title: "Massagem com Conchas", type: "pdf" },
+      { id: "17-9", title: "Massagem Tailandesa", type: "pdf" },
+    ],
+  },
+  // ─── Módulo 18 ───
+  {
+    id: "mod-18",
+    title: "Módulo 18 – Estudos Práticos (Terapias Clínicas)",
+    emoji: "📄",
+    unlock: { kind: "days_after_purchase", days: 7 },
+    lessons: [
+      { id: "18-1", title: "Massagem Terapêutica em Pacientes com Fibromialgia", type: "pdf" },
+      { id: "18-2", title: "Massagem Terapêutica para Redução de Espasmos Musculares", type: "pdf" },
+      { id: "18-3", title: "Massagem com Ervas Aromáticas", type: "pdf" },
+      { id: "18-4", title: "Massagem Terapêutica para Alívio de Tensão no Pescoço e Ombros", type: "pdf" },
+      { id: "18-5", title: "Massagem Terapêutica com Alongamento Passivo", type: "pdf" },
+      { id: "18-6", title: "Massagem para Melhoria da Flexibilidade", type: "pdf" },
+      { id: "18-7", title: "Massagem Terapêutica em Pacientes com Lesões Desportivas", type: "pdf" },
+      { id: "18-8", title: "Massagem Terapêutica para Tratamento de Fascite Plantar", type: "pdf" },
+      { id: "18-9", title: "Massagem Terapêutica em Pacientes com Artrite", type: "pdf" },
+      { id: "18-10", title: "Massagem Terapêutica com Técnicas de Percussão", type: "pdf" },
+      { id: "18-11", title: "Massagem para Redução de Dor em Pacientes Pós-operatórios", type: "pdf" },
+      { id: "18-12", title: "Massagem Terapêutica para Problemas Respiratórios", type: "pdf" },
+      { id: "18-13", title: "Massagem Terapêutica para Estímulo do Sistema Imunológico", type: "pdf" },
+    ],
+  },
+  // ─── Módulo 19 ───
+  {
+    id: "mod-19",
+    title: "Módulo 19 – Estudos Práticos (Bônus)",
+    emoji: "🎁",
+    unlock: { kind: "days_after_purchase", days: 7 },
+    lessons: [
+      { id: "19-1", title: "Massagem Modeladora Bambuterapia", type: "pdf" },
+      { id: "19-2", title: "Massagem Modeladora Pantalas", type: "pdf" },
+      { id: "19-3", title: "Massagem Modeladora Ventosa Aplicada", type: "pdf" },
+      { id: "19-4", title: "Massagem Modeladora Turbinada", type: "pdf" },
+      { id: "19-5", title: "Outras Técnicas", type: "pdf" },
+      { id: "19-6", title: "Precificação", type: "pdf" },
     ],
   },
 ];
