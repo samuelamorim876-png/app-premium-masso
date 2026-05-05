@@ -54,13 +54,13 @@ function AuthPage() {
             Domine técnicas profissionais de massoterapia com mais de 100 aulas em vídeo.
             Do iniciante ao especialista.
           </p>
-          <div className="mt-8 flex justify-center gap-6 text-primary-foreground/60 text-sm">
+           <div className="mt-8 flex justify-center gap-6 text-primary-foreground/60 text-sm">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary-foreground">14</p>
+              <p className="text-2xl font-bold text-primary-foreground">19</p>
               <p>Módulos</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary-foreground">100+</p>
+              <p className="text-2xl font-bold text-primary-foreground">120+</p>
               <p>Aulas</p>
             </div>
             <div className="text-center">
