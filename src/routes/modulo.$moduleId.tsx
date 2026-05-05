@@ -2,17 +2,22 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useProgress } from "@/hooks/use-progress";
+import { useGamification } from "@/hooks/use-gamification";
+import { useLessonNotes } from "@/hooks/use-lesson-notes";
 import { courseModules } from "@/data/course-data";
+import { lessonCuriosities, lessonQuizzes } from "@/data/quiz-data";
 import { LessonRow } from "@/components/course/LessonRow";
 import { LessonPlayer } from "@/components/course/LessonPlayer";
+import { LessonNotes } from "@/components/course/LessonNotes";
+import { QuizBlock } from "@/components/course/QuizBlock";
+import { CuriosityBlock } from "@/components/course/CuriosityBlock";
+import { RewardPopup } from "@/components/course/RewardPopup";
 import { ArrowLeft, ChevronRight, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/modulo/$moduleId")({
   head: () => ({
-    meta: [
-      { title: "Módulo — Curso de Massoterapia" },
-    ],
+    meta: [{ title: "Módulo — Curso de Massoterapia" }],
   }),
   component: ModulePage,
 });
@@ -21,6 +26,7 @@ function ModulePage() {
   const { moduleId } = Route.useParams();
   const { user } = useAuth();
   const { isLessonCompleted, toggleLesson, getModuleProgress, isModuleUnlocked } = useProgress(user?.id);
+  const { showReward, addPoints, awardBadge } = useGamification(user?.id);
 
   const moduleIndex = courseModules.findIndex((m) => m.id === moduleId);
   const mod = courseModules[moduleIndex];
@@ -69,8 +75,24 @@ function ModulePage() {
   const progress = getModuleProgress(moduleId);
   const activeLesson = mod.lessons.find((l) => l.id === activeLessonId);
 
+  const handleToggleLesson = async () => {
+    if (!activeLesson) return;
+    const wasCompleted = isLessonCompleted(activeLesson.id);
+    await toggleLesson(activeLesson.id);
+    if (!wasCompleted) {
+      await addPoints(10);
+    }
+    // Check if module is now complete
+    const updatedProgress = getModuleProgress(moduleId);
+    if (!wasCompleted && updatedProgress.completed + 1 === updatedProgress.total) {
+      setTimeout(() => awardBadge(moduleId), 500);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {showReward && <RewardPopup points={showReward.points} badge={showReward.badge} />}
+
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-card/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
@@ -121,14 +143,36 @@ function ModulePage() {
           </div>
 
           {/* Lesson content */}
-          <div>
+          <div className="space-y-5">
             {activeLesson ? (
-              <LessonPlayer
-                lesson={activeLesson}
-                moduleName={mod.title}
-                isCompleted={isLessonCompleted(activeLesson.id)}
-                onToggle={() => toggleLesson(activeLesson.id)}
-              />
+              <>
+                <LessonPlayer
+                  lesson={activeLesson}
+                  moduleName={mod.title}
+                  isCompleted={isLessonCompleted(activeLesson.id)}
+                  onToggle={handleToggleLesson}
+                />
+
+                {/* Curiosity block */}
+                {lessonCuriosities[activeLesson.id] && (
+                  <CuriosityBlock text={lessonCuriosities[activeLesson.id].text} />
+                )}
+
+                {/* Quiz block */}
+                {lessonQuizzes[activeLesson.id] && user && (
+                  <QuizBlock
+                    lessonId={activeLesson.id}
+                    questions={lessonQuizzes[activeLesson.id]}
+                    userId={user.id}
+                    onCorrectAnswer={() => addPoints(15)}
+                  />
+                )}
+
+                {/* Notes */}
+                {user && (
+                  <LessonNotesWrapper userId={user.id} lessonId={activeLesson.id} />
+                )}
+              </>
             ) : (
               <div className="flex h-80 items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 animate-fade-in">
                 <div className="text-center">
@@ -162,4 +206,9 @@ function ModulePage() {
       </div>
     </div>
   );
+}
+
+function LessonNotesWrapper({ userId, lessonId }: { userId: string; lessonId: string }) {
+  const { content, updateContent, saving } = useLessonNotes(userId, lessonId);
+  return <LessonNotes content={content} onChange={updateContent} saving={saving} />;
 }
