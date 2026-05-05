@@ -34,7 +34,7 @@ function AuthPage() {
       {/* Left side - brand */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center bg-primary p-12 relative overflow-hidden">
         <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" width={960} height={1280} />
-        <div className="max-w-md text-center">
+        <div className="max-w-md text-center relative z-10">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary-foreground/10">
             <span className="text-4xl">💆</span>
           </div>
