@@ -109,10 +109,15 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "6-1", title: "Sistema Esquelético", type: "video", url: "..." },
-      { id: "6-2", title: "Sistema Muscular", type: "video", url: "..." },
-      { id: "6-3", title: "Sistema Circulatório", type: "video", url: "..." },
-      { id: "6-4", title: "Sistema Tegumentar (pele)", type: "video", url: "..." },
+      { id: "6-1", title: "Sistema Esquelético", type: "video", url: "https://www.youtube.com/embed/L2d05rgczQ" },
+      { id: "6-2", title: "Sistema Muscular", type: "video", url: "https://www.youtube.com/embed/PU8mvYEHSXU" },
+      { id: "6-3", title: "Sistema Circulatório", type: "video", url: "https://www.youtube.com/embed/GDbEdkGSy6U" },
+      {
+        id: "6-4",
+        title: "Sistema Tegumentar (pele)",
+        type: "video",
+        url: "https://www.youtube.com/embed/GZciUXZ88U8",
+      },
     ],
   },
   // ─── Módulo 7 ───
@@ -122,10 +127,30 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "7-1", title: "Código de Ética e Conduta do Terapeuta", type: "video", url: "..." },
-      { id: "7-2", title: "Importância da Confidencialidade", type: "video", url: "..." },
-      { id: "7-3", title: "Limites Profissionais e Relacionamento com Clientes", type: "video", url: "..." },
-      { id: "7-4", title: "Construindo uma Prática Profissional Sustentável", type: "video", url: "..." },
+      {
+        id: "7-1",
+        title: "Código de Ética e Conduta do Terapeuta",
+        type: "video",
+        url: "https://www.youtube.com/embed/nAu13KcOq2k",
+      },
+      {
+        id: "7-2",
+        title: "Importância da Confidencialidade",
+        type: "video",
+        url: "https://www.youtube.com/embed/AC5nXB8IxWY",
+      },
+      {
+        id: "7-3",
+        title: "Limites Profissionais e Relacionamento com Clientes",
+        type: "video",
+        url: "https://www.youtube.com/embed/nGkaDOp8bew",
+      },
+      {
+        id: "7-4",
+        title: "Construindo uma Prática Profissional Sustentável",
+        type: "video",
+        url: "https://www.youtube.com/embed/1kct5IaaYM0",
+      },
     ],
   },
   // ─── Módulo 8 ───
