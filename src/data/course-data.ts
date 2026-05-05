@@ -47,7 +47,12 @@ export const courseModules: Module[] = [
         url: "https://drive.google.com/file/d/1nRhVxNoOMMLma6icsyxV36HP-jrHsZ9i/view?usp=drive_link",
       },
       { id: "mc1-2", title: "Ética e Postura Profissional do Massoterapeuta", type: "pdf" },
-      { id: "mc1-3", title: "Anatomia e Fisiologia Básica para Massoterapeutas", type: "pdf" },
+      {
+        id: "mc1-3",
+        title: "Anatomia e Fisiologia Básica para Massoterapeutas",
+        type: "pdf",
+        url: "https://drive.google.com/file/d/1-prMas1etja4UB0otz6QH70dA6LVEgf8/view?usp=drive_link",
+      },
       { id: "mc1-4", title: "História e Evolução da Massoterapia no Mundo", type: "pdf" },
     ],
   },
