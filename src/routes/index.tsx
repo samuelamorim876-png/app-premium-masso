@@ -185,7 +185,31 @@ function Dashboard() {
           <GamificationBar data={gamData} badges={badges} />
         </div>
 
-        {/* Progress + Daily challenge row */}
+        {/* Quick access */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+          <Link to="/simulador" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+            <Stethoscope className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Simulador</p>
+              <p className="text-[10px] text-muted-foreground">Pratique atendimentos</p>
+            </div>
+          </Link>
+          <Link to="/protocolos" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+            <ClipboardList className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Protocolos</p>
+              <p className="text-[10px] text-muted-foreground">Planos de atendimento</p>
+            </div>
+          </Link>
+          <Link to="/perfil" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+            <User className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Meu Perfil</p>
+              <p className="text-[10px] text-muted-foreground">Progresso e histórico</p>
+            </div>
+          </Link>
+        </div>
+
         <div className="grid gap-6 md:grid-cols-[1fr_320px] mb-8">
           <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
             <OverallProgress {...overallProgress} />
