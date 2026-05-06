@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useAdmin } from "@/hooks/use-admin";
 import { useAuth } from "@/hooks/use-auth";
 import { useProgress } from "@/hooks/use-progress";
 import { useGamification } from "@/hooks/use-gamification";
@@ -13,7 +14,7 @@ import { GamificationBar } from "@/components/course/GamificationBar";
 import { DailyChallenge } from "@/components/course/DailyChallenge";
 import { RewardPopup } from "@/components/course/RewardPopup";
 import { Link } from "@tanstack/react-router";
-import { LogOut, GraduationCap, Stethoscope, ClipboardList, User, Bot, Notebook, BookOpen, ShoppingBag } from "lucide-react";
+import { LogOut, GraduationCap, Stethoscope, ClipboardList, User, Bot, Notebook, BookOpen, ShoppingBag, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import modIntroImg from "@/assets/hero-massage-dark.jpg";
@@ -131,6 +132,7 @@ function AuthPage() {
 
 function Dashboard() {
   const { user, logout } = useAuth();
+  const { isAdmin } = useAdmin(user?.id);
   const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading } = useProgress(user?.id);
   const { data: gamData, badges, showReward, addPoints } = useGamification(user?.id);
 
@@ -159,6 +161,13 @@ function Dashboard() {
             <span className="font-heading text-lg font-bold text-foreground hidden sm:inline">Massoterapia</span>
           </div>
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="ghost" size="sm" className="text-primary hover:text-primary">
+                  <Shield className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
             <Link to="/perfil">
               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                 <User className="h-4 w-4" />
