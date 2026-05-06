@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Play, FileText } from "lucide-react";
+import { CheckCircle2, Circle, Play, FileText, Headphones, Info } from "lucide-react";
 import type { Lesson } from "@/data/course-data";
 
 interface LessonRowProps {
