@@ -219,49 +219,46 @@ function Dashboard() {
         </div>
 
         {/* Section title */}
-        <div className="mb-6 animate-fade-up" style={{ animationDelay: "200ms" }}>
+        <div className="mb-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
           <h2 className="font-heading text-xl font-bold text-foreground">Todos os Módulos</h2>
           <p className="mt-1 text-sm text-muted-foreground">{courseModules.length} módulos disponíveis</p>
         </div>
 
-        {/* Module grid */}
-        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {courseModules.map((mod, i) => {
-            const unlocked = isModuleUnlocked(i);
-            const daysLeft = daysUntilUnlock(i);
-            const img = moduleImages[mod.id];
-            return unlocked ? (
-              <Link
-                key={mod.id}
-                to="/modulo/$moduleId"
-                params={{ moduleId: mod.id }}
-                className="block animate-fade-up"
-                style={{ animationDelay: `${(i + 3) * 60}ms` }}
-              >
+        {/* Module carousel - horizontal scroll */}
+        <div className="-mx-4 sm:-mx-6">
+          <div className="flex gap-4 overflow-x-auto px-4 sm:px-6 pb-4 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+            {courseModules.map((mod, i) => {
+              const unlocked = isModuleUnlocked(i);
+              const daysLeft = daysUntilUnlock(i);
+              const img = moduleImages[mod.id];
+              const card = (
                 <ModuleCard
                   module={mod}
                   index={i}
-                  unlocked
+                  unlocked={unlocked}
                   progress={getModuleProgress(mod.id)}
                   onOpen={() => {}}
                   daysLeft={daysLeft}
                   image={img}
                 />
-              </Link>
-            ) : (
-              <div key={mod.id} className="animate-fade-up" style={{ animationDelay: `${(i + 3) * 60}ms` }}>
-                <ModuleCard
-                  module={mod}
-                  index={i}
-                  unlocked={false}
-                  progress={getModuleProgress(mod.id)}
-                  onOpen={() => {}}
-                  daysLeft={daysLeft}
-                  image={img}
-                />
-              </div>
-            );
-          })}
+              );
+              return (
+                <div
+                  key={mod.id}
+                  className="w-[160px] sm:w-[180px] md:w-[200px] flex-shrink-0 snap-start animate-fade-up"
+                  style={{ animationDelay: `${(i + 3) * 60}ms` }}
+                >
+                  {unlocked ? (
+                    <Link to="/modulo/$moduleId" params={{ moduleId: mod.id }} className="block">
+                      {card}
+                    </Link>
+                  ) : (
+                    card
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </main>
     </div>
