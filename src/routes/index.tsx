@@ -13,7 +13,7 @@ import { GamificationBar } from "@/components/course/GamificationBar";
 import { DailyChallenge } from "@/components/course/DailyChallenge";
 import { RewardPopup } from "@/components/course/RewardPopup";
 import { Link } from "@tanstack/react-router";
-import { LogOut, GraduationCap, Stethoscope, ClipboardList, User } from "lucide-react";
+import { LogOut, GraduationCap, Stethoscope, ClipboardList, User, Bot, Notebook, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import modIntroImg from "@/assets/hero-massage-dark.jpg";
@@ -186,6 +186,13 @@ function Dashboard() {
 
         {/* Quick access */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+          <Link to="/assistente" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+            <Bot className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Assistente IA</p>
+              <p className="text-[10px] text-muted-foreground">Tire dúvidas do curso</p>
+            </div>
+          </Link>
           <Link to="/simulador" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
             <Stethoscope className="h-5 w-5 text-primary shrink-0" />
             <div>
@@ -198,6 +205,20 @@ function Dashboard() {
             <div>
               <p className="text-sm font-semibold text-foreground">Protocolos</p>
               <p className="text-[10px] text-muted-foreground">Planos de atendimento</p>
+            </div>
+          </Link>
+          <Link to="/indicacoes" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+            <BookOpen className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Leitura</p>
+              <p className="text-[10px] text-muted-foreground">Indicações e contraindicações</p>
+            </div>
+          </Link>
+          <Link to="/anotacoes" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+            <Notebook className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Anotações</p>
+              <p className="text-[10px] text-muted-foreground">Seu caderno digital</p>
             </div>
           </Link>
           <Link to="/perfil" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
