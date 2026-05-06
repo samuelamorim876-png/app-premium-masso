@@ -161,6 +161,13 @@ function Dashboard() {
             <span className="font-heading text-lg font-bold text-foreground hidden sm:inline">Massoterapia</span>
           </div>
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="ghost" size="sm" className="text-primary hover:text-primary">
+                  <Shield className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
             <Link to="/perfil">
               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                 <User className="h-4 w-4" />
