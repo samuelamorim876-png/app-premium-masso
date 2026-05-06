@@ -33,7 +33,7 @@ export function LessonRow({ lesson, index, isCompleted, isActive, onClick }: Les
           </div>
         ) : isActive ? (
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15">
-            {isPdf ? <FileText className="h-4 w-4 text-primary" /> : <Play className="h-4 w-4 text-primary fill-primary" />}
+            {(isPdf || isInfo) ? <FileText className="h-4 w-4 text-primary" /> : isAudio ? <Headphones className="h-4 w-4 text-primary" /> : <Play className="h-4 w-4 text-primary fill-primary" />}
           </div>
         ) : (
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
