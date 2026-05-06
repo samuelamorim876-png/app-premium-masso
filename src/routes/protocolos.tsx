@@ -114,6 +114,20 @@ function ProtocolosPage() {
               ))}
             </div>
 
+            {/* Observations */}
+            {plan.observations && plan.observations.length > 0 && (
+              <div className="mb-8 rounded-xl border border-primary/20 bg-primary/5 p-4">
+                <h3 className="font-heading text-sm font-semibold text-foreground mb-3">⚠️ Observações Importantes</h3>
+                <ul className="space-y-2">
+                  {plan.observations.map((obs) => (
+                    <li key={obs} className="text-xs text-muted-foreground flex items-start gap-2">
+                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary shrink-0" /> {obs}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Indications & Contraindications */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-xl border border-success/20 bg-success/5 p-4">
