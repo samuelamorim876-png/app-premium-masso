@@ -14,6 +14,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProtocolosRouteImport } from './routes/protocolos'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as IndicacoesRouteImport } from './routes/indicacoes'
+import { Route as CursosRouteImport } from './routes/cursos'
 import { Route as AssistenteRouteImport } from './routes/assistente'
 import { Route as AnotacoesRouteImport } from './routes/anotacoes'
 import { Route as IndexRouteImport } from './routes/index'
@@ -44,6 +45,11 @@ const IndicacoesRoute = IndicacoesRouteImport.update({
   path: '/indicacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CursosRoute = CursosRouteImport.update({
+  id: '/cursos',
+  path: '/cursos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AssistenteRoute = AssistenteRouteImport.update({
   id: '/assistente',
   path: '/assistente',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anotacoes': typeof AnotacoesRoute
   '/assistente': typeof AssistenteRoute
+  '/cursos': typeof CursosRoute
   '/indicacoes': typeof IndicacoesRoute
   '/perfil': typeof PerfilRoute
   '/protocolos': typeof ProtocolosRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anotacoes': typeof AnotacoesRoute
   '/assistente': typeof AssistenteRoute
+  '/cursos': typeof CursosRoute
   '/indicacoes': typeof IndicacoesRoute
   '/perfil': typeof PerfilRoute
   '/protocolos': typeof ProtocolosRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/anotacoes': typeof AnotacoesRoute
   '/assistente': typeof AssistenteRoute
+  '/cursos': typeof CursosRoute
   '/indicacoes': typeof IndicacoesRoute
   '/perfil': typeof PerfilRoute
   '/protocolos': typeof ProtocolosRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anotacoes'
     | '/assistente'
+    | '/cursos'
     | '/indicacoes'
     | '/perfil'
     | '/protocolos'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anotacoes'
     | '/assistente'
+    | '/cursos'
     | '/indicacoes'
     | '/perfil'
     | '/protocolos'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anotacoes'
     | '/assistente'
+    | '/cursos'
     | '/indicacoes'
     | '/perfil'
     | '/protocolos'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnotacoesRoute: typeof AnotacoesRoute
   AssistenteRoute: typeof AssistenteRoute
+  CursosRoute: typeof CursosRoute
   IndicacoesRoute: typeof IndicacoesRoute
   PerfilRoute: typeof PerfilRoute
   ProtocolosRoute: typeof ProtocolosRoute
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndicacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cursos': {
+      id: '/cursos'
+      path: '/cursos'
+      fullPath: '/cursos'
+      preLoaderRoute: typeof CursosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/assistente': {
       id: '/assistente'
       path: '/assistente'
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnotacoesRoute: AnotacoesRoute,
   AssistenteRoute: AssistenteRoute,
+  CursosRoute: CursosRoute,
   IndicacoesRoute: IndicacoesRoute,
   PerfilRoute: PerfilRoute,
   ProtocolosRoute: ProtocolosRoute,

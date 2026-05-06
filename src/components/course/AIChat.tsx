@@ -125,14 +125,29 @@ export function AIChat({ lessonContext, floating = false }: AIChatProps) {
     }
   };
 
+  const [showTooltip, setShowTooltip] = useState(true);
+
+  useEffect(() => {
+    if (!floating) return;
+    const timer = setTimeout(() => setShowTooltip(false), 10000);
+    return () => clearTimeout(timer);
+  }, [floating]);
+
   if (floating && !open) {
     return (
-      <button
-        onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all animate-scale-in"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </button>
+      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 animate-scale-in">
+        {showTooltip && (
+          <div className="rounded-xl bg-card border border-border shadow-lg px-4 py-2.5 text-sm font-medium text-foreground animate-fade-in max-w-[200px]">
+            Faça uma pergunta sobre a aula
+          </div>
+        )}
+        <button
+          onClick={() => setOpen(true)}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </button>
+      </div>
     );
   }
 
