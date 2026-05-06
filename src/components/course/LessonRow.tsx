@@ -10,7 +10,12 @@ interface LessonRowProps {
 }
 
 export function LessonRow({ lesson, index, isCompleted, isActive, onClick }: LessonRowProps) {
-  const isPdf = lesson.type === "pdf" || lesson.type === "info";
+  const isPdf = lesson.type === "pdf";
+  const isInfo = lesson.type === "info";
+  const isAudio = lesson.type === "audio";
+
+  const typeLabel = isAudio ? "Áudio" : isInfo ? "Info" : isPdf ? "PDF" : "Vídeo aula";
+  const TypeIcon = isAudio ? Headphones : isInfo ? Info : isPdf ? FileText : Play;
 
   return (
     <button
