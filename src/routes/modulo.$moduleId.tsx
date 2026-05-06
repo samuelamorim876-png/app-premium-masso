@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
+import { AIChat } from "@/components/course/AIChat";
 import { useAuth } from "@/hooks/use-auth";
 import { useProgress } from "@/hooks/use-progress";
 import { useGamification } from "@/hooks/use-gamification";
@@ -158,6 +159,16 @@ function ModulePage() {
                   moduleName={mod.title}
                   isCompleted={isLessonCompleted(activeLesson.id)}
                   onToggle={handleToggleLesson}
+                />
+
+                {/* AI contextual chat for this lesson */}
+                <AIChat
+                  lessonContext={{
+                    moduleName: mod.title,
+                    lessonName: activeLesson.title,
+                    lessonType: activeLesson.type,
+                  }}
+                  floating
                 />
 
                 {/* Curiosity block */}
