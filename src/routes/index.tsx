@@ -36,6 +36,7 @@ const moduleImages: Record<string, string> = {
   "mc-2": modStudyImg,
   "mc-3": modStudyImg,
   "mc-4": modStudyImg,
+  "mod-audio": modRelaxanteImg,
   "mod-5": modProductsImg,
   "mod-6": modAnatomyImg,
   "mod-7": modEthicsImg,
@@ -50,6 +51,8 @@ const moduleImages: Record<string, string> = {
   "mod-17": modAvancadoImg,
   "mod-18": modAvancadoImg,
   "mod-19": modBonusImg,
+  "mod-cert": modBonusImg,
+  "mod-avisos": modStudyImg,
 };
 
 export const Route = createFileRoute("/")({
