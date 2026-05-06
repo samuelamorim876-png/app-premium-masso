@@ -83,8 +83,20 @@ function ProtocolosPage() {
               <p className="text-sm text-muted-foreground">{plan.description}</p>
             </div>
 
+            {/* Techniques */}
+            {plan.techniques && plan.techniques.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-heading text-sm font-semibold text-foreground mb-3">🔧 Técnicas Utilizadas</h3>
+                <div className="flex flex-wrap gap-2">
+                  {plan.techniques.map((t) => (
+                    <span key={t} className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">{t}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Steps */}
-            <h3 className="font-heading text-sm font-semibold text-foreground mb-4">Passo a Passo</h3>
+            <h3 className="font-heading text-sm font-semibold text-foreground mb-4">📋 Passo a Passo</h3>
             <div className="space-y-3 mb-8">
               {plan.steps.map((step) => (
                 <div key={step.order} className="rounded-xl border border-border bg-card p-4 flex gap-4">
