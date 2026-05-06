@@ -1,4 +1,4 @@
-export type LessonType = "video" | "pdf" | "info";
+export type LessonType = "video" | "pdf" | "info" | "audio";
 
 export interface Lesson {
   id: string;
@@ -6,6 +6,8 @@ export interface Lesson {
   type: LessonType;
   /** URL for video or PDF — set later by the course admin */
   url?: string;
+  /** Rich text content for info-type lessons */
+  infoContent?: string;
 }
 
 export type UnlockRule =
@@ -30,7 +32,36 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      { id: "mia-1", title: "Importante – Leia Antes de Começar", type: "pdf" },
+      {
+        id: "mia-1",
+        title: "Importante – Leia Antes de Começar",
+        type: "info",
+        infoContent: `📢 ATENÇÃO – LEIA ANTES DE COMEÇAR!
+
+Olá! 👋 Seja muito bem-vindo(a) ao nosso curso de Massoterapia! 💆‍♀️✨
+
+Sabemos que muita gente fica confusa no começo, então aqui vai uma explicação bem simples pra te ajudar:
+
+---
+
+✅ COMO FUNCIONA O CURSO:
+
+🟡 MÓDULOS INICIAIS (1 ao 5)
+São PDFs com conteúdos complementares. Você pode ler com calma, mas se quiser ir direto para as vídeo aulas, é só pular esses módulos.
+
+🟢 AS VÍDEO AULAS COMEÇAM NO MÓDULO 6!
+A partir do módulo 6, você vai ver as aulas em vídeo + práticas, exatamente como muita gente prefere. É só clicar e assistir! 🎥
+
+🔵 AULA DE APRESENTAÇÃO
+Assista à aula de apresentação no início do curso. Lá explicamos como tudo está organizado e como aproveitar melhor o conteúdo.
+
+---
+
+💡 DICA IMPORTANTE:
+Se você só viu PDFs até agora, é porque ainda não chegou no módulo certo.
+
+Vai até o módulo 6 e pronto: as vídeo aulas vão estar lá esperando por você!`,
+      },
       { id: "mia-2", title: "Avisos", type: "video", url: "https://www.youtube.com/embed/hstXzBWRyYU" },
     ],
   },
@@ -41,30 +72,10 @@ export const courseModules: Module[] = [
     emoji: "📄",
     unlock: { kind: "immediate" },
     lessons: [
-      {
-        id: "mc1-1",
-        title: "Introdução à Massoterapia e o Poder do Toque",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1nRhVxNoOMMLma6icsyxV36HP-jrHsZ9i/view?usp=drive_link",
-      },
-      {
-        id: "mc1-2",
-        title: "Ética e Postura Profissional do Massoterapeuta",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1-prMas1etja4UB0otz6QH70dA6LVEgf8/view?usp=drive_link",
-      },
-      {
-        id: "mc1-3",
-        title: "Anatomia e Fisiologia Básica para Massoterapeutas",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1T1ODNlFep32H74JCQ3_Xw26lGLxSoJtN/view?usp=drive_link",
-      },
-      {
-        id: "mc1-4",
-        title: "História e Evolução da Massoterapia no Mundo",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1g478dFtnJ_hVmd1Sk478IgiiVqItpcSk/view?usp=drive_link",
-      },
+      { id: "mc1-1", title: "Introdução à Massoterapia e o Poder do Toque", type: "pdf", url: "https://drive.google.com/file/d/1nRhVxNoOMMLma6icsyxV36HP-jrHsZ9i/view?usp=drive_link" },
+      { id: "mc1-2", title: "Ética e Postura Profissional do Massoterapeuta", type: "pdf", url: "https://drive.google.com/file/d/1-prMas1etja4UB0otz6QH70dA6LVEgf8/view?usp=drive_link" },
+      { id: "mc1-3", title: "Anatomia e Fisiologia Básica para Massoterapeutas", type: "pdf", url: "https://drive.google.com/file/d/1T1ODNlFep32H74JCQ3_Xw26lGLxSoJtN/view?usp=drive_link" },
+      { id: "mc1-4", title: "História e Evolução da Massoterapia no Mundo", type: "pdf", url: "https://drive.google.com/file/d/1g478dFtnJ_hVmd1Sk478IgiiVqItpcSk/view?usp=drive_link" },
     ],
   },
   // ─── Matérias Complementares 2 ───
@@ -74,30 +85,10 @@ export const courseModules: Module[] = [
     emoji: "📄",
     unlock: { kind: "immediate" },
     lessons: [
-      {
-        id: "mc2-1",
-        title: "Princípios e Efeitos da Massagem Relaxante",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/11-3d-2u0KO0uHWbHKVzXaFJq5hg0jYsV/view?usp=drive_link",
-      },
-      {
-        id: "mc2-2",
-        title: "Manobras Básicas da Massagem Relaxante: Deslizes, Amassamentos e Fricções",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/16N3Q2ypu1ASqt833zgpfvrxTHQEEvSnZ/view?usp=drive_link",
-      },
-      {
-        id: "mc2-3",
-        title: "Sequência Completa de Massagem Relaxante Corporal",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1nD6DKlJkiF3s1Sfs1iFwfiB7vQ7MgAZv/view?usp=drive_link",
-      },
-      {
-        id: "mc2-4",
-        title: "Indicações, Contraindicações e Cuidados Essenciais",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1pVg46FFuoFVhzWB_I6RZMt98oiNQfKG_/view?usp=drive_link",
-      },
+      { id: "mc2-1", title: "Princípios e Efeitos da Massagem Relaxante", type: "pdf", url: "https://drive.google.com/file/d/11-3d-2u0KO0uHWbHKVzXaFJq5hg0jYsV/view?usp=drive_link" },
+      { id: "mc2-2", title: "Manobras Básicas da Massagem Relaxante: Deslizes, Amassamentos e Fricções", type: "pdf", url: "https://drive.google.com/file/d/16N3Q2ypu1ASqt833zgpfvrxTHQEEvSnZ/view?usp=drive_link" },
+      { id: "mc2-3", title: "Sequência Completa de Massagem Relaxante Corporal", type: "pdf", url: "https://drive.google.com/file/d/1nD6DKlJkiF3s1Sfs1iFwfiB7vQ7MgAZv/view?usp=drive_link" },
+      { id: "mc2-4", title: "Indicações, Contraindicações e Cuidados Essenciais", type: "pdf", url: "https://drive.google.com/file/d/1pVg46FFuoFVhzWB_I6RZMt98oiNQfKG_/view?usp=drive_link" },
     ],
   },
   // ─── Matérias Complementares 3 ───
@@ -107,30 +98,10 @@ export const courseModules: Module[] = [
     emoji: "📄",
     unlock: { kind: "immediate" },
     lessons: [
-      {
-        id: "mc3-1",
-        title: "Avaliação e Anamnese: Entendendo as Queixas do Cliente",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1ZZKAgIkTwFv_Nl5LV7raWHFqW5djYq5t/view?usp=drive_link",
-      },
-      {
-        id: "mc3-2",
-        title: "Massagem para Dores Musculares e Tensão Crônica",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1n8HX0fkMVtHnEbNOd16pgySiE-0N0B7k/view?usp=drive_link",
-      },
-      {
-        id: "mc3-3",
-        title: "Abordagem Massoterapêutica para Lesões e Inflamações Comuns",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1WhFw5omUHw9a63Zg39weQqYkLxRMhiuI/view?usp=drive_link",
-      },
-      {
-        id: "mc3-4",
-        title: "Técnicas Complementares: Alongamentos e Mobilizações Articulares",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1Znn7_oYuL_G-CtoJ81Pu_YeJdgLORLe-/view?usp=drive_link",
-      },
+      { id: "mc3-1", title: "Avaliação e Anamnese: Entendendo as Queixas do Cliente", type: "pdf", url: "https://drive.google.com/file/d/1ZZKAgIkTwFv_Nl5LV7raWHFqW5djYq5t/view?usp=drive_link" },
+      { id: "mc3-2", title: "Massagem para Dores Musculares e Tensão Crônica", type: "pdf", url: "https://drive.google.com/file/d/1n8HX0fkMVtHnEbNOd16pgySiE-0N0B7k/view?usp=drive_link" },
+      { id: "mc3-3", title: "Abordagem Massoterapêutica para Lesões e Inflamações Comuns", type: "pdf", url: "https://drive.google.com/file/d/1WhFw5omUHw9a63Zg39weQqYkLxRMhiuI/view?usp=drive_link" },
+      { id: "mc3-4", title: "Técnicas Complementares: Alongamentos e Mobilizações Articulares", type: "pdf", url: "https://drive.google.com/file/d/1Znn7_oYuL_G-CtoJ81Pu_YeJdgLORLe-/view?usp=drive_link" },
     ],
   },
   // ─── Matérias Complementares 4 ───
@@ -140,36 +111,27 @@ export const courseModules: Module[] = [
     emoji: "📄",
     unlock: { kind: "immediate" },
     lessons: [
-      {
-        id: "mc4-1",
-        title: "Introdução à Massagem Desportiva: Preparação e Recuperação",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1vEwm2NPmTXkhsfB7e3rN6_36usNMgtLF/view?usp=drive_link",
-      },
-      {
-        id: "mc4-2",
-        title: "Massagem Modeladora e Drenagem Linfática: Conceitos e Aplicações",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1QGwijvqguVfBb7qhtALjILKnfnQtGc17/view?usp=drive_link",
-      },
-      {
-        id: "mc4-3",
-        title: "Reflexologia Podal: Pontos e Benefícios Terapêuticos",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/10CNprdu179BcX0NKufx8QP549O41YnKD/view?usp=drive_link",
-      },
-      {
-        id: "mc4-4",
-        title: "Massagem em Gestantes e Idosos: Adaptações e Cuidados Especiais",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/14jX7iiNiwEQyUxim7fIKZ3Vono2Sj2Dg/view?usp=drive_link",
-      },
-      {
-        id: "mc4-5",
-        title: "Biossegurança na Massoterapia: Higiene e Prevenção de Contaminações",
-        type: "pdf",
-        url: "https://drive.google.com/file/d/1BDclgJPq84cMSkz9scljziPSq6Pm9eux/view?usp=drive_link",
-      },
+      { id: "mc4-1", title: "Introdução à Massagem Desportiva: Preparação e Recuperação", type: "pdf", url: "https://drive.google.com/file/d/1vEwm2NPmTXkhsfB7e3rN6_36usNMgtLF/view?usp=drive_link" },
+      { id: "mc4-2", title: "Massagem Modeladora e Drenagem Linfática: Conceitos e Aplicações", type: "pdf", url: "https://drive.google.com/file/d/1QGwijvqguVfBb7qhtALjILKnfnQtGc17/view?usp=drive_link" },
+      { id: "mc4-3", title: "Reflexologia Podal: Pontos e Benefícios Terapêuticos", type: "pdf", url: "https://drive.google.com/file/d/10CNprdu179BcX0NKufx8QP549O41YnKD/view?usp=drive_link" },
+      { id: "mc4-4", title: "Massagem em Gestantes e Idosos: Adaptações e Cuidados Especiais", type: "pdf", url: "https://drive.google.com/file/d/14jX7iiNiwEQyUxim7fIKZ3Vono2Sj2Dg/view?usp=drive_link" },
+      { id: "mc4-5", title: "Biossegurança na Massoterapia: Higiene e Prevenção de Contaminações", type: "pdf", url: "https://drive.google.com/file/d/1BDclgJPq84cMSkz9scljziPSq6Pm9eux/view?usp=drive_link" },
+    ],
+  },
+  // ─── Ambiente Terapêutico (áudios) ───
+  {
+    id: "mod-audio",
+    title: "Ambiente Terapêutico – Áudios Relaxantes",
+    emoji: "🎧",
+    unlock: { kind: "immediate" },
+    lessons: [
+      { id: "audio-1", title: "Som de Chuva Relaxante", type: "audio", url: "" },
+      { id: "audio-2", title: "Som de Floresta", type: "audio", url: "" },
+      { id: "audio-3", title: "Água Corrente (Relaxamento)", type: "audio", url: "" },
+      { id: "audio-4", title: "Música Zen para Massagem", type: "audio", url: "" },
+      { id: "audio-5", title: "Som Ambiente para Drenagem", type: "audio", url: "" },
+      { id: "audio-6", title: "Relaxamento Profundo", type: "audio", url: "" },
+      { id: "audio-7", title: "Som Suave para Atendimento", type: "audio", url: "" },
     ],
   },
   // ─── Módulo 5 ───
@@ -179,12 +141,7 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      {
-        id: "5-1",
-        title: "Utensílios, Materiais e Produtos",
-        type: "video",
-        url: "https://www.youtube.com/embed/2DeoiByPSM8",
-      },
+      { id: "5-1", title: "Utensílios, Materiais e Produtos", type: "video", url: "https://www.youtube.com/embed/2DeoiByPSM8" },
       { id: "5-2", title: "Higiene do Local", type: "video", url: "https://www.youtube.com/embed/Fs6rMWGesR4" },
     ],
   },
@@ -195,20 +152,10 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      {
-        id: "6-1",
-        title: "Sistema Esquelético",
-        type: "video",
-        url: "https://www.youtube-nocookie.com/embed/BdOZuePswlo",
-      },
+      { id: "6-1", title: "Sistema Esquelético", type: "video", url: "https://www.youtube-nocookie.com/embed/BdOZuePswlo" },
       { id: "6-2", title: "Sistema Muscular", type: "video", url: "https://www.youtube.com/embed/PU8mvYEHSXU" },
       { id: "6-3", title: "Sistema Circulatório", type: "video", url: "https://www.youtube.com/embed/GDbEdkGSy6U" },
-      {
-        id: "6-4",
-        title: "Sistema Tegumentar (pele)",
-        type: "video",
-        url: "https://www.youtube.com/embed/GZciUXZ88U8",
-      },
+      { id: "6-4", title: "Sistema Tegumentar (pele)", type: "video", url: "https://www.youtube.com/embed/GZciUXZ88U8" },
     ],
   },
   // ─── Módulo 7 ───
@@ -218,30 +165,10 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      {
-        id: "7-1",
-        title: "Código de Ética e Conduta do Terapeuta",
-        type: "video",
-        url: "https://www.youtube.com/embed/nAu13KcOq2k",
-      },
-      {
-        id: "7-2",
-        title: "Importância da Confidencialidade",
-        type: "video",
-        url: "https://www.youtube.com/embed/AC5nXB8IxWY",
-      },
-      {
-        id: "7-3",
-        title: "Limites Profissionais e Relacionamento com Clientes",
-        type: "video",
-        url: "https://www.youtube.com/embed/nGkaDOp8bew",
-      },
-      {
-        id: "7-4",
-        title: "Construindo uma Prática Profissional Sustentável",
-        type: "video",
-        url: "https://www.youtube.com/embed/1kct5IaaYM0",
-      },
+      { id: "7-1", title: "Código de Ética e Conduta do Terapeuta", type: "video", url: "https://www.youtube.com/embed/nAu13KcOq2k" },
+      { id: "7-2", title: "Importância da Confidencialidade", type: "video", url: "https://www.youtube.com/embed/AC5nXB8IxWY" },
+      { id: "7-3", title: "Limites Profissionais e Relacionamento com Clientes", type: "video", url: "https://www.youtube.com/embed/nGkaDOp8bew" },
+      { id: "7-4", title: "Construindo uma Prática Profissional Sustentável", type: "video", url: "https://www.youtube.com/embed/1kct5IaaYM0" },
     ],
   },
   // ─── Módulo 8 ───
@@ -251,36 +178,11 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      {
-        id: "8-1",
-        title: "Introdução à Massagem Relaxante",
-        type: "video",
-        url: "https://www.youtube.com/embed/uxzt2M6oxkU",
-      },
-      {
-        id: "8-2",
-        title: "Massagem Relaxante Facial",
-        type: "video",
-        url: "https://www.youtube.com/embed/GJY4UrxiET0",
-      },
-      {
-        id: "8-3",
-        title: "Massagem Relaxante Membros Superiores",
-        type: "video",
-        url: "https://www.youtube.com/embed/EVE_s14HyNM",
-      },
-      {
-        id: "8-4",
-        title: "Massagem Relaxante nas Pernas",
-        type: "video",
-        url: "https://www.youtube.com/embed/kWDJTqMZomY",
-      },
-      {
-        id: "8-5",
-        title: "Massagem Relaxante Costas",
-        type: "video",
-        url: "https://www.youtube.com/embed/T_rcWdPJnSc",
-      },
+      { id: "8-1", title: "Introdução à Massagem Relaxante", type: "video", url: "https://www.youtube.com/embed/uxzt2M6oxkU" },
+      { id: "8-2", title: "Massagem Relaxante Facial", type: "video", url: "https://www.youtube.com/embed/GJY4UrxiET0" },
+      { id: "8-3", title: "Massagem Relaxante Membros Superiores", type: "video", url: "https://www.youtube.com/embed/EVE_s14HyNM" },
+      { id: "8-4", title: "Massagem Relaxante nas Pernas", type: "video", url: "https://www.youtube.com/embed/kWDJTqMZomY" },
+      { id: "8-5", title: "Massagem Relaxante Costas", type: "video", url: "https://www.youtube.com/embed/T_rcWdPJnSc" },
     ],
   },
   // ─── Módulo 9 ───
@@ -290,33 +192,13 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "immediate" },
     lessons: [
-      {
-        id: "9-1",
-        title: "Introdução à Drenagem Linfática",
-        type: "video",
-        url: "https://www.youtube.com/embed/vQDuO03CQfM",
-      },
+      { id: "9-1", title: "Introdução à Drenagem Linfática", type: "video", url: "https://www.youtube.com/embed/vQDuO03CQfM" },
       { id: "9-2", title: "Ativação da Linfa", type: "video", url: "https://www.youtube.com/embed/jcTceP1_q2E" },
       { id: "9-3", title: "Drenagem Pernas", type: "video", url: "https://www.youtube.com/embed/sD-vDlvtekM" },
       { id: "9-4", title: "Drenagem Braços e Tórax", type: "video", url: "https://www.youtube.com/embed/cXDeBtpWCFc" },
-      {
-        id: "9-5",
-        title: "Drenagem Pernas Superiores",
-        type: "video",
-        url: "https://www.youtube.com/embed/9hsEzYWoldo",
-      },
-      {
-        id: "9-6",
-        title: "Drenagem Abdômen e Fechamento",
-        type: "video",
-        url: "https://www.youtube.com/embed/ZyVbN7Tqbgg",
-      },
-      {
-        id: "9-7",
-        title: "Drenagem Linfática Costas",
-        type: "video",
-        url: "https://www.youtube.com/embed/MuOHOz2qhok",
-      },
+      { id: "9-5", title: "Drenagem Pernas Superiores", type: "video", url: "https://www.youtube.com/embed/9hsEzYWoldo" },
+      { id: "9-6", title: "Drenagem Abdômen e Fechamento", type: "video", url: "https://www.youtube.com/embed/ZyVbN7Tqbgg" },
+      { id: "9-7", title: "Drenagem Linfática Costas", type: "video", url: "https://www.youtube.com/embed/MuOHOz2qhok" },
     ],
   },
   // ─── Módulo 10 ───
@@ -326,12 +208,7 @@ export const courseModules: Module[] = [
     emoji: "🔹",
     unlock: { kind: "days_after_purchase", days: 7 },
     lessons: [
-      {
-        id: "10-1",
-        title: "Início Reflexologia Podal",
-        type: "video",
-        url: "https://www.youtube.com/watch?v=HRoE5K8hGmo",
-      },
+      { id: "10-1", title: "Início Reflexologia Podal", type: "video", url: "https://www.youtube.com/watch?v=HRoE5K8hGmo" },
       { id: "10-2", title: "Reflexologia Podal 2", type: "video", url: "https://www.youtube.com/embed/Z4Nuzd3b67U" },
     ],
   },
@@ -461,6 +338,51 @@ export const courseModules: Module[] = [
       { id: "19-4", title: "Massagem Modeladora Turbinada", type: "pdf" },
       { id: "19-5", title: "Outras Técnicas", type: "pdf" },
       { id: "19-6", title: "Precificação", type: "pdf" },
+    ],
+  },
+  // ─── Certificado ───
+  {
+    id: "mod-cert",
+    title: "Certificado / Comprovante de Conclusão",
+    emoji: "🎓",
+    unlock: { kind: "days_after_purchase", days: 7 },
+    lessons: [
+      {
+        id: "cert-1",
+        title: "Comprovante de Conclusão",
+        type: "info",
+        infoContent: `🎉 Parabéns pela sua conquista! 🎉
+
+Estamos muito felizes em ver você chegando até aqui e concluindo mais essa etapa importante da sua jornada.
+
+Para que possamos emitir o seu certificado, basta enviar um e-mail para auxilio24horas2@gmail.com com:
+
+• Encaminhe o nome do curso
+• Seu nome completo (exatamente como deseja que apareça no certificado)
+
+Capriche na forma como deseja que seu nome seja escrito, pois ele será impresso exatamente dessa maneira no documento.
+
+Assim que recebermos o seu e-mail, daremos início à emissão e envio do certificado de conclusão.`,
+      },
+    ],
+  },
+  // ─── Avisos Finais ───
+  {
+    id: "mod-avisos",
+    title: "Avisos Importantes",
+    emoji: "📋",
+    unlock: { kind: "days_after_purchase", days: 7 },
+    lessons: [
+      {
+        id: "avisos-1",
+        title: "Importante",
+        type: "info",
+        infoContent: `Este curso foi criado com o objetivo de oferecer um conteúdo 100% teórico sobre Massoterapia, abordando seus conceitos, fundamentos, história e princípios básicos de forma clara e explicativa, por meio de videoaulas narradas e de fácil compreensão.
+
+O curso é livre e tem como principal intuito levar conhecimento teórico sobre a Massoterapia, sem vínculo com certificação por órgãos oficiais.
+
+É um conteúdo educacional e informativo, ideal para quem deseja entender melhor o funcionamento da Massoterapia, ampliar seus conhecimentos ou estudar por interesse pessoal, de forma livre e sem finalidade profissional.`,
+      },
     ],
   },
 ];

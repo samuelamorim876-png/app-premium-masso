@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Play, FileText } from "lucide-react";
+import { CheckCircle2, Circle, Play, FileText, Headphones, Info } from "lucide-react";
 import type { Lesson } from "@/data/course-data";
 
 interface LessonRowProps {
@@ -10,7 +10,12 @@ interface LessonRowProps {
 }
 
 export function LessonRow({ lesson, index, isCompleted, isActive, onClick }: LessonRowProps) {
-  const isPdf = lesson.type === "pdf" || lesson.type === "info";
+  const isPdf = lesson.type === "pdf";
+  const isInfo = lesson.type === "info";
+  const isAudio = lesson.type === "audio";
+
+  const typeLabel = isAudio ? "Áudio" : isInfo ? "Info" : isPdf ? "PDF" : "Vídeo aula";
+  const TypeIcon = isAudio ? Headphones : isInfo ? Info : isPdf ? FileText : Play;
 
   return (
     <button
@@ -28,7 +33,7 @@ export function LessonRow({ lesson, index, isCompleted, isActive, onClick }: Les
           </div>
         ) : isActive ? (
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15">
-            {isPdf ? <FileText className="h-4 w-4 text-primary" /> : <Play className="h-4 w-4 text-primary fill-primary" />}
+            {(isPdf || isInfo) ? <FileText className="h-4 w-4 text-primary" /> : isAudio ? <Headphones className="h-4 w-4 text-primary" /> : <Play className="h-4 w-4 text-primary fill-primary" />}
           </div>
         ) : (
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
@@ -41,7 +46,7 @@ export function LessonRow({ lesson, index, isCompleted, isActive, onClick }: Les
           {lesson.title}
         </span>
         <span className={`text-[10px] uppercase tracking-wider ${isActive ? "text-primary/60" : "text-muted-foreground/50"}`}>
-          {isPdf ? "PDF" : "Vídeo aula"}
+          {typeLabel}
         </span>
       </div>
     </button>

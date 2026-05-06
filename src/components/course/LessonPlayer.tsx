@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, FileDown, Play } from "lucide-react";
+import { CheckCircle2, Circle, FileDown, Play, Info, Headphones, Pause } from "lucide-react";
 import type { Lesson } from "@/data/course-data";
+import { useState, useRef } from "react";
 
 interface LessonPlayerProps {
   lesson: Lesson;
@@ -9,8 +10,67 @@ interface LessonPlayerProps {
   onToggle: () => void;
 }
 
+function AudioPlayer({ url, title }: { url: string; title: string }) {
+  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const toggle = () => {
+    if (!audioRef.current) return;
+    if (playing) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setPlaying(!playing);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-10 text-center">
+      <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
+        <Headphones className="h-10 w-10 text-primary" />
+      </div>
+      {url && url !== "" ? (
+        <>
+          <audio ref={audioRef} src={url} onEnded={() => setPlaying(false)} />
+          <button
+            onClick={toggle}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all duration-200 shadow-lg shadow-primary/20"
+          >
+            {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            {playing ? "Pausar" : "Reproduzir"} Áudio
+          </button>
+          <p className="mt-3 text-xs text-muted-foreground">{title}</p>
+        </>
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground">Áudio terapêutico</p>
+          <p className="mt-1 text-xs text-muted-foreground/60">O áudio será disponibilizado em breve</p>
+        </>
+      )}
+    </div>
+  );
+}
+
+function InfoContent({ content }: { content: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+      <div className="flex items-center gap-3 mb-5">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20">
+          <Info className="h-5 w-5 text-primary" />
+        </div>
+        <h3 className="font-heading text-base font-semibold text-card-foreground">Informação Importante</h3>
+      </div>
+      <div className="prose prose-sm max-w-none text-foreground/90 whitespace-pre-line leading-relaxed">
+        {content}
+      </div>
+    </div>
+  );
+}
+
 export function LessonPlayer({ lesson, moduleName, isCompleted, onToggle }: LessonPlayerProps) {
-  const isPdf = lesson.type === "pdf" || lesson.type === "info";
+  const isPdf = lesson.type === "pdf";
+  const isInfo = lesson.type === "info";
+  const isAudio = lesson.type === "audio";
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -20,7 +80,11 @@ export function LessonPlayer({ lesson, moduleName, isCompleted, onToggle }: Less
       </div>
 
       {/* Content area */}
-      {isPdf ? (
+      {isInfo && lesson.infoContent ? (
+        <InfoContent content={lesson.infoContent} />
+      ) : isAudio ? (
+        <AudioPlayer url={lesson.url ?? ""} title={lesson.title} />
+      ) : isPdf ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-10 text-center">
           <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
             <FileDown className="h-10 w-10 text-primary" />
@@ -43,7 +107,7 @@ export function LessonPlayer({ lesson, moduleName, isCompleted, onToggle }: Less
         </div>
       ) : (
         <div className="aspect-video w-full overflow-hidden rounded-2xl bg-card border border-border shadow-xl shadow-black/20">
-          {lesson.url ? (
+          {lesson.url && lesson.url !== "..." ? (
             <iframe
               src={lesson.url}
               className="h-full w-full"
@@ -66,14 +130,18 @@ export function LessonPlayer({ lesson, moduleName, isCompleted, onToggle }: Less
       )}
 
       {/* Description */}
-      <div className="rounded-xl border border-border bg-card p-5">
-        <h4 className="font-heading text-sm font-semibold text-card-foreground">Sobre esta aula</h4>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {isPdf
-            ? `Material complementar: ${lesson.title}. Faça o download e estude no seu ritmo.`
-            : `Nesta aula você aprenderá os conceitos e técnicas de ${lesson.title}. Assista ao vídeo completo e marque como concluída quando terminar.`}
-        </p>
-      </div>
+      {!isInfo && (
+        <div className="rounded-xl border border-border bg-card p-5">
+          <h4 className="font-heading text-sm font-semibold text-card-foreground">Sobre esta aula</h4>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {isAudio
+              ? `Áudio terapêutico: ${lesson.title}. Utilize durante suas sessões ou para relaxamento.`
+              : isPdf
+                ? `Material complementar: ${lesson.title}. Faça o download e estude no seu ritmo.`
+                : `Nesta aula você aprenderá os conceitos e técnicas de ${lesson.title}. Assista ao vídeo completo e marque como concluída quando terminar.`}
+          </p>
+        </div>
+      )}
 
       {/* Complete button */}
       <Button

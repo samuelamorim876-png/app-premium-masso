@@ -13,7 +13,7 @@ import { GamificationBar } from "@/components/course/GamificationBar";
 import { DailyChallenge } from "@/components/course/DailyChallenge";
 import { RewardPopup } from "@/components/course/RewardPopup";
 import { Link } from "@tanstack/react-router";
-import { LogOut, GraduationCap } from "lucide-react";
+import { LogOut, GraduationCap, Stethoscope, ClipboardList, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import modIntroImg from "@/assets/hero-massage-dark.jpg";
@@ -36,6 +36,7 @@ const moduleImages: Record<string, string> = {
   "mc-2": modStudyImg,
   "mc-3": modStudyImg,
   "mc-4": modStudyImg,
+  "mod-audio": modRelaxanteImg,
   "mod-5": modProductsImg,
   "mod-6": modAnatomyImg,
   "mod-7": modEthicsImg,
@@ -50,6 +51,8 @@ const moduleImages: Record<string, string> = {
   "mod-17": modAvancadoImg,
   "mod-18": modAvancadoImg,
   "mod-19": modBonusImg,
+  "mod-cert": modBonusImg,
+  "mod-avisos": modStudyImg,
 };
 
 export const Route = createFileRoute("/")({
@@ -155,7 +158,13 @@ function Dashboard() {
             </div>
             <span className="font-heading text-lg font-bold text-foreground hidden sm:inline">Massoterapia</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Link to="/perfil">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <User className="h-4 w-4" />
+              </Button>
+            </Link>
+            <span className="text-sm text-muted-foreground hidden sm:inline">Olá, {user?.name}</span>
             <span className="text-sm text-muted-foreground hidden sm:inline">Olá, {user?.name}</span>
             <Button variant="ghost" size="sm" onClick={logout} className="text-muted-foreground hover:text-foreground">
               <LogOut className="h-4 w-4" />
@@ -176,7 +185,31 @@ function Dashboard() {
           <GamificationBar data={gamData} badges={badges} />
         </div>
 
-        {/* Progress + Daily challenge row */}
+        {/* Quick access */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+          <Link to="/simulador" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+            <Stethoscope className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Simulador</p>
+              <p className="text-[10px] text-muted-foreground">Pratique atendimentos</p>
+            </div>
+          </Link>
+          <Link to="/protocolos" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+            <ClipboardList className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Protocolos</p>
+              <p className="text-[10px] text-muted-foreground">Planos de atendimento</p>
+            </div>
+          </Link>
+          <Link to="/perfil" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+            <User className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Meu Perfil</p>
+              <p className="text-[10px] text-muted-foreground">Progresso e histórico</p>
+            </div>
+          </Link>
+        </div>
+
         <div className="grid gap-6 md:grid-cols-[1fr_320px] mb-8">
           <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
             <OverallProgress {...overallProgress} />
