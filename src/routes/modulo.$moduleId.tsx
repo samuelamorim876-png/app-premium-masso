@@ -161,6 +161,16 @@ function ModulePage() {
                   onToggle={handleToggleLesson}
                 />
 
+                {/* AI contextual chat for this lesson */}
+                <AIChat
+                  lessonContext={{
+                    moduleName: mod.title,
+                    lessonName: activeLesson.title,
+                    lessonType: activeLesson.type,
+                  }}
+                  floating
+                />
+
                 {/* Curiosity block */}
                 {lessonCuriosities[activeLesson.id] && (
                   <CuriosityBlock text={lessonCuriosities[activeLesson.id].text} />
