@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useProgress } from "@/hooks/use-progress";
 import { useGamification } from "@/hooks/use-gamification";
@@ -31,6 +31,14 @@ function ModulePage() {
   const moduleIndex = courseModules.findIndex((m) => m.id === moduleId);
   const mod = courseModules[moduleIndex];
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to content area when a lesson is selected
+  useEffect(() => {
+    if (activeLessonId && contentRef.current) {
+      contentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [activeLessonId]);
 
   if (!user) {
     return (
@@ -82,7 +90,6 @@ function ModulePage() {
     if (!wasCompleted) {
       await addPoints(10);
     }
-    // Check if module is now complete
     const updatedProgress = getModuleProgress(moduleId);
     if (!wasCompleted && updatedProgress.completed + 1 === updatedProgress.total) {
       setTimeout(() => awardBadge(moduleId), 500);
@@ -143,7 +150,7 @@ function ModulePage() {
           </div>
 
           {/* Lesson content */}
-          <div className="space-y-5">
+          <div ref={contentRef} className="space-y-5 scroll-mt-20">
             {activeLesson ? (
               <>
                 <LessonPlayer
