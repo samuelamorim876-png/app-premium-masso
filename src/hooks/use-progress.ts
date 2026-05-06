@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { courseModules } from "@/data/course-data";
+import type { Module } from "@/data/course-data";
 
-export function useProgress(userId: string | undefined) {
+export function useProgress(userId: string | undefined, modules?: Module[]) {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [purchasedAt, setPurchasedAt] = useState<Date | null>(null);
@@ -32,6 +32,8 @@ export function useProgress(userId: string | undefined) {
     });
   }, [userId]);
 
+  const mods = modules || [];
+
   const toggleLesson = useCallback(async (lessonId: string) => {
     if (!userId) return;
 
@@ -53,17 +55,17 @@ export function useProgress(userId: string | undefined) {
 
   const getModuleProgress = useCallback(
     (moduleId: string) => {
-      const mod = courseModules.find((m) => m.id === moduleId);
+      const mod = mods.find((m) => m.id === moduleId);
       if (!mod) return { completed: 0, total: 0, percent: 0 };
       const done = mod.lessons.filter((l) => completed.has(l.id)).length;
       return { completed: done, total: mod.lessons.length, percent: Math.round((done / mod.lessons.length) * 100) };
     },
-    [completed]
+    [completed, mods]
   );
 
   const isModuleUnlocked = useCallback(
     (moduleIndex: number) => {
-      const mod = courseModules[moduleIndex];
+      const mod = mods[moduleIndex];
       if (!mod) return false;
 
       const rule = mod.unlock;
@@ -78,29 +80,29 @@ export function useProgress(userId: string | undefined) {
 
       if (rule.kind === "after_previous") {
         if (moduleIndex === 0) return true;
-        const prevModule = courseModules[moduleIndex - 1];
+        const prevModule = mods[moduleIndex - 1];
         return prevModule.lessons.every((l) => completed.has(l.id));
       }
 
       return false;
     },
-    [completed, purchasedAt]
+    [completed, purchasedAt, mods]
   );
 
   const daysUntilUnlock = useCallback(
     (moduleIndex: number) => {
-      const mod = courseModules[moduleIndex];
+      const mod = mods[moduleIndex];
       if (!mod || mod.unlock.kind !== "days_after_purchase" || !purchasedAt) return null;
       const unlockDate = new Date(purchasedAt.getTime() + mod.unlock.days * 24 * 60 * 60 * 1000);
       const diff = unlockDate.getTime() - Date.now();
       if (diff <= 0) return 0;
       return Math.ceil(diff / (24 * 60 * 60 * 1000));
     },
-    [purchasedAt]
+    [purchasedAt, mods]
   );
 
   const overallProgress = (() => {
-    const totalLessons = courseModules.reduce((a, m) => a + m.lessons.length, 0);
+    const totalLessons = mods.reduce((a, m) => a + m.lessons.length, 0);
     const percent = totalLessons === 0 ? 0 : Math.round((completed.size / totalLessons) * 100);
     return { completed: completed.size, total: totalLessons, percent };
   })();
