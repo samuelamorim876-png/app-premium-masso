@@ -132,6 +132,7 @@ function AuthPage() {
 
 function Dashboard() {
   const { user, logout } = useAuth();
+  const { isAdmin } = useAdmin(user?.id);
   const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading } = useProgress(user?.id);
   const { data: gamData, badges, showReward, addPoints } = useGamification(user?.id);
 
