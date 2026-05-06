@@ -31,7 +31,7 @@ export const courseModules: Module[] = [
     unlock: { kind: "immediate" },
     lessons: [
       { id: "mia-1", title: "Importante – Leia Antes de Começar", type: "pdf" },
-      { id: "mia-2", title: "Avisos", type: "video", url: "..." },
+      { id: "mia-2", title: "Avisos", type: "video", url: "https://www.youtube.com/embed/hstXzBWRyYU" },
     ],
   },
   // ─── Matérias Complementares 1 ───
