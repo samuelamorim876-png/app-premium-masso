@@ -158,7 +158,13 @@ function Dashboard() {
             </div>
             <span className="font-heading text-lg font-bold text-foreground hidden sm:inline">Massoterapia</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Link to="/perfil">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <User className="h-4 w-4" />
+              </Button>
+            </Link>
+            <span className="text-sm text-muted-foreground hidden sm:inline">Olá, {user?.name}</span>
             <span className="text-sm text-muted-foreground hidden sm:inline">Olá, {user?.name}</span>
             <Button variant="ghost" size="sm" onClick={logout} className="text-muted-foreground hover:text-foreground">
               <LogOut className="h-4 w-4" />
