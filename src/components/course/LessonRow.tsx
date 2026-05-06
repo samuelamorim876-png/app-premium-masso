@@ -46,7 +46,7 @@ export function LessonRow({ lesson, index, isCompleted, isActive, onClick }: Les
           {lesson.title}
         </span>
         <span className={`text-[10px] uppercase tracking-wider ${isActive ? "text-primary/60" : "text-muted-foreground/50"}`}>
-          {isPdf ? "PDF" : "Vídeo aula"}
+          {typeLabel}
         </span>
       </div>
     </button>
