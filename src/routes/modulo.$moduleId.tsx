@@ -2,10 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { AIChat } from "@/components/course/AIChat";
 import { useAuth } from "@/hooks/use-auth";
+import { useAdmin } from "@/hooks/use-admin";
 import { useProgress } from "@/hooks/use-progress";
 import { useGamification } from "@/hooks/use-gamification";
 import { useLessonNotes } from "@/hooks/use-lesson-notes";
-import { courseModules } from "@/data/course-data";
+import { useManagedModules } from "@/hooks/use-managed-modules";
 import { lessonCuriosities, lessonQuizzes } from "@/data/quiz-data";
 import { LessonRow } from "@/components/course/LessonRow";
 import { LessonPlayer } from "@/components/course/LessonPlayer";
@@ -13,8 +14,11 @@ import { LessonNotes } from "@/components/course/LessonNotes";
 import { QuizBlock } from "@/components/course/QuizBlock";
 import { CuriosityBlock } from "@/components/course/CuriosityBlock";
 import { RewardPopup } from "@/components/course/RewardPopup";
-import { ArrowLeft, ChevronRight, GraduationCap } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, ChevronRight, GraduationCap, Edit, Trash2, Plus, X, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/modulo/$moduleId")({
   head: () => ({
@@ -26,15 +30,18 @@ export const Route = createFileRoute("/modulo/$moduleId")({
 function ModulePage() {
   const { moduleId } = Route.useParams();
   const { user } = useAuth();
-  const { isLessonCompleted, toggleLesson, getModuleProgress, isModuleUnlocked } = useProgress(user?.id);
+  const { isAdmin } = useAdmin(user?.id);
+  const { modules: courseModules, loading: modulesLoading, refetch } = useManagedModules();
+  const { isLessonCompleted, toggleLesson, getModuleProgress, isModuleUnlocked } = useProgress(user?.id, courseModules);
   const { showReward, addPoints, awardBadge } = useGamification(user?.id);
 
   const moduleIndex = courseModules.findIndex((m) => m.id === moduleId);
   const mod = courseModules[moduleIndex];
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [editingLesson, setEditingLesson] = useState<string | null>(null);
+  const [addingLesson, setAddingLesson] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to content area when a lesson is selected
   useEffect(() => {
     if (activeLessonId && contentRef.current) {
       contentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -48,6 +55,14 @@ function ModulePage() {
           <p className="text-muted-foreground">Faça login para acessar o curso.</p>
           <Link to="/" className="mt-4 inline-block text-primary hover:underline">Ir para login</Link>
         </div>
+      </div>
+    );
+  }
+
+  if (modulesLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
   }
@@ -97,11 +112,17 @@ function ModulePage() {
     }
   };
 
+  const handleDeleteLesson = async (lessonId: string) => {
+    if (!confirm("Tem certeza que deseja excluir esta aula?")) return;
+    await supabase.from("managed_lessons").delete().eq("id", lessonId);
+    if (activeLessonId === lessonId) setActiveLessonId(null);
+    refetch();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {showReward && <RewardPopup points={showReward.points} badge={showReward.badge} />}
 
-      {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-card/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
           <Link to="/">
@@ -119,7 +140,6 @@ function ModulePage() {
       </header>
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6">
-        {/* Module info */}
         <div className="mb-6 animate-fade-up">
           <h1 className="font-heading text-xl sm:text-2xl font-bold text-foreground">{mod.title}</h1>
           <div className="mt-3 flex items-center gap-3">
@@ -138,21 +158,74 @@ function ModulePage() {
             </h3>
             <div className="space-y-1">
               {mod.lessons.map((lesson, i) => (
-                <LessonRow
-                  key={lesson.id}
-                  lesson={lesson}
-                  index={i}
-                  isCompleted={isLessonCompleted(lesson.id)}
-                  isActive={activeLessonId === lesson.id}
-                  onClick={() => setActiveLessonId(lesson.id)}
-                />
+                <div key={lesson.id} className="group relative">
+                  <LessonRow
+                    lesson={lesson}
+                    index={i}
+                    isCompleted={isLessonCompleted(lesson.id)}
+                    isActive={activeLessonId === lesson.id}
+                    onClick={() => setActiveLessonId(lesson.id)}
+                  />
+                  {/* Admin controls per lesson */}
+                  {isAdmin && (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditingLesson(lesson.id); setActiveLessonId(lesson.id); }}
+                        className="p-1 rounded-full bg-card hover:bg-primary/10 text-muted-foreground hover:text-primary border border-border"
+                        title="Editar"
+                      >
+                        <Edit className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteLesson(lesson.id); }}
+                        className="p-1 rounded-full bg-card hover:bg-destructive/10 text-muted-foreground hover:text-destructive border border-border"
+                        title="Remover"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
+            {/* Admin: Add lesson button */}
+            {isAdmin && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-3 w-full"
+                onClick={() => setAddingLesson(true)}
+              >
+                <Plus className="h-4 w-4 mr-1" /> Adicionar Aula
+              </Button>
+            )}
           </div>
 
           {/* Lesson content */}
           <div ref={contentRef} className="space-y-5 scroll-mt-20">
-            {activeLesson ? (
+            {/* Admin: Add lesson form */}
+            {isAdmin && addingLesson && (
+              <InlineLessonForm
+                moduleId={moduleId}
+                nextOrder={mod.lessons.length}
+                onClose={() => setAddingLesson(false)}
+                onSaved={() => { setAddingLesson(false); refetch(); }}
+              />
+            )}
+
+            {/* Admin: Edit lesson form */}
+            {isAdmin && editingLesson && activeLesson && editingLesson === activeLesson.id && (
+              <InlineLessonForm
+                moduleId={moduleId}
+                nextOrder={0}
+                initial={activeLesson}
+                lessonId={activeLesson.id}
+                onClose={() => setEditingLesson(null)}
+                onSaved={() => { setEditingLesson(null); refetch(); }}
+              />
+            )}
+
+            {activeLesson && !editingLesson ? (
               <>
                 <LessonPlayer
                   lesson={activeLesson}
@@ -161,7 +234,6 @@ function ModulePage() {
                   onToggle={handleToggleLesson}
                 />
 
-                {/* AI contextual chat for this lesson */}
                 <AIChat
                   lessonContext={{
                     moduleName: mod.title,
@@ -171,12 +243,10 @@ function ModulePage() {
                   floating
                 />
 
-                {/* Curiosity block */}
                 {lessonCuriosities[activeLesson.id] && (
                   <CuriosityBlock text={lessonCuriosities[activeLesson.id].text} />
                 )}
 
-                {/* Quiz block */}
                 {lessonQuizzes[activeLesson.id] && user && (
                   <QuizBlock
                     lessonId={activeLesson.id}
@@ -186,12 +256,11 @@ function ModulePage() {
                   />
                 )}
 
-                {/* Notes */}
                 {user && (
                   <LessonNotesWrapper userId={user.id} lessonId={activeLesson.id} />
                 )}
               </>
-            ) : (
+            ) : !editingLesson ? (
               <div className="flex h-80 items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 animate-fade-in">
                 <div className="text-center">
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
@@ -201,7 +270,7 @@ function ModulePage() {
                   <p className="mt-1 text-xs text-muted-foreground">Clique em uma aula ao lado para começar</p>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -221,6 +290,83 @@ function ModulePage() {
             </Link>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* Inline lesson form for admin editing/adding inside module page */
+function InlineLessonForm({ moduleId, nextOrder, initial, lessonId, onClose, onSaved }: {
+  moduleId: string;
+  nextOrder: number;
+  initial?: { title: string; type: string; url?: string; infoContent?: string };
+  lessonId?: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [title, setTitle] = useState(initial?.title || "");
+  const [type, setType] = useState(initial?.type || "video");
+  const [contentUrl, setContentUrl] = useState(initial?.url || "");
+  const [description, setDescription] = useState(initial?.infoContent || "");
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!title.trim()) return;
+    setSaving(true);
+    if (lessonId) {
+      await supabase.from("managed_lessons").update({
+        title: title.trim(),
+        type,
+        content_url: contentUrl.trim() || null,
+        description: description.trim(),
+      }).eq("id", lessonId);
+    } else {
+      await supabase.from("managed_lessons").insert({
+        module_id: moduleId,
+        title: title.trim(),
+        type,
+        content_url: contentUrl.trim() || null,
+        description: description.trim(),
+        sort_order: nextOrder,
+      });
+    }
+    setSaving(false);
+    onSaved();
+  };
+
+  return (
+    <div className="rounded-xl border-2 border-primary/30 bg-card p-4 space-y-3 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-foreground text-sm">{lessonId ? "✏️ Editar Aula" : "➕ Nova Aula"}</h3>
+        <button onClick={onClose} className="p-1 rounded-full hover:bg-muted text-muted-foreground">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      <Input placeholder="Título da aula" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <select
+        value={type}
+        onChange={(e) => setType(e.target.value)}
+        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+      >
+        <option value="video">Vídeo (link)</option>
+        <option value="pdf">PDF (link)</option>
+        <option value="audio">Áudio</option>
+        <option value="info">Informativo</option>
+      </select>
+      <Input
+        placeholder={type === "video" ? "Link do vídeo (YouTube, Vimeo...)" : type === "pdf" ? "Link do PDF" : "URL do conteúdo"}
+        value={contentUrl}
+        onChange={(e) => setContentUrl(e.target.value)}
+      />
+      {type === "info" && (
+        <Textarea placeholder="Conteúdo informativo" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
+      )}
+      <div className="flex gap-2">
+        <Button size="sm" onClick={save} disabled={saving}>
+          <Save className="h-4 w-4 mr-1" />
+          {saving ? "Salvando..." : "Salvar"}
+        </Button>
+        <Button size="sm" variant="outline" onClick={onClose}>Cancelar</Button>
       </div>
     </div>
   );
