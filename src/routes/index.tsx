@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useAdmin } from "@/hooks/use-admin";
 import { useAuth } from "@/hooks/use-auth";
 import { useProgress } from "@/hooks/use-progress";
 import { useGamification } from "@/hooks/use-gamification";
@@ -13,7 +14,7 @@ import { GamificationBar } from "@/components/course/GamificationBar";
 import { DailyChallenge } from "@/components/course/DailyChallenge";
 import { RewardPopup } from "@/components/course/RewardPopup";
 import { Link } from "@tanstack/react-router";
-import { LogOut, GraduationCap, Stethoscope, ClipboardList, User, Bot, Notebook, BookOpen, ShoppingBag } from "lucide-react";
+import { LogOut, GraduationCap, Stethoscope, ClipboardList, User, Bot, Notebook, BookOpen, ShoppingBag, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import modIntroImg from "@/assets/hero-massage-dark.jpg";
