@@ -13,7 +13,7 @@ import { GamificationBar } from "@/components/course/GamificationBar";
 import { DailyChallenge } from "@/components/course/DailyChallenge";
 import { RewardPopup } from "@/components/course/RewardPopup";
 import { Link } from "@tanstack/react-router";
-import { LogOut, GraduationCap } from "lucide-react";
+import { LogOut, GraduationCap, Stethoscope, ClipboardList, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import modIntroImg from "@/assets/hero-massage-dark.jpg";
