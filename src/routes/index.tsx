@@ -165,7 +165,6 @@ function Dashboard() {
               </Button>
             </Link>
             <span className="text-sm text-muted-foreground hidden sm:inline">Olá, {user?.name}</span>
-            <span className="text-sm text-muted-foreground hidden sm:inline">Olá, {user?.name}</span>
             <Button variant="ghost" size="sm" onClick={logout} className="text-muted-foreground hover:text-foreground">
               <LogOut className="h-4 w-4" />
             </Button>
