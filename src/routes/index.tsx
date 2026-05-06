@@ -13,7 +13,7 @@ import { GamificationBar } from "@/components/course/GamificationBar";
 import { DailyChallenge } from "@/components/course/DailyChallenge";
 import { RewardPopup } from "@/components/course/RewardPopup";
 import { Link } from "@tanstack/react-router";
-import { LogOut, GraduationCap, Stethoscope, ClipboardList, User, Bot, Notebook, BookOpen } from "lucide-react";
+import { LogOut, GraduationCap, Stethoscope, ClipboardList, User, Bot, Notebook, BookOpen, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import modIntroImg from "@/assets/hero-massage-dark.jpg";
@@ -221,11 +221,11 @@ function Dashboard() {
               <p className="text-[10px] text-muted-foreground">Seu caderno digital</p>
             </div>
           </Link>
-          <Link to="/perfil" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
-            <User className="h-5 w-5 text-primary shrink-0" />
+          <Link to="/cursos" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+            <ShoppingBag className="h-5 w-5 text-primary shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-foreground">Meu Perfil</p>
-              <p className="text-[10px] text-muted-foreground">Progresso e histórico</p>
+              <p className="text-sm font-semibold text-foreground">Nossos Cursos</p>
+              <p className="text-[10px] text-muted-foreground">Veja todos os cursos</p>
             </div>
           </Link>
         </div>
