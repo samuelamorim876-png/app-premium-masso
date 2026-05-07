@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { sendAccessRequestPush } from "@/server/push-notifications.functions";
 import { CheckCircle } from "lucide-react";
 
 export function AccessRequestForm({ onBack }: { onBack: () => void }) {
@@ -25,15 +26,26 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
       return;
     }
     setSubmitting(true);
-    const { error: dbError } = await supabase.from("access_requests").insert({
-      name: name.trim(),
-      email: email.trim(),
-      desired_password: password,
-    });
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+    const { data: request, error: dbError } = await supabase
+      .from("access_requests")
+      .insert({
+        name: cleanName,
+        email: cleanEmail,
+        desired_password: password,
+      })
+      .select("id")
+      .single();
     setSubmitting(false);
     if (dbError) {
       setError("Erro ao enviar solicitação. Tente novamente.");
       return;
+    }
+    if (request?.id) {
+      sendAccessRequestPush({ data: { requestId: request.id, name: cleanName, email: cleanEmail } }).catch((err) => {
+        console.error("Erro ao enviar notificação push:", err);
+      });
     }
     setSuccess(true);
   };
