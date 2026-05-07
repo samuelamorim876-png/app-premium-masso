@@ -138,7 +138,13 @@ function AuthPage() {
 
           {view === "login" && (
             <>
+              {logoutMessage && (
+                <div className="mb-4 rounded-lg bg-destructive/10 border border-destructive/30 p-3 text-sm text-destructive">
+                  {logoutMessage}
+                </div>
+              )}
               <LoginForm
+
                 onLogin={login}
                 onSwitchToForgot={() => setView("forgot")}
               />
