@@ -8,7 +8,7 @@ import { useManagedModules } from "@/hooks/use-managed-modules";
 import heroImage from "@/assets/hero-massage-dark.jpg";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
-import { InstallBanner, InstallPopup } from "@/components/pwa/InstallPrompt";
+import { InstallBanner } from "@/components/pwa/InstallPrompt";
 import { ModuleCard } from "@/components/course/ModuleCard";
 import { OverallProgress } from "@/components/course/OverallProgress";
 import { GamificationBar } from "@/components/course/GamificationBar";
@@ -130,7 +130,7 @@ function AuthPage() {
           {view === "forgot" && <ForgotPasswordForm onReset={resetPassword} onSwitchToLogin={() => setView("login")} />}
 
           <InstallBanner />
-          <InstallPopup />
+          {/* install popup removed */}
         </div>
       </div>
     </div>
