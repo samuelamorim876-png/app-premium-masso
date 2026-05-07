@@ -127,6 +127,7 @@ function PushToggle({ userId }: { userId: string | undefined }) {
   );
 }
 
+function AdminDashboard() {
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("students");
 
