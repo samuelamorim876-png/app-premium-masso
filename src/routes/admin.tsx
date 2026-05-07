@@ -24,6 +24,7 @@ import {
   GraduationCap,
   Video,
   FileText,
+  Clock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
