@@ -147,6 +147,7 @@ function AdminDashboard() {
         </div>
 
         {tab === "students" && <StudentsTab />}
+        {tab === "pending" && <PendingTab />}
         {tab === "content" && <ContentTab />}
         {tab === "courses" && <CoursesTab />}
       </main>
