@@ -183,8 +183,13 @@ function StudentsTab() {
   };
 
   const deleteStudent = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este aluno?")) return;
-    await supabase.from("profiles").delete().eq("id", id);
+    if (!confirm("Tem certeza que deseja excluir este aluno? Isso removerá o acesso completamente.")) return;
+    try {
+      await deleteAuthUser({ data: { userId: id } });
+      alert("✅ Aluno excluído com sucesso.");
+    } catch (err: any) {
+      alert(`❌ Erro ao excluir: ${err.message}`);
+    }
     fetchProfiles();
   };
 
