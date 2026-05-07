@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ClientOnly } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useAdmin } from "@/hooks/use-admin";
@@ -27,7 +28,10 @@ import {
   Video,
   FileText,
   Clock,
+  Bell,
+  BellOff,
 } from "lucide-react";
+import { usePushSubscription } from "@/hooks/use-push-subscription";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Painel Administrativo — Massoterapia" }] }),
@@ -104,7 +108,27 @@ function AdminPage() {
   return <AdminDashboard />;
 }
 
+function PushToggle({ userId }: { userId: string | undefined }) {
+  const { isSubscribed, isSupported, loading, subscribe, unsubscribe } = usePushSubscription(userId);
+
+  if (!isSupported) return null;
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => (isSubscribed ? unsubscribe() : subscribe())}
+      disabled={loading}
+      className={isSubscribed ? "text-amber-400 hover:text-amber-300" : "text-muted-foreground hover:text-foreground"}
+      title={isSubscribed ? "Desativar notificações" : "Ativar notificações push"}
+    >
+      {isSubscribed ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+    </Button>
+  );
+}
+
 function AdminDashboard() {
+  const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("students");
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
@@ -126,6 +150,11 @@ function AdminDashboard() {
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
             <span className="text-sm font-bold text-foreground">Painel Admin</span>
+          </div>
+          <div className="ml-auto">
+            <ClientOnly fallback={null}>
+              <PushToggle userId={user?.id} />
+            </ClientOnly>
           </div>
         </div>
       </header>
