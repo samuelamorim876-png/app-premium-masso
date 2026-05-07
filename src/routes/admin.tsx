@@ -108,7 +108,25 @@ function AdminPage() {
   return <AdminDashboard />;
 }
 
-function AdminDashboard() {
+function PushToggle({ userId }: { userId: string | undefined }) {
+  const { isSubscribed, isSupported, loading, subscribe, unsubscribe } = usePushSubscription(userId);
+
+  if (!isSupported) return null;
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => (isSubscribed ? unsubscribe() : subscribe())}
+      disabled={loading}
+      className={isSubscribed ? "text-amber-400 hover:text-amber-300" : "text-muted-foreground hover:text-foreground"}
+      title={isSubscribed ? "Desativar notificações" : "Ativar notificações push"}
+    >
+      {isSubscribed ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+    </Button>
+  );
+}
+
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("students");
 
