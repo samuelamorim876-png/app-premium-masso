@@ -128,6 +128,8 @@ function AuthPage() {
             />
           )}
           {view === "forgot" && <ForgotPasswordForm onReset={resetPassword} onSwitchToLogin={() => setView("login")} />}
+
+          <InstallPrompt />
         </div>
       </div>
     </div>
