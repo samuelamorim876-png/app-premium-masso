@@ -20,29 +20,65 @@ export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const checkActive = useCallback(async (userId: string): Promise<boolean> => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_active")
+      .eq("id", userId)
+      .maybeSingle();
+    return profile?.is_active !== false;
+  }, []);
+
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        setUser(mapUser(session.user));
+        const active = await checkActive(session.user.id);
+        if (!active) {
+          await supabase.auth.signOut();
+          setUser(null);
+        } else {
+          setUser(mapUser(session.user));
+        }
       } else {
         setUser(null);
       }
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        setUser(mapUser(session.user));
+        const active = await checkActive(session.user.id);
+        if (!active) {
+          await supabase.auth.signOut();
+          setUser(null);
+        } else {
+          setUser(mapUser(session.user));
+        }
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [checkActive]);
 
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return error.message;
+
+    // Check if user profile is active
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_active")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      if (profile && !profile.is_active) {
+        await supabase.auth.signOut();
+        return "Seu acesso foi desativado. Entre em contato com o administrador.";
+      }
+    }
+
     return null;
   }, []);
 

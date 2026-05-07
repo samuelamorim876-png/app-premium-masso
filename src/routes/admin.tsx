@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAdmin } from "@/hooks/use-admin";
 import { supabase } from "@/integrations/supabase/client";
 import { approveAccessRequest } from "@/server/approve-user.functions";
+import { deleteAuthUser } from "@/server/delete-user.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -182,8 +183,13 @@ function StudentsTab() {
   };
 
   const deleteStudent = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este aluno?")) return;
-    await supabase.from("profiles").delete().eq("id", id);
+    if (!confirm("Tem certeza que deseja excluir este aluno? Isso removerá o acesso completamente.")) return;
+    try {
+      await deleteAuthUser({ data: { userId: id } });
+      alert("✅ Aluno excluído com sucesso.");
+    } catch (err: any) {
+      alert(`❌ Erro ao excluir: ${err.message}`);
+    }
     fetchProfiles();
   };
 
