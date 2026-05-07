@@ -55,7 +55,7 @@ function useInstallPWA() {
 export function InstallBanner() {
   const { canInstallNative, isStandalone, install } = useInstallPWA();
 
-  if (isStandalone || !canInstallNative) return null;
+  if (isStandalone) return null;
 
   return (
     <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 mt-6">
@@ -68,10 +68,12 @@ export function InstallBanner() {
             Instale o app para acesso rápido direto do seu celular.
           </p>
         </div>
-        <Button size="sm" className="shrink-0 gap-1.5" onClick={() => install()}>
-          <Download className="h-3.5 w-3.5" />
-          Instalar App
-        </Button>
+        {canInstallNative && (
+          <Button size="sm" className="shrink-0 gap-1.5" onClick={() => install()}>
+            <Download className="h-3.5 w-3.5" />
+            Instalar App
+          </Button>
+        )}
       </div>
     </div>
   );
