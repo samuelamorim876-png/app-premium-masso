@@ -59,7 +59,8 @@ export const sendAccessRequestPush = createServerFn({ method: "POST" })
     if (!subscriptions?.length) return { sent: 0, reason: "no_admin_push_subscription" };
 
     const webPushModule = await import("web-push");
-    const webPush = webPushModule.default ?? webPushModule;
+    const webPush =
+      (webPushModule as typeof import("web-push") & { default?: typeof import("web-push") }).default ?? webPushModule;
     webPush.setVapidDetails(`mailto:${ADMIN_EMAIL}`, VAPID_PUBLIC_KEY, vapidPrivateKey);
 
     const payload = JSON.stringify({
