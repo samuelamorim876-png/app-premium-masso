@@ -6,6 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { sendAccessRequestPush } from "@/server/push-notifications.functions";
 import { CheckCircle } from "lucide-react";
 
+function createRequestId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+    (Number(c) ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4)))).toString(16)
+  );
+}
+
 export function AccessRequestForm({ onBack }: { onBack: () => void }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,7 +35,7 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
     setSubmitting(true);
     const cleanName = name.trim();
     const cleanEmail = email.trim();
-    const requestId = crypto.randomUUID();
+    const requestId = createRequestId();
     const { error: dbError } = await supabase
       .from("access_requests")
       .insert({
