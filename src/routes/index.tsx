@@ -7,6 +7,7 @@ import { useGamification } from "@/hooks/use-gamification";
 import { useManagedModules } from "@/hooks/use-managed-modules";
 import heroImage from "@/assets/hero-massage-dark.jpg";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { AccessRequestForm } from "@/components/auth/AccessRequestForm";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { InstallBanner } from "@/components/pwa/InstallPrompt";
 import { ModuleCard } from "@/components/course/ModuleCard";
