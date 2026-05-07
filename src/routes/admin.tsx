@@ -283,10 +283,19 @@ function PendingTab() {
 
   const approveRequest = async (req: AccessRequest) => {
     if (!confirm(`Aprovar acesso para ${req.name} (${req.email})?`)) return;
-    await supabase.from("access_requests").update({
-      status: "approved",
-      reviewed_at: new Date().toISOString(),
-    }).eq("id", req.id);
+    try {
+      await approveAccessRequest({
+        data: {
+          requestId: req.id,
+          name: req.name,
+          email: req.email,
+          password: req.desired_password,
+        },
+      });
+      alert(`✅ Usuário ${req.name} aprovado e conta criada com sucesso!`);
+    } catch (err: any) {
+      alert(`❌ Erro ao aprovar: ${err.message}`);
+    }
     fetchRequests();
   };
 
