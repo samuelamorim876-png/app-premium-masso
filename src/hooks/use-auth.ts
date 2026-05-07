@@ -38,6 +38,7 @@ export function useAuth() {
   const userRef = useRef<AuthUser | null>(null);
   const loggingOutRef = useRef(false);
   const initializedRef = useRef(false);
+  const forceLogoutRef = useRef<(message?: string) => Promise<void>>(async () => {});
 
   const forceLogout = useCallback(async (message?: string) => {
     if (loggingOutRef.current) return;
