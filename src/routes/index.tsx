@@ -8,6 +8,7 @@ import { useManagedModules } from "@/hooks/use-managed-modules";
 import heroImage from "@/assets/hero-massage-dark.jpg";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { ModuleCard } from "@/components/course/ModuleCard";
 import { OverallProgress } from "@/components/course/OverallProgress";
 import { GamificationBar } from "@/components/course/GamificationBar";
