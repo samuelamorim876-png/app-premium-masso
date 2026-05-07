@@ -151,7 +151,11 @@ function AuthPage() {
               <InstallBanner />
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground mb-2">Sem acesso?</p>
-                <Button variant="outline" className="w-full" onClick={() => setView("request")}>
+                <Button
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold text-base shadow-lg shadow-amber-500/25 border-0"
+                  size="lg"
+                  onClick={() => setView("request")}
+                >
                   Solicitar Acesso
                 </Button>
               </div>
