@@ -1,6 +1,4 @@
-// Service worker with push notification support
-// In production, VitePWA generates the main SW with workbox caching
-// This file handles push events as a fallback / supplement
+// Imported by the generated PWA service worker to support real push notifications.
 
 self.addEventListener("push", (event) => {
   if (!event.data) return;
@@ -31,24 +29,18 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const url = event.notification.data?.url || "/";
+  const targetUrl = new URL(url, self.location.origin).href;
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url.includes(url) && "focus" in client) {
+        if (client.url === targetUrl && "focus" in client) {
           return client.focus();
         }
       }
       if (self.clients.openWindow) {
-        return self.clients.openWindow(url);
+        return self.clients.openWindow(targetUrl);
       }
     })
   );
-});
-
-// Handle skip waiting message from update prompt
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
 });

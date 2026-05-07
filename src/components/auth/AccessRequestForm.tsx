@@ -3,7 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { sendAccessRequestPush } from "@/server/push-notifications.functions";
 import { CheckCircle } from "lucide-react";
+
+function createRequestId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+    (Number(c) ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4)))).toString(16)
+  );
+}
 
 export function AccessRequestForm({ onBack }: { onBack: () => void }) {
   const [name, setName] = useState("");
@@ -25,16 +33,25 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
       return;
     }
     setSubmitting(true);
-    const { error: dbError } = await supabase.from("access_requests").insert({
-      name: name.trim(),
-      email: email.trim(),
-      desired_password: password,
-    });
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+    const requestId = createRequestId();
+    const { error: dbError } = await supabase
+      .from("access_requests")
+      .insert({
+        id: requestId,
+        name: cleanName,
+        email: cleanEmail,
+        desired_password: password,
+      });
     setSubmitting(false);
     if (dbError) {
       setError("Erro ao enviar solicitação. Tente novamente.");
       return;
     }
+    sendAccessRequestPush({ data: { requestId, name: cleanName, email: cleanEmail } }).catch((err) => {
+      console.error("Erro ao enviar notificação push:", err);
+    });
     setSuccess(true);
   };
 
