@@ -31,7 +31,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "students" | "content" | "courses";
+type Tab = "students" | "pending" | "content" | "courses";
 
 interface Profile {
   id: string;
