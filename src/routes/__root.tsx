@@ -84,11 +84,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-let pwaRegistered = false;
 function RootComponent() {
-  if (typeof window !== "undefined" && !pwaRegistered) {
-    pwaRegistered = true;
+  useEffect(() => {
     import("../pwa-register").then((m) => m.registerPWA());
-  }
+  }, []);
   return <Outlet />;
 }
