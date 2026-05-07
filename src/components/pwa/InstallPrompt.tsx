@@ -64,8 +64,8 @@ export function InstallBanner() {
           <Smartphone className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-foreground leading-snug">
-            Instale o app para acesso rápido direto do seu celular.
+          <p className="text-sm font-medium text-foreground leading-snug">
+            Instale o aplicativo para melhor experiência
           </p>
         </div>
         {canInstallNative && (
@@ -76,9 +76,8 @@ export function InstallBanner() {
         )}
       </div>
       <div className="mt-3 space-y-1.5 text-xs text-muted-foreground border-t border-primary/20 pt-3">
-        <p className="font-medium text-foreground/80">2ª opção de instalação:</p>
-        <p>📱 <strong>Android:</strong> Clique nos <span className="inline-block px-1 py-0.5 rounded bg-muted text-foreground/70 font-mono">⋮</span> pontos no canto superior direito e procure por <strong>"Adicionar à tela inicial"</strong></p>
-        <p>🍎 <strong>iPhone:</strong> Clique em compartilhar e depois <strong>"Adicionar à Tela de Início"</strong></p>
+        <p>📱 <strong>Android:</strong> Clique nos <span className="inline-block px-1 py-0.5 rounded bg-muted text-foreground/70 font-mono">⋮</span> três pontos no canto superior direito e procure por <strong>"Adicionar à tela inicial"</strong></p>
+        <p>🍎 <strong>iPhone:</strong> Clique em compartilhar e depois em <strong>"Adicionar à Tela de Início"</strong></p>
       </div>
     </div>
   );
