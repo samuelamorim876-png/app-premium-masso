@@ -75,6 +75,11 @@ export function InstallBanner() {
           </Button>
         )}
       </div>
+      <div className="mt-3 space-y-1.5 text-xs text-muted-foreground border-t border-primary/20 pt-3">
+        <p className="font-medium text-foreground/80">2ª opção de instalação:</p>
+        <p>📱 <strong>Android:</strong> Clique nos <span className="inline-block px-1 py-0.5 rounded bg-muted text-foreground/70 font-mono">⋮</span> pontos no canto superior direito e procure por <strong>"Adicionar à tela inicial"</strong></p>
+        <p>🍎 <strong>iPhone:</strong> Clique em compartilhar e depois <strong>"Adicionar à Tela de Início"</strong></p>
+      </div>
     </div>
   );
 }
