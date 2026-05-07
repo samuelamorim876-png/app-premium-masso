@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { ClientOnly } from "@tanstack/react-router";
+import { UpdatePrompt } from "../components/pwa/UpdatePrompt";
 
 import appCss from "../styles.css?url";
 
