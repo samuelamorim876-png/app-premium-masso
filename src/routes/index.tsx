@@ -73,7 +73,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type AuthView = "login" | "forgot";
+type AuthView = "login" | "forgot" | "request";
 
 function AuthPage() {
   const { login, resetPassword } = useAuth();
