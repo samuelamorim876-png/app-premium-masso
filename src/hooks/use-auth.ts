@@ -160,12 +160,13 @@ export function useAuth() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Realtime listener — only in production
+  // Realtime listener — only in production, runs once
   useEffect(() => {
     if (isPreviewEnv()) return;
 
+    const channelName = `profile-status-${Date.now()}`;
     const channel = supabase
-      .channel("profile-status-watch")
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "profiles" },
@@ -174,7 +175,7 @@ export function useAuth() {
           if (!currentUser) return;
           if (payload.new && (payload.new as any).id === currentUser.id) {
             if ((payload.new as any).is_active === false) {
-              forceLogout("Seu acesso foi desativado pelo administrador.");
+              forceLogoutRef.current("Seu acesso foi desativado pelo administrador.");
             }
           }
         }
@@ -186,7 +187,7 @@ export function useAuth() {
           const currentUser = userRef.current;
           if (!currentUser) return;
           if (payload.old && (payload.old as any).id === currentUser.id) {
-            forceLogout("Seu acesso foi desativado pelo administrador.");
+            forceLogoutRef.current("Seu acesso foi desativado pelo administrador.");
           }
         }
       )
@@ -195,7 +196,8 @@ export function useAuth() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [forceLogout]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Periodic status check every 60s — only in production
   useEffect(() => {
@@ -206,7 +208,7 @@ export function useAuth() {
       if (!currentUser) return;
       const active = await checkActive(currentUser.id);
       if (!active) {
-        forceLogout("Seu acesso foi desativado pelo administrador.");
+        forceLogoutRef.current("Seu acesso foi desativado pelo administrador.");
       }
     }, 60000);
 
