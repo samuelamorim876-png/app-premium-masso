@@ -38,6 +38,7 @@ export function useAuth() {
   const userRef = useRef<AuthUser | null>(null);
   const loggingOutRef = useRef(false);
   const initializedRef = useRef(false);
+  const forceLogoutRef = useRef<(message?: string) => Promise<void>>(async () => {});
 
   const forceLogout = useCallback(async (message?: string) => {
     if (loggingOutRef.current) return;
@@ -49,11 +50,14 @@ export function useAuth() {
     }
     setUser(null);
     userRef.current = null;
-    if (message) {
+    if (message && typeof sessionStorage !== "undefined") {
       sessionStorage.setItem("auth_logout_message", message);
     }
     loggingOutRef.current = false;
   }, []);
+
+  // Keep ref in sync so effects don't need forceLogout as dependency
+  forceLogoutRef.current = forceLogout;
 
   const checkActive = useCallback(async (userId: string): Promise<boolean> => {
     try {
@@ -156,12 +160,13 @@ export function useAuth() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Realtime listener — only in production
+  // Realtime listener — only in production, runs once
   useEffect(() => {
     if (isPreviewEnv()) return;
 
+    const channelName = `profile-status-${Date.now()}`;
     const channel = supabase
-      .channel("profile-status-watch")
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "profiles" },
@@ -170,7 +175,7 @@ export function useAuth() {
           if (!currentUser) return;
           if (payload.new && (payload.new as any).id === currentUser.id) {
             if ((payload.new as any).is_active === false) {
-              forceLogout("Seu acesso foi desativado pelo administrador.");
+              forceLogoutRef.current("Seu acesso foi desativado pelo administrador.");
             }
           }
         }
@@ -182,7 +187,7 @@ export function useAuth() {
           const currentUser = userRef.current;
           if (!currentUser) return;
           if (payload.old && (payload.old as any).id === currentUser.id) {
-            forceLogout("Seu acesso foi desativado pelo administrador.");
+            forceLogoutRef.current("Seu acesso foi desativado pelo administrador.");
           }
         }
       )
@@ -191,7 +196,8 @@ export function useAuth() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [forceLogout]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Periodic status check every 60s — only in production
   useEffect(() => {
@@ -202,12 +208,13 @@ export function useAuth() {
       if (!currentUser) return;
       const active = await checkActive(currentUser.id);
       if (!active) {
-        forceLogout("Seu acesso foi desativado pelo administrador.");
+        forceLogoutRef.current("Seu acesso foi desativado pelo administrador.");
       }
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [checkActive, forceLogout]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkActive]);
 
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
     const { error, data } = await supabase.auth.signInWithPassword({ email, password });
