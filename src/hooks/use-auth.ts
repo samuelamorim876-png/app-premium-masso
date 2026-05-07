@@ -41,8 +41,23 @@ export function useAuth() {
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return error.message;
+
+    // Check if user profile is active
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_active")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      if (profile && !profile.is_active) {
+        await supabase.auth.signOut();
+        return "Seu acesso foi desativado. Entre em contato com o administrador.";
+      }
+    }
+
     return null;
   }, []);
 
