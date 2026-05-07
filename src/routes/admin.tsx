@@ -109,6 +109,7 @@ function AdminPage() {
 }
 
 function AdminDashboard() {
+  const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("students");
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
