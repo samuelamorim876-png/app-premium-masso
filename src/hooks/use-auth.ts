@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { User, Session } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
+import { useNavigate } from "@tanstack/react-router";
 
 interface AuthUser {
   id: string;
@@ -19,6 +20,19 @@ function mapUser(user: User): AuthUser {
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const userRef = useRef<AuthUser | null>(null);
+
+  const forceLogout = useCallback(async (message?: string) => {
+    await supabase.auth.signOut();
+    setUser(null);
+    userRef.current = null;
+    if (message) {
+      // Store message for display on login screen
+      sessionStorage.setItem("auth_logout_message", message);
+    }
+    // Force reload to login
+    window.location.href = "/";
+  }, []);
 
   const checkActive = useCallback(async (userId: string): Promise<boolean> => {
     const { data: profile } = await supabase
@@ -26,7 +40,9 @@ export function useAuth() {
       .select("is_active")
       .eq("id", userId)
       .maybeSingle();
-    return profile?.is_active !== false;
+    // If profile doesn't exist (deleted) or is inactive, return false
+    if (!profile) return false;
+    return profile.is_active !== false;
   }, []);
 
   useEffect(() => {
@@ -34,13 +50,15 @@ export function useAuth() {
       if (session?.user) {
         const active = await checkActive(session.user.id);
         if (!active) {
-          await supabase.auth.signOut();
-          setUser(null);
-        } else {
-          setUser(mapUser(session.user));
+          await forceLogout("Seu acesso foi desativado pelo administrador.");
+          return;
         }
+        const mapped = mapUser(session.user);
+        setUser(mapped);
+        userRef.current = mapped;
       } else {
         setUser(null);
+        userRef.current = null;
       }
       setLoading(false);
     });
@@ -49,23 +67,80 @@ export function useAuth() {
       if (session?.user) {
         const active = await checkActive(session.user.id);
         if (!active) {
-          await supabase.auth.signOut();
-          setUser(null);
-        } else {
-          setUser(mapUser(session.user));
+          await forceLogout("Seu acesso foi desativado pelo administrador.");
+          return;
         }
+        const mapped = mapUser(session.user);
+        setUser(mapped);
+        userRef.current = mapped;
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [checkActive]);
+  }, [checkActive, forceLogout]);
+
+  // Realtime listener: watch for profile changes (deactivation or deletion)
+  useEffect(() => {
+    const channel = supabase
+      .channel("profile-status-watch")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+        },
+        (payload) => {
+          const currentUser = userRef.current;
+          if (!currentUser) return;
+          if (payload.new && (payload.new as any).id === currentUser.id) {
+            if ((payload.new as any).is_active === false) {
+              forceLogout("Seu acesso foi desativado pelo administrador.");
+            }
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "profiles",
+        },
+        (payload) => {
+          const currentUser = userRef.current;
+          if (!currentUser) return;
+          if (payload.old && (payload.old as any).id === currentUser.id) {
+            forceLogout("Seu acesso foi desativado pelo administrador.");
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [forceLogout]);
+
+  // Periodic status check every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const currentUser = userRef.current;
+      if (!currentUser) return;
+      const active = await checkActive(currentUser.id);
+      if (!active) {
+        forceLogout("Seu acesso foi desativado pelo administrador.");
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [checkActive, forceLogout]);
 
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
     const { error, data } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return error.message;
 
-    // Check if user profile is active
     if (data.user) {
       const { data: profile } = await supabase
         .from("profiles")
@@ -73,9 +148,9 @@ export function useAuth() {
         .eq("id", data.user.id)
         .maybeSingle();
 
-      if (profile && !profile.is_active) {
+      if (!profile || profile.is_active === false) {
         await supabase.auth.signOut();
-        return "Seu acesso foi desativado. Entre em contato com o administrador.";
+        return "Seu acesso foi desativado pelo administrador.";
       }
     }
 
@@ -95,6 +170,7 @@ export function useAuth() {
   const logout = useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
+    userRef.current = null;
   }, []);
 
   const resetPassword = useCallback(async (email: string): Promise<string | null> => {

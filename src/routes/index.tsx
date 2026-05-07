@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdmin } from "@/hooks/use-admin";
 import { useAuth } from "@/hooks/use-auth";
 import { useProgress } from "@/hooks/use-progress";
@@ -78,6 +78,15 @@ type AuthView = "login" | "forgot" | "request";
 function AuthPage() {
   const { login, resetPassword } = useAuth();
   const [view, setView] = useState<AuthView>("login");
+  const [logoutMessage, setLogoutMessage] = useState("");
+
+  useEffect(() => {
+    const msg = sessionStorage.getItem("auth_logout_message");
+    if (msg) {
+      setLogoutMessage(msg);
+      sessionStorage.removeItem("auth_logout_message");
+    }
+  }, []);
 
   return (
     <div className="flex min-h-screen">
@@ -129,7 +138,13 @@ function AuthPage() {
 
           {view === "login" && (
             <>
+              {logoutMessage && (
+                <div className="mb-4 rounded-lg bg-destructive/10 border border-destructive/30 p-3 text-sm text-destructive">
+                  {logoutMessage}
+                </div>
+              )}
               <LoginForm
+
                 onLogin={login}
                 onSwitchToForgot={() => setView("forgot")}
               />
