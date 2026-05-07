@@ -132,6 +132,11 @@ function AdminDashboard() {
             <Shield className="h-5 w-5 text-primary" />
             <span className="text-sm font-bold text-foreground">Painel Admin</span>
           </div>
+          <div className="ml-auto">
+            <ClientOnly fallback={null}>
+              <PushToggle userId={user?.id} />
+            </ClientOnly>
+          </div>
         </div>
       </header>
 
