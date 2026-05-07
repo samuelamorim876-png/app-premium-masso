@@ -90,5 +90,12 @@ function RootComponent() {
   useEffect(() => {
     import("../pwa-register").then((m) => m.registerPWA());
   }, []);
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <ClientOnly fallback={null}>
+        <UpdatePrompt />
+      </ClientOnly>
+    </>
+  );
 }
