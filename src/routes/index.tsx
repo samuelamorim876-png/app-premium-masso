@@ -78,6 +78,15 @@ type AuthView = "login" | "forgot" | "request";
 function AuthPage() {
   const { login, resetPassword } = useAuth();
   const [view, setView] = useState<AuthView>("login");
+  const [logoutMessage, setLogoutMessage] = useState("");
+
+  useEffect(() => {
+    const msg = sessionStorage.getItem("auth_logout_message");
+    if (msg) {
+      setLogoutMessage(msg);
+      sessionStorage.removeItem("auth_logout_message");
+    }
+  }, []);
 
   return (
     <div className="flex min-h-screen">
