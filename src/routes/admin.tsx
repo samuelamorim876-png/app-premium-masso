@@ -28,7 +28,10 @@ import {
   Video,
   FileText,
   Clock,
+  Bell,
+  BellOff,
 } from "lucide-react";
+import { usePushSubscription } from "@/hooks/use-push-subscription";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Painel Administrativo — Massoterapia" }] }),
