@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { useNavigate } from "@tanstack/react-router";
 
 interface AuthUser {
   id: string;
@@ -17,32 +16,58 @@ function mapUser(user: User): AuthUser {
   };
 }
 
+function isPreviewEnv(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    if (window.self !== window.top) return true;
+  } catch {
+    return true;
+  }
+  const h = window.location.hostname;
+  return (
+    h.includes("id-preview--") ||
+    h.includes("lovableproject.com") ||
+    h.includes("lovableproject-dev.com") ||
+    h.includes("preview--")
+  );
+}
+
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const userRef = useRef<AuthUser | null>(null);
+  const loggingOutRef = useRef(false);
 
   const forceLogout = useCallback(async (message?: string) => {
-    await supabase.auth.signOut();
+    if (loggingOutRef.current) return;
+    loggingOutRef.current = true;
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
+    }
     setUser(null);
     userRef.current = null;
     if (message) {
-      // Store message for display on login screen
       sessionStorage.setItem("auth_logout_message", message);
     }
-    // Force reload to login
-    window.location.href = "/";
+    // Don't reload — just clear state. The UI will show login.
+    loggingOutRef.current = false;
   }, []);
 
   const checkActive = useCallback(async (userId: string): Promise<boolean> => {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_active")
-      .eq("id", userId)
-      .maybeSingle();
-    // If profile doesn't exist (deleted) or is inactive, return false
-    if (!profile) return false;
-    return profile.is_active !== false;
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_active")
+        .eq("id", userId)
+        .maybeSingle();
+      if (!profile) return false;
+      return profile.is_active !== false;
+    } catch {
+      // Network error — assume active to avoid false lockouts
+      return true;
+    }
   }, []);
 
   useEffect(() => {
@@ -51,6 +76,7 @@ export function useAuth() {
         const active = await checkActive(session.user.id);
         if (!active) {
           await forceLogout("Seu acesso foi desativado pelo administrador.");
+          setLoading(false);
           return;
         }
         const mapped = mapUser(session.user);
@@ -68,6 +94,7 @@ export function useAuth() {
         const active = await checkActive(session.user.id);
         if (!active) {
           await forceLogout("Seu acesso foi desativado pelo administrador.");
+          setLoading(false);
           return;
         }
         const mapped = mapUser(session.user);
@@ -80,17 +107,15 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, [checkActive, forceLogout]);
 
-  // Realtime listener: watch for profile changes (deactivation or deletion)
+  // Realtime listener — only in production (not preview)
   useEffect(() => {
+    if (isPreviewEnv()) return;
+
     const channel = supabase
       .channel("profile-status-watch")
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "profiles",
-        },
+        { event: "UPDATE", schema: "public", table: "profiles" },
         (payload) => {
           const currentUser = userRef.current;
           if (!currentUser) return;
@@ -103,11 +128,7 @@ export function useAuth() {
       )
       .on(
         "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "profiles",
-        },
+        { event: "DELETE", schema: "public", table: "profiles" },
         (payload) => {
           const currentUser = userRef.current;
           if (!currentUser) return;
@@ -123,8 +144,10 @@ export function useAuth() {
     };
   }, [forceLogout]);
 
-  // Periodic status check every 30 seconds
+  // Periodic status check every 60s — only in production
   useEffect(() => {
+    if (isPreviewEnv()) return;
+
     const interval = setInterval(async () => {
       const currentUser = userRef.current;
       if (!currentUser) return;
@@ -132,7 +155,7 @@ export function useAuth() {
       if (!active) {
         forceLogout("Seu acesso foi desativado pelo administrador.");
       }
-    }, 30000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [checkActive, forceLogout]);

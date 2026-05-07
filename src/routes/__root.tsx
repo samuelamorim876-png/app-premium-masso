@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
@@ -51,6 +52,10 @@ export const Route = createRootRoute({
         href: appCss,
       },
       {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap",
+      },
+      {
         rel: "manifest",
         href: "/manifest.json",
       },
@@ -79,11 +84,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-let pwaRegistered = false;
 function RootComponent() {
-  if (typeof window !== "undefined" && !pwaRegistered) {
-    pwaRegistered = true;
+  useEffect(() => {
     import("../pwa-register").then((m) => m.registerPWA());
-  }
+  }, []);
   return <Outlet />;
 }
