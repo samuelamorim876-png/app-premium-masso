@@ -117,21 +117,33 @@ function AuthPage() {
             </div>
             <h1 className="mt-2 font-heading text-xl font-bold text-foreground">Curso de Massoterapia</h1>
           </div>
-          <h2 className="font-heading text-2xl font-bold text-foreground mb-6">
+          <h2 className="font-heading text-2xl font-bold text-foreground mb-2">
             {view === "login" && "Bem-vindo de volta"}
             {view === "forgot" && "Recuperar senha"}
           </h2>
+          {view === "login" && (
+            <p className="text-sm text-muted-foreground mb-6">
+              Use seu e-mail e senha para acessar o aplicativo.
+            </p>
+          )}
 
           {view === "login" && (
-            <LoginForm
-              onLogin={login}
-              onSwitchToForgot={() => setView("forgot")}
-            />
+            <>
+              <LoginForm
+                onLogin={login}
+                onSwitchToForgot={() => setView("forgot")}
+              />
+              <InstallBanner />
+              <div className="mt-6 text-center">
+                <p className="text-sm text-muted-foreground mb-2">Sem acesso?</p>
+                <Button variant="outline" className="w-full" onClick={() => setView("request")}>
+                  Solicitar Acesso
+                </Button>
+              </div>
+            </>
           )}
           {view === "forgot" && <ForgotPasswordForm onReset={resetPassword} onSwitchToLogin={() => setView("login")} />}
-
-          <InstallBanner />
-          {/* install popup removed */}
+          {view === "request" && <AccessRequestForm onBack={() => setView("login")} />}
         </div>
       </div>
     </div>
