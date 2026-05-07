@@ -213,7 +213,8 @@ export function useAuth() {
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [checkActive, forceLogout]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkActive]);
 
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
     const { error, data } = await supabase.auth.signInWithPassword({ email, password });
