@@ -28,25 +28,23 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
     setSubmitting(true);
     const cleanName = name.trim();
     const cleanEmail = email.trim();
-    const { data: request, error: dbError } = await supabase
+    const requestId = crypto.randomUUID();
+    const { error: dbError } = await supabase
       .from("access_requests")
       .insert({
+        id: requestId,
         name: cleanName,
         email: cleanEmail,
         desired_password: password,
-      })
-      .select("id")
-      .single();
+      });
     setSubmitting(false);
     if (dbError) {
       setError("Erro ao enviar solicitação. Tente novamente.");
       return;
     }
-    if (request?.id) {
-      sendAccessRequestPush({ data: { requestId: request.id, name: cleanName, email: cleanEmail } }).catch((err) => {
-        console.error("Erro ao enviar notificação push:", err);
-      });
-    }
+    sendAccessRequestPush({ data: { requestId, name: cleanName, email: cleanEmail } }).catch((err) => {
+      console.error("Erro ao enviar notificação push:", err);
+    });
     setSuccess(true);
   };
 
