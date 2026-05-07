@@ -37,6 +37,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
   const userRef = useRef<AuthUser | null>(null);
   const loggingOutRef = useRef(false);
+  const initializedRef = useRef(false);
 
   const forceLogout = useCallback(async (message?: string) => {
     if (loggingOutRef.current) return;
@@ -51,49 +52,77 @@ export function useAuth() {
     if (message) {
       sessionStorage.setItem("auth_logout_message", message);
     }
-    // Don't reload — just clear state. The UI will show login.
     loggingOutRef.current = false;
   }, []);
 
   const checkActive = useCallback(async (userId: string): Promise<boolean> => {
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("is_active")
         .eq("id", userId)
         .maybeSingle();
-      if (!profile) return false;
+      // Network error or query error — assume active to avoid false lockouts
+      if (error) return true;
+      // No profile found — user might have just signed up, allow through
+      if (!profile) return true;
       return profile.is_active !== false;
     } catch {
-      // Network error — assume active to avoid false lockouts
       return true;
     }
   }, []);
 
+  // Single initialization effect
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        const active = await checkActive(session.user.id);
-        if (!active) {
-          await forceLogout("Seu acesso foi desativado pelo administrador.");
+    let cancelled = false;
+
+    // 1. Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (cancelled) return;
+
+        // Skip if we haven't finished initial load yet (getSession handles that)
+        if (!initializedRef.current && event !== "INITIAL_SESSION") return;
+
+        if (event === "SIGNED_OUT") {
+          setUser(null);
+          userRef.current = null;
           setLoading(false);
           return;
         }
-        const mapped = mapUser(session.user);
-        setUser(mapped);
-        userRef.current = mapped;
-      } else {
-        setUser(null);
-        userRef.current = null;
-      }
-      setLoading(false);
-    });
 
+        if (session?.user) {
+          // Only check active status on sign-in events, not token refreshes
+          if (event === "SIGNED_IN") {
+            const active = await checkActive(session.user.id);
+            if (cancelled) return;
+            if (!active) {
+              await forceLogout("Seu acesso foi desativado pelo administrador.");
+              setLoading(false);
+              return;
+            }
+          }
+          const mapped = mapUser(session.user);
+          setUser(mapped);
+          userRef.current = mapped;
+        } else {
+          setUser(null);
+          userRef.current = null;
+        }
+        setLoading(false);
+      }
+    );
+
+    // 2. Then get current session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (cancelled) return;
+
       if (session?.user) {
         const active = await checkActive(session.user.id);
+        if (cancelled) return;
         if (!active) {
           await forceLogout("Seu acesso foi desativado pelo administrador.");
+          initializedRef.current = true;
           setLoading(false);
           return;
         }
@@ -101,13 +130,33 @@ export function useAuth() {
         setUser(mapped);
         userRef.current = mapped;
       }
+
+      initializedRef.current = true;
       setLoading(false);
+    }).catch(() => {
+      if (!cancelled) {
+        initializedRef.current = true;
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
-  }, [checkActive, forceLogout]);
+    // Safety timeout — never stay loading forever
+    const safetyTimer = setTimeout(() => {
+      if (!cancelled && loading) {
+        initializedRef.current = true;
+        setLoading(false);
+      }
+    }, 8000);
 
-  // Realtime listener — only in production (not preview)
+    return () => {
+      cancelled = true;
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Realtime listener — only in production
   useEffect(() => {
     if (isPreviewEnv()) return;
 
@@ -165,20 +214,15 @@ export function useAuth() {
     if (error) return error.message;
 
     if (data.user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_active")
-        .eq("id", data.user.id)
-        .maybeSingle();
-
-      if (!profile || profile.is_active === false) {
+      const active = await checkActive(data.user.id);
+      if (!active) {
         await supabase.auth.signOut();
         return "Seu acesso foi desativado pelo administrador.";
       }
     }
 
     return null;
-  }, []);
+  }, [checkActive]);
 
   const register = useCallback(async (name: string, email: string, password: string): Promise<string | null> => {
     const { error } = await supabase.auth.signUp({
