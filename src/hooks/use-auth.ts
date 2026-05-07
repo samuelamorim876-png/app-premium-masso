@@ -50,11 +50,14 @@ export function useAuth() {
     }
     setUser(null);
     userRef.current = null;
-    if (message) {
+    if (message && typeof sessionStorage !== "undefined") {
       sessionStorage.setItem("auth_logout_message", message);
     }
     loggingOutRef.current = false;
   }, []);
+
+  // Keep ref in sync so effects don't need forceLogout as dependency
+  forceLogoutRef.current = forceLogout;
 
   const checkActive = useCallback(async (userId: string): Promise<boolean> => {
     try {
