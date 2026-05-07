@@ -21,6 +21,7 @@ export default defineConfig({
         manifest: false,
         workbox: {
           navigateFallbackDenylist: [/^\/~oauth/],
+          importScripts: ["/push-sw.js"],
           runtimeCaching: [
             {
               urlPattern: ({ request }) => request.mode === "navigate",
