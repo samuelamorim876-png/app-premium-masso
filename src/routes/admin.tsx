@@ -24,6 +24,7 @@ import {
   GraduationCap,
   Video,
   FileText,
+  Clock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "students" | "content" | "courses";
+type Tab = "students" | "pending" | "content" | "courses";
 
 interface Profile {
   id: string;
@@ -106,6 +107,7 @@ function AdminDashboard() {
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: "students", label: "Alunos", icon: <Users className="h-4 w-4" /> },
+    { key: "pending", label: "Aguardando Aprovação", icon: <Clock className="h-4 w-4" /> },
     { key: "content", label: "Conteúdos", icon: <BookOpen className="h-4 w-4" /> },
     { key: "courses", label: "Cursos", icon: <ShoppingBag className="h-4 w-4" /> },
   ];
@@ -145,6 +147,7 @@ function AdminDashboard() {
         </div>
 
         {tab === "students" && <StudentsTab />}
+        {tab === "pending" && <PendingTab />}
         {tab === "content" && <ContentTab />}
         {tab === "courses" && <CoursesTab />}
       </main>
@@ -240,6 +243,97 @@ function StudentsTab() {
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ==================== PENDING TAB ==================== */
+interface AccessRequest {
+  id: string;
+  name: string;
+  email: string;
+  desired_password: string;
+  status: string;
+  created_at: string;
+}
+
+function PendingTab() {
+  const [requests, setRequests] = useState<AccessRequest[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  const fetchRequests = async () => {
+    setLoadingData(true);
+    const { data } = await supabase
+      .from("access_requests")
+      .select("*")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+    setRequests((data as AccessRequest[]) || []);
+    setLoadingData(false);
+  };
+
+  useEffect(() => { fetchRequests(); }, []);
+
+  const approveRequest = async (req: AccessRequest) => {
+    if (!confirm(`Aprovar acesso para ${req.name} (${req.email})?`)) return;
+    await supabase.from("access_requests").update({
+      status: "approved",
+      reviewed_at: new Date().toISOString(),
+    }).eq("id", req.id);
+    fetchRequests();
+  };
+
+  const rejectRequest = async (req: AccessRequest) => {
+    if (!confirm(`Rejeitar solicitação de ${req.name}?`)) return;
+    await supabase.from("access_requests").update({
+      status: "rejected",
+      reviewed_at: new Date().toISOString(),
+    }).eq("id", req.id);
+    fetchRequests();
+  };
+
+  return (
+    <div>
+      <h2 className="font-heading text-lg font-bold text-foreground mb-4">
+        Alunos – Aguardando Aprovação
+      </h2>
+
+      {loadingData ? (
+        <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+      ) : requests.length === 0 ? (
+        <div className="text-center py-8">
+          <Clock className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
+          <p className="text-muted-foreground">Nenhuma solicitação pendente.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground mb-2">{requests.length} solicitação(ões) pendente(s)</p>
+          {requests.map((req) => (
+            <div key={req.id} className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground">{req.name}</p>
+                  <p className="text-xs text-muted-foreground">{req.email}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Senha desejada: <span className="font-mono bg-muted px-1.5 py-0.5 rounded">{req.desired_password}</span>
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Solicitado em: {new Date(req.created_at).toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" onClick={() => approveRequest(req)} className="gap-1 bg-emerald-600 hover:bg-emerald-700">
+                    <CheckCircle className="h-3.5 w-3.5" /> Aprovar
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => rejectRequest(req)} className="gap-1">
+                    <XCircle className="h-3.5 w-3.5" /> Rejeitar
+                  </Button>
                 </div>
               </div>
             </div>
