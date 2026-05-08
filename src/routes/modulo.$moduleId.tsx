@@ -42,6 +42,7 @@ function ModulePage() {
   const [editingLesson, setEditingLesson] = useState<string | null>(null);
   const [addingLesson, setAddingLesson] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const activeLesson = mod?.lessons.find((l) => l.id === activeLessonId);
 
   useEffect(() => {
     if (activeLessonId && contentRef.current) {
