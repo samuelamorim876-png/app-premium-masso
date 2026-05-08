@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProgress } from "@/hooks/use-progress";
 import { useGamification } from "@/hooks/use-gamification";
 import { useManagedModules } from "@/hooks/use-managed-modules";
+import { useStudentPresence } from "@/hooks/use-student-activity";
 import heroImage from "@/assets/hero-massage-dark.jpg";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { AccessRequestForm } from "@/components/auth/AccessRequestForm";
@@ -171,6 +172,7 @@ function AuthPage() {
 
 function Dashboard() {
   const { user, logout } = useAuth();
+  useStudentPresence(user?.id);
   const { isAdmin } = useAdmin(user?.id);
   const { modules: courseModules, loading: modulesLoading } = useManagedModules();
   const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading } = useProgress(user?.id, courseModules);

@@ -348,6 +348,81 @@ export type Database = {
         }
         Relationships: []
       }
+      student_activity_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          lesson_id: string | null
+          lesson_title: string | null
+          lesson_type: string | null
+          metadata: Json
+          module_id: string | null
+          module_title: string | null
+          path: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          lesson_id?: string | null
+          lesson_title?: string | null
+          lesson_type?: string | null
+          metadata?: Json
+          module_id?: string | null
+          module_title?: string | null
+          path?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          lesson_id?: string | null
+          lesson_title?: string | null
+          lesson_type?: string | null
+          metadata?: Json
+          module_id?: string | null
+          module_title?: string | null
+          path?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      student_engagement: {
+        Row: {
+          current_lesson_id: string | null
+          current_module_id: string | null
+          current_path: string | null
+          last_seen_at: string | null
+          online_until: string | null
+          total_usage_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_lesson_id?: string | null
+          current_module_id?: string | null
+          current_path?: string | null
+          last_seen_at?: string | null
+          online_until?: string | null
+          total_usage_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_lesson_id?: string | null
+          current_module_id?: string | null
+          current_path?: string | null
+          last_seen_at?: string | null
+          online_until?: string | null
+          total_usage_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -434,6 +509,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_student_usage: {
+        Args: { _seconds: number; _user_id: string }
+        Returns: undefined
       }
     }
     Enums: {

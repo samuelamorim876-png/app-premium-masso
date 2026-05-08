@@ -1,12 +1,31 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import type { Subscription, User } from "@supabase/supabase-js";
 
 interface AuthUser {
   id: string;
   email: string;
   name: string;
 }
+
+interface AuthState {
+  user: AuthUser | null;
+  loading: boolean;
+}
+
+type AuthStore = {
+  state: AuthState;
+  listeners: Set<() => void>;
+  initialized: boolean;
+  loggingOut: boolean;
+  activeCheckTimer: ReturnType<typeof setInterval> | null;
+  safetyTimer: ReturnType<typeof setTimeout> | null;
+  authSubscription: Subscription | null;
+};
+
+const SERVER_SNAPSHOT: AuthState = { user: null, loading: true };
+const LOGIN_TIMEOUT_MS = 15000;
+const AUTH_INIT_TIMEOUT_MS = 8000;
 
 function mapUser(user: User): AuthUser {
   return {
@@ -15,6 +34,24 @@ function mapUser(user: User): AuthUser {
     name: user.user_metadata?.name ?? user.email?.split("@")[0] ?? "",
   };
 }
+
+function getStore(): AuthStore {
+  const g = globalThis as typeof globalThis & { __massoterapiaAuthStore?: AuthStore };
+  if (!g.__massoterapiaAuthStore) {
+    g.__massoterapiaAuthStore = {
+      state: { user: null, loading: true },
+      listeners: new Set(),
+      initialized: false,
+      loggingOut: false,
+      activeCheckTimer: null,
+      safetyTimer: null,
+      authSubscription: null,
+    };
+  }
+  return g.__massoterapiaAuthStore;
+}
+
+const store = getStore();
 
 function isPreviewEnv(): boolean {
   if (typeof window === "undefined") return false;
@@ -32,38 +69,38 @@ function isPreviewEnv(): boolean {
   );
 }
 
-// ---------- Module-level singleton store ----------
-
-interface AuthState {
-  user: AuthUser | null;
-  loading: boolean;
-}
-
-let state: AuthState = { user: null, loading: true };
-const listeners = new Set<() => void>();
-
 function setState(next: Partial<AuthState>) {
-  state = { ...state, ...next };
-  listeners.forEach((l) => l());
+  const nextState = { ...store.state, ...next };
+  if (store.state.user === nextState.user && store.state.loading === nextState.loading) return;
+  store.state = nextState;
+  store.listeners.forEach((listener) => listener());
 }
 
 function subscribe(listener: () => void) {
-  listeners.add(listener);
+  store.listeners.add(listener);
+  initAuth();
   return () => {
-    listeners.delete(listener);
+    store.listeners.delete(listener);
   };
 }
 
 function getSnapshot(): AuthState {
-  return state;
+  return store.state;
 }
 
 function getServerSnapshot(): AuthState {
-  return { user: null, loading: true };
+  return SERVER_SNAPSHOT;
 }
 
-let initialized = false;
-let loggingOut = false;
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
 
 async function checkActive(userId: string): Promise<boolean> {
   try {
@@ -72,8 +109,9 @@ async function checkActive(userId: string): Promise<boolean> {
       .select("is_active")
       .eq("id", userId)
       .maybeSingle();
+
     if (error) return true;
-    if (!profile) return true;
+    if (!profile) return false;
     return profile.is_active !== false;
   } catch {
     return true;
@@ -81,155 +119,162 @@ async function checkActive(userId: string): Promise<boolean> {
 }
 
 async function forceLogout(message?: string) {
-  if (loggingOut) return;
-  loggingOut = true;
+  if (store.loggingOut) return;
+  store.loggingOut = true;
   try {
     await supabase.auth.signOut();
   } catch {
-    // ignore
+    // Keep local auth state consistent even if the network request fails.
   }
-  setState({ user: null });
+  setState({ user: null, loading: false });
   if (message && typeof sessionStorage !== "undefined") {
     sessionStorage.setItem("auth_logout_message", message);
   }
-  loggingOut = false;
+  store.loggingOut = false;
+}
+
+function validateActiveInBackground(user: User, options?: { quiet?: boolean }) {
+  window.setTimeout(async () => {
+    const active = await checkActive(user.id);
+    const currentUser = store.state.user;
+    if (!active && currentUser?.id === user.id) {
+      await forceLogout("Seu acesso foi desativado ou removido pelo administrador.");
+      return;
+    }
+    if (!options?.quiet && currentUser?.id === user.id) {
+      setState({ user: mapUser(user), loading: false });
+    }
+  }, 0);
+}
+
+function startProductionActiveMonitor() {
+  if (isPreviewEnv() || store.activeCheckTimer) return;
+
+  store.activeCheckTimer = setInterval(async () => {
+    const currentUser = store.state.user;
+    if (!currentUser) return;
+    const active = await checkActive(currentUser.id);
+    if (!active) {
+      await forceLogout("Seu acesso foi desativado ou removido pelo administrador.");
+    }
+  }, 60000);
+
+  supabase
+    .channel("profile-status-singleton")
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, (payload) => {
+      const currentUser = store.state.user;
+      if (!currentUser) return;
+      if (payload.new && (payload.new as any).id === currentUser.id && (payload.new as any).is_active === false) {
+        forceLogout("Seu acesso foi desativado pelo administrador.");
+      }
+    })
+    .on("postgres_changes", { event: "DELETE", schema: "public", table: "profiles" }, (payload) => {
+      const currentUser = store.state.user;
+      if (!currentUser) return;
+      if (payload.old && (payload.old as any).id === currentUser.id) {
+        forceLogout("Seu acesso foi removido pelo administrador.");
+      }
+    })
+    .subscribe();
 }
 
 function initAuth() {
-  if (initialized || typeof window === "undefined") return;
-  initialized = true;
+  if (store.initialized || typeof window === "undefined") return;
+  store.initialized = true;
 
-  // 1. Listen for auth changes
-  supabase.auth.onAuthStateChange(async (event, session) => {
+  store.authSubscription = supabase.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT") {
       setState({ user: null, loading: false });
       return;
     }
 
     if (session?.user) {
-      if (event === "SIGNED_IN") {
-        const active = await checkActive(session.user.id);
-        if (!active) {
-          await forceLogout("Seu acesso foi desativado pelo administrador.");
-          setState({ loading: false });
-          return;
-        }
-      }
       setState({ user: mapUser(session.user), loading: false });
-    } else {
+      validateActiveInBackground(session.user, { quiet: true });
+      return;
+    }
+
+    if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
       setState({ user: null, loading: false });
     }
-  });
+  }).data.subscription;
 
-  // 2. Hydrate current session
   supabase.auth
     .getSession()
-    .then(async ({ data: { session } }) => {
+    .then(({ data: { session } }) => {
       if (session?.user) {
-        const active = await checkActive(session.user.id);
-        if (!active) {
-          await forceLogout("Seu acesso foi desativado pelo administrador.");
-          setState({ loading: false });
-          return;
-        }
         setState({ user: mapUser(session.user), loading: false });
+        validateActiveInBackground(session.user, { quiet: true });
       } else {
         setState({ user: null, loading: false });
       }
     })
     .catch(() => {
-      setState({ loading: false });
+      setState({ user: null, loading: false });
     });
 
-  // Safety timeout — never stay loading forever
-  setTimeout(() => {
-    if (state.loading) setState({ loading: false });
-  }, 8000);
+  store.safetyTimer = setTimeout(() => {
+    if (store.state.loading) setState({ loading: false });
+  }, AUTH_INIT_TIMEOUT_MS);
 
-  // 3. Realtime + periodic active-check (production only)
-  if (!isPreviewEnv()) {
-    supabase
-      .channel(`profile-status-${Date.now()}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "profiles" },
-        (payload) => {
-          const u = state.user;
-          if (!u) return;
-          if (payload.new && (payload.new as any).id === u.id) {
-            if ((payload.new as any).is_active === false) {
-              forceLogout("Seu acesso foi desativado pelo administrador.");
-            }
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "profiles" },
-        (payload) => {
-          const u = state.user;
-          if (!u) return;
-          if (payload.old && (payload.old as any).id === u.id) {
-            forceLogout("Seu acesso foi desativado pelo administrador.");
-          }
-        }
-      )
-      .subscribe();
-
-    setInterval(async () => {
-      const u = state.user;
-      if (!u) return;
-      const active = await checkActive(u.id);
-      if (!active) {
-        forceLogout("Seu acesso foi desativado pelo administrador.");
-      }
-    }, 60000);
-  }
+  startProductionActiveMonitor();
 }
 
-// Kick off init at module load (browser only)
 if (typeof window !== "undefined") {
   initAuth();
 }
 
-// ---------- Public hook ----------
-
 export function useAuth() {
   const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  const login = useCallback(
-    async (email: string, password: string): Promise<string | null> => {
-      const { error, data } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return error.message;
+  const login = useCallback(async (email: string, password: string): Promise<string | null> => {
+    try {
+      setState({ loading: true });
+      const { error, data } = await withTimeout(
+        supabase.auth.signInWithPassword({ email, password }),
+        LOGIN_TIMEOUT_MS,
+        "O login demorou demais para responder. Tente novamente."
+      );
+
+      if (error) {
+        setState({ user: null, loading: false });
+        return error.message;
+      }
 
       if (data.user) {
-        const active = await checkActive(data.user.id);
+        const active = await withTimeout(
+          checkActive(data.user.id),
+          LOGIN_TIMEOUT_MS,
+          "Não foi possível validar seu acesso agora. Tente novamente."
+        );
         if (!active) {
-          await supabase.auth.signOut();
-          return "Seu acesso foi desativado pelo administrador.";
+          await forceLogout("Seu acesso foi desativado ou removido pelo administrador.");
+          return "Seu acesso foi desativado ou removido pelo administrador.";
         }
+        setState({ user: mapUser(data.user), loading: false });
+      } else {
+        setState({ user: null, loading: false });
       }
-      return null;
-    },
-    []
-  );
 
-  const register = useCallback(
-    async (name: string, email: string, password: string): Promise<string | null> => {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { name }, emailRedirectTo: window.location.origin },
-      });
-      if (error) return error.message;
       return null;
-    },
-    []
-  );
+    } catch (error) {
+      setState({ loading: false });
+      return error instanceof Error ? error.message : "Não foi possível entrar. Tente novamente.";
+    }
+  }, []);
+
+  const register = useCallback(async (name: string, email: string, password: string): Promise<string | null> => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name }, emailRedirectTo: window.location.origin },
+    });
+    if (error) return error.message;
+    return null;
+  }, []);
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
-    setState({ user: null });
+    await forceLogout();
   }, []);
 
   const resetPassword = useCallback(async (email: string): Promise<string | null> => {
