@@ -47,6 +47,47 @@ export type Database = {
         }
         Relationships: []
       }
+      course_xp_discounts: {
+        Row: {
+          course_id: string
+          created_at: string
+          discount_link: string
+          discount_percent: number
+          enabled: boolean
+          id: string
+          updated_at: string
+          xp_required: number
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          discount_link?: string
+          discount_percent?: number
+          enabled?: boolean
+          id?: string
+          updated_at?: string
+          xp_required?: number
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          discount_link?: string
+          discount_percent?: number
+          enabled?: boolean
+          id?: string
+          updated_at?: string
+          xp_required?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_xp_discounts_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: true
+            referencedRelation: "managed_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_challenge_completions: {
         Row: {
           challenge_id: string
@@ -97,6 +138,33 @@ export type Database = {
           description?: string
           id?: string
           title?: string
+        }
+        Relationships: []
+      }
+      daily_login_streaks: {
+        Row: {
+          current_streak: number
+          last_login_date: string
+          longest_streak: number
+          total_logins: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          last_login_date?: string
+          longest_streak?: number
+          total_logins?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          last_login_date?: string
+          longest_streak?: number
+          total_logins?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -498,6 +566,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_xp_redemptions: {
+        Row: {
+          course_id: string
+          discount_link: string
+          discount_percent: number
+          id: string
+          redeemed_at: string
+          user_id: string
+          xp_spent: number
+        }
+        Insert: {
+          course_id: string
+          discount_link: string
+          discount_percent: number
+          id?: string
+          redeemed_at?: string
+          user_id: string
+          xp_spent: number
+        }
+        Update: {
+          course_id?: string
+          discount_link?: string
+          discount_percent?: number
+          id?: string
+          redeemed_at?: string
+          user_id?: string
+          xp_spent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_xp_redemptions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "managed_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -513,6 +619,16 @@ export type Database = {
       increment_student_usage: {
         Args: { _seconds: number; _user_id: string }
         Returns: undefined
+      }
+      redeem_xp_discount: {
+        Args: { _course_id: string }
+        Returns: {
+          discount_link: string
+          discount_percent: number
+          message: string
+          success: boolean
+          xp_spent: number
+        }[]
       }
     }
     Enums: {
