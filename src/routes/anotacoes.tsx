@@ -29,7 +29,7 @@ function getLessonInfo(lessonId: string) {
 }
 
 function AnotacoesPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [notes, setNotes] = useState<NoteRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -53,6 +53,7 @@ function AnotacoesPage() {
     load();
   }, [user]);
 
+  if (authLoading) return <div className="flex min-h-screen items-center justify-center bg-background"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
   if (!user) return <div className="flex min-h-screen items-center justify-center bg-background"><p className="text-muted-foreground">Faça login para acessar.</p></div>;
 
   const filtered = notes

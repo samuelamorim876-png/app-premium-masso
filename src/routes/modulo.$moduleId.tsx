@@ -29,7 +29,7 @@ export const Route = createFileRoute("/modulo/$moduleId")({
 
 function ModulePage() {
   const { moduleId } = Route.useParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isAdmin } = useAdmin(user?.id);
   const { modules: courseModules, loading: modulesLoading, refetch } = useManagedModules();
   const { isLessonCompleted, toggleLesson, getModuleProgress, isModuleUnlocked } = useProgress(user?.id, courseModules);
@@ -47,6 +47,14 @@ function ModulePage() {
       contentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [activeLessonId]);
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (

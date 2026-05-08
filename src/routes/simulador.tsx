@@ -11,10 +11,18 @@ export const Route = createFileRoute("/simulador")({
 });
 
 function SimuladorPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [answered, setAnswered] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
