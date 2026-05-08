@@ -124,5 +124,5 @@ export function useGamification(userId: string | undefined) {
     await addPoints(50);
   }, [userId, badges, addPoints]);
 
-  return { data, badges, showReward, addPoints, awardBadge, dismissReward: () => setShowReward(null) };
+  return { data, badges, showReward, addPoints, awardBadge, awardCustomBadge, refresh, dismissReward: () => setShowReward(null) };
 }
