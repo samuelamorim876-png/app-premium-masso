@@ -32,6 +32,7 @@ import {
   BellOff,
 } from "lucide-react";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
+import { useAdminStudentMonitoring } from "@/hooks/use-admin-student-monitoring";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Painel Administrativo — Massoterapia" }] }),
