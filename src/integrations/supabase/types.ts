@@ -510,6 +510,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_student_usage: {
+        Args: { _seconds: number; _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
