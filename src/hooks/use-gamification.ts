@@ -67,20 +67,31 @@ export function useGamification(userId: string | undefined) {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [showReward, setShowReward] = useState<{ points: number; badge?: string } | null>(null);
 
-  useEffect(() => {
+  const refresh = useCallback(async () => {
     if (!userId) return;
-    Promise.all([
-      supabase.from("user_gamification").select("*").eq("user_id", userId).single(),
+    const [gamRes, badgeRes] = await Promise.all([
+      supabase.from("user_gamification").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("user_badges").select("*").eq("user_id", userId),
-    ]).then(([gamRes, badgeRes]) => {
-      if (gamRes.data) {
-        setData({ points: gamRes.data.points, level: gamRes.data.level, xp: gamRes.data.xp });
-      }
-      if (badgeRes.data) {
-        setBadges(badgeRes.data.map((b: any) => ({ badge_id: b.badge_id, badge_name: b.badge_name, earned_at: b.earned_at })));
-      }
-    });
+    ]);
+    if (gamRes.data) {
+      setData({ points: gamRes.data.points, level: gamRes.data.level, xp: gamRes.data.xp });
+    }
+    if (badgeRes.data) {
+      setBadges(badgeRes.data.map((b: any) => ({ badge_id: b.badge_id, badge_name: b.badge_name, earned_at: b.earned_at })));
+    }
   }, [userId]);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  const awardCustomBadge = useCallback(async (badgeId: string, badgeName: string) => {
+    if (!userId) return;
+    if (badges.some((b) => b.badge_id === badgeId)) return;
+    const newBadge = { badge_id: badgeId, badge_name: badgeName, earned_at: new Date().toISOString() };
+    setBadges((prev) => [...prev, newBadge]);
+    setShowReward({ points: 25, badge: badgeName });
+    setTimeout(() => setShowReward(null), 3000);
+    await supabase.from("user_badges").insert({ user_id: userId, badge_id: badgeId, badge_name: badgeName });
+  }, [userId, badges]);
 
   const addPoints = useCallback(async (pts: number) => {
     if (!userId) return;
