@@ -177,7 +177,8 @@ function Dashboard() {
   const { isAdmin } = useAdmin(user?.id);
   const { modules: courseModules, loading: modulesLoading } = useManagedModules();
   const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading } = useProgress(user?.id, courseModules);
-  const { data: gamData, badges, showReward, addPoints } = useGamification(user?.id);
+  const { data: gamData, badges, showReward, addPoints, awardCustomBadge } = useGamification(user?.id);
+  useDailyLogin(user?.id, addPoints, awardCustomBadge);
 
   if (loading || modulesLoading) {
     return (
