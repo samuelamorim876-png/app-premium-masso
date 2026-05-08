@@ -29,7 +29,7 @@ function getLessonInfo(lessonId: string) {
 }
 
 function AnotacoesPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [notes, setNotes] = useState<NoteRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
