@@ -47,7 +47,7 @@ export function GamificationBar({ data, badges }: GamificationBarProps) {
           </div>
           <p className="mt-2 flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-amber-500">
             <Sparkles className="h-3.5 w-3.5" />
-            Acumule XP e desbloqueie até 60% de desconto em nossos cursos
+            Acumule XP e desbloqueie emblemas e conquistas
           </p>
         </div>
 
