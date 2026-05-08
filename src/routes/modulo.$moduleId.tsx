@@ -119,7 +119,7 @@ function ModulePage() {
   }
 
   const progress = getModuleProgress(moduleId);
-  const activeLesson = mod.lessons.find((l) => l.id === activeLessonId);
+  
 
   const handleToggleLesson = async () => {
     if (!activeLesson) return;
