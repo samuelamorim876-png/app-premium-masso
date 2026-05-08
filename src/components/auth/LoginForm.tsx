@@ -16,10 +16,16 @@ export function LoginForm({ onLogin, onSwitchToForgot }: LoginFormProps) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError("");
     setSubmitting(true);
-    const err = await onLogin(email, password);
-    if (err) setError(err);
-    setSubmitting(false);
+    try {
+      const err = await onLogin(email, password);
+      if (err) setError(err);
+    } catch {
+      setError("Não foi possível entrar. Tente novamente.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
