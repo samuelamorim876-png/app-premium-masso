@@ -1,6 +1,8 @@
-import { Star, Trophy, Zap } from "lucide-react";
+import { Star, Trophy, Zap, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { GamificationData, Badge } from "@/hooks/use-gamification";
 import { getNextLevel } from "@/hooks/use-gamification";
+import { AchievementsDialog } from "./AchievementsDialog";
 
 interface GamificationBarProps {
   data: GamificationData;
@@ -9,6 +11,7 @@ interface GamificationBarProps {
 
 export function GamificationBar({ data, badges }: GamificationBarProps) {
   const next = getNextLevel(data.xp);
+  const visibleBadges = badges.slice(0, 4);
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 animate-fade-up">
@@ -24,7 +27,7 @@ export function GamificationBar({ data, badges }: GamificationBarProps) {
           </div>
         </div>
 
-        {/* XP Progress */}
+        {/* XP Progress + benefit message */}
         <div className="flex-1 w-full sm:w-auto">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -32,7 +35,7 @@ export function GamificationBar({ data, badges }: GamificationBarProps) {
             </span>
             {next && (
               <span className="text-xs text-muted-foreground">
-                {next.xpNeeded} XP para {next.name}
+                Nível {next.name}
               </span>
             )}
           </div>
@@ -42,6 +45,10 @@ export function GamificationBar({ data, badges }: GamificationBarProps) {
               style={{ width: `${next ? next.progress : 100}%` }}
             />
           </div>
+          <p className="mt-2 flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-amber-500">
+            <Sparkles className="h-3.5 w-3.5" />
+            Acumule XP e desbloqueie até 60% de desconto em nossos cursos
+          </p>
         </div>
 
         {/* Badges count */}
@@ -56,18 +63,42 @@ export function GamificationBar({ data, badges }: GamificationBarProps) {
         </div>
       </div>
 
-      {/* Badge row */}
+      {/* Badge row — horizontal scroll, never stack */}
       {badges.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {badges.map((b) => (
-            <span
-              key={b.badge_id}
-              className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
-              title={`Conquistado em ${new Date(b.earned_at).toLocaleDateString("pt-BR")}`}
-            >
-              {b.badge_name}
-            </span>
-          ))}
+        <div className="mt-4">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+            {visibleBadges.map((b) => (
+              <span
+                key={b.badge_id}
+                className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary whitespace-nowrap"
+                title={`Conquistado em ${new Date(b.earned_at).toLocaleDateString("pt-BR")}`}
+              >
+                {b.badge_name}
+              </span>
+            ))}
+            {badges.length > 4 && (
+              <AchievementsDialog
+                badges={badges}
+                trigger={
+                  <Button size="sm" variant="outline" className="shrink-0 h-auto py-1.5 px-3 text-xs">
+                    Ver mais conquistas
+                  </Button>
+                }
+              />
+            )}
+          </div>
+          {badges.length <= 4 && badges.length > 0 && (
+            <div className="mt-2">
+              <AchievementsDialog
+                badges={badges}
+                trigger={
+                  <button className="text-[11px] text-primary hover:underline">
+                    Ver todas as conquistas
+                  </button>
+                }
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
