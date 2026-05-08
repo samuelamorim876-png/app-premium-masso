@@ -32,6 +32,7 @@ import {
   BellOff,
 } from "lucide-react";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
+import { useAdminStudentMonitoring } from "@/hooks/use-admin-student-monitoring";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Painel Administrativo — Massoterapia" }] }),
@@ -187,30 +188,37 @@ function AdminDashboard() {
 }
 
 /* ==================== STUDENTS TAB ==================== */
+const PRINCIPAL_ADMIN_EMAIL = "pastororxiamorim@gmail.com";
+
+function formatDuration(totalSeconds: number) {
+  if (!totalSeconds) return "0min";
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  if (h > 0) return `${h}h ${m}min`;
+  return `${m}min`;
+}
+
+function formatDateTime(iso: string | null) {
+  if (!iso) return "Nunca";
+  return new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}
+
 function StudentsTab() {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const { user } = useAuth();
+  const { students, loading: loadingData, refetch } = useAdminStudentMonitoring();
   const [search, setSearch] = useState("");
-  const [loadingData, setLoadingData] = useState(true);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
-  const fetchProfiles = async () => {
-    setLoadingData(true);
-    const { data } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
-    setProfiles((data as Profile[]) || []);
-    setLoadingData(false);
-  };
-
-  useEffect(() => { fetchProfiles(); }, []);
+  const isPrincipalAdmin = (user?.email || "").toLowerCase() === PRINCIPAL_ADMIN_EMAIL;
 
   const togglePremium = async (id: string, current: boolean) => {
     await supabase.from("profiles").update({ premium_access: !current }).eq("id", id);
-    fetchProfiles();
+    refetch();
   };
-
   const toggleActive = async (id: string, current: boolean) => {
     await supabase.from("profiles").update({ is_active: !current }).eq("id", id);
-    fetchProfiles();
+    refetch();
   };
-
   const deleteStudent = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir este aluno? Isso removerá o acesso completamente.")) return;
     try {
@@ -219,14 +227,22 @@ function StudentsTab() {
     } catch (err: any) {
       alert(`❌ Erro ao excluir: ${err.message}`);
     }
-    fetchProfiles();
+    refetch();
   };
 
-  const filtered = profiles.filter(
+  const filtered = students.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       (p.email || "").toLowerCase().includes(search.toLowerCase())
   );
+
+  const toneClasses: Record<string, string> = {
+    online: "bg-emerald-500/20 text-emerald-400",
+    recent: "bg-sky-500/20 text-sky-400",
+    low: "bg-amber-500/20 text-amber-400",
+    inactive: "bg-muted text-muted-foreground",
+    blocked: "bg-red-500/20 text-red-400",
+  };
 
   return (
     <div>
@@ -247,42 +263,109 @@ function StudentsTab() {
         <div className="text-center py-8 text-muted-foreground">Carregando...</div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((p) => (
-            <div key={p.id} className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <p className="font-semibold text-foreground truncate">{p.name || "Sem nome"}</p>
-                  <p className="text-xs text-muted-foreground truncate">{p.email}</p>
+          {filtered.map((p) => {
+            const isOpen = expanded === p.id;
+            return (
+              <div key={p.id} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-foreground truncate">{p.name || "Sem nome"}</p>
+                      <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${toneClasses[p.activityTone]}`}>
+                        {p.isOnline && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />}
+                        {p.activityLabel}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">{p.email}</p>
+                    {isPrincipalAdmin && (
+                      <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-muted-foreground">
+                        <span>Último acesso: <strong className="text-foreground">{formatDateTime(p.lastSeenAt)}</strong></span>
+                        <span>Tempo total: <strong className="text-foreground">{formatDuration(p.totalUsageSeconds)}</strong></span>
+                        <span>Progresso: <strong className="text-foreground">{p.progressPercent}%</strong> ({p.completedLessons}/{p.totalLessons})</span>
+                        <span>Dias ativos: <strong className="text-foreground">{p.activeDays}</strong></span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={() => togglePremium(p.id, p.premium_access)}
+                      className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                        p.premium_access ? "bg-amber-500/20 text-amber-400" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <Star className="h-3 w-3" />
+                      {p.premium_access ? "Premium" : "Básico"}
+                    </button>
+                    <button
+                      onClick={() => toggleActive(p.id, p.is_active)}
+                      className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                        p.is_active ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
+                      }`}
+                    >
+                      {p.is_active ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                      {p.is_active ? "Ativo" : "Inativo"}
+                    </button>
+                    {isPrincipalAdmin && (
+                      <button
+                        onClick={() => setExpanded(isOpen ? null : p.id)}
+                        className="rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        title="Ver detalhes de uso"
+                      >
+                        {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => deleteStudent(p.id)}
+                      className="rounded-full p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    onClick={() => togglePremium(p.id, p.premium_access)}
-                    className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                      p.premium_access ? "bg-amber-500/20 text-amber-400" : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    <Star className="h-3 w-3" />
-                    {p.premium_access ? "Premium" : "Básico"}
-                  </button>
-                  <button
-                    onClick={() => toggleActive(p.id, p.is_active)}
-                    className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                      p.is_active ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
-                    }`}
-                  >
-                    {p.is_active ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-                    {p.is_active ? "Ativo" : "Inativo"}
-                  </button>
-                  <button
-                    onClick={() => deleteStudent(p.id)}
-                    className="rounded-full p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+
+                {isPrincipalAdmin && isOpen && (
+                  <div className="mt-4 border-t border-border pt-4 space-y-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                      <div className="rounded-lg bg-muted/40 p-2">
+                        <p className="text-muted-foreground">Módulos concluídos</p>
+                        <p className="text-base font-bold text-foreground">{p.completedModules}</p>
+                      </div>
+                      <div className="rounded-lg bg-muted/40 p-2">
+                        <p className="text-muted-foreground">Vídeos acessados</p>
+                        <p className="text-base font-bold text-foreground flex items-center gap-1"><Video className="h-3 w-3" />{p.accessedVideos}</p>
+                      </div>
+                      <div className="rounded-lg bg-muted/40 p-2">
+                        <p className="text-muted-foreground">PDFs acessados</p>
+                        <p className="text-base font-bold text-foreground flex items-center gap-1"><FileText className="h-3 w-3" />{p.accessedPdfs}</p>
+                      </div>
+                      <div className="rounded-lg bg-muted/40 p-2">
+                        <p className="text-muted-foreground">Tela atual</p>
+                        <p className="text-xs font-mono text-foreground truncate">{p.currentPath || "—"}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground mb-2">Eventos recentes</p>
+                      {p.recentEvents.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">Nenhuma atividade registrada ainda.</p>
+                      ) : (
+                        <ul className="space-y-1">
+                          {p.recentEvents.map((ev) => (
+                            <li key={ev.id} className="text-xs text-foreground flex items-center justify-between gap-2 border-b border-border/50 pb-1">
+                              <span className="truncate">
+                                <span className="text-muted-foreground">[{ev.event_type}]</span>{" "}
+                                {ev.lesson_title || ev.module_title || ev.path || "—"}
+                              </span>
+                              <span className="text-muted-foreground whitespace-nowrap">{formatDateTime(ev.created_at)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
