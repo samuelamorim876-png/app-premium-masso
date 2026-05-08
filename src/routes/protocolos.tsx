@@ -11,8 +11,16 @@ export const Route = createFileRoute("/protocolos")({
 });
 
 function ProtocolosPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [activePlan, setActivePlan] = useState<string | null>(null);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
