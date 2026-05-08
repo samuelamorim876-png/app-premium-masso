@@ -29,7 +29,7 @@ export const Route = createFileRoute("/modulo/$moduleId")({
 
 function ModulePage() {
   const { moduleId } = Route.useParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isAdmin } = useAdmin(user?.id);
   const { modules: courseModules, loading: modulesLoading, refetch } = useManagedModules();
   const { isLessonCompleted, toggleLesson, getModuleProgress, isModuleUnlocked } = useProgress(user?.id, courseModules);
