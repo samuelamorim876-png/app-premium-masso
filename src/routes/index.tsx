@@ -6,6 +6,7 @@ import { useProgress } from "@/hooks/use-progress";
 import { useGamification } from "@/hooks/use-gamification";
 import { useManagedModules } from "@/hooks/use-managed-modules";
 import { useStudentPresence } from "@/hooks/use-student-activity";
+import { useDailyLogin } from "@/hooks/use-daily-login";
 import heroImage from "@/assets/hero-massage-dark.jpg";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { AccessRequestForm } from "@/components/auth/AccessRequestForm";
