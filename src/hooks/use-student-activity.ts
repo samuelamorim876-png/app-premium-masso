@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 interface ActivityInput {
   eventType: string;
@@ -42,7 +43,7 @@ async function writeActivity(userId: string, input: ActivityInput) {
       lesson_id: lessonId,
       lesson_title: input.lessonTitle ?? null,
       lesson_type: input.lessonType ?? null,
-      metadata: input.metadata ?? {},
+      metadata: (input.metadata ?? {}) as Json,
     }),
   ]);
 }
@@ -75,7 +76,6 @@ export function useStudentPresence(userId: string | undefined) {
         user_id: userId,
         last_seen_at: new Date(now).toISOString(),
         online_until: new Date(now + 90000).toISOString(),
-        total_usage_seconds: elapsed,
         current_path: window.location.pathname,
       }, { onConflict: "user_id" }).then(async () => {
         if (elapsed > 0) {
