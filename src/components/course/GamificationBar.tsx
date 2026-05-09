@@ -63,44 +63,6 @@ export function GamificationBar({ data, badges }: GamificationBarProps) {
         </div>
       </div>
 
-      {/* Badge row — horizontal scroll, never stack */}
-      {badges.length > 0 && (
-        <div className="mt-4">
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
-            {visibleBadges.map((b) => (
-              <span
-                key={b.badge_id}
-                className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary whitespace-nowrap"
-                title={`Conquistado em ${new Date(b.earned_at).toLocaleDateString("pt-BR")}`}
-              >
-                {b.badge_name}
-              </span>
-            ))}
-            {badges.length > 4 && (
-              <AchievementsDialog
-                badges={badges}
-                trigger={
-                  <Button size="sm" variant="outline" className="shrink-0 h-auto py-1.5 px-3 text-xs">
-                    Ver mais conquistas
-                  </Button>
-                }
-              />
-            )}
-          </div>
-          {badges.length <= 4 && badges.length > 0 && (
-            <div className="mt-2">
-              <AchievementsDialog
-                badges={badges}
-                trigger={
-                  <button className="text-[11px] text-primary hover:underline">
-                    Ver todas as conquistas
-                  </button>
-                }
-              />
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
