@@ -226,13 +226,46 @@ function Dashboard() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
-        <div className="mb-8 animate-fade-up">
+        <div className="mb-6 animate-fade-up">
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">Meu Curso</h1>
           <p className="mt-2 text-base text-muted-foreground">Continue de onde parou e avance no seu aprendizado.</p>
         </div>
 
+        {/* HERO CTA — Começar a Estudar */}
+        <Link
+          to="/estudar"
+          className="group mb-6 block overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/25 via-primary/10 to-transparent p-6 transition-all hover:border-primary/70 hover:shadow-[0_0_40px_-10px_oklch(0.65_0.18_260/0.5)] animate-fade-up"
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/30 group-hover:scale-110 transition-transform">
+              <PlayCircle className="h-8 w-8 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">Acesse seu curso aqui</p>
+              <h2 className="mt-1 font-heading text-xl sm:text-2xl font-bold text-foreground">Começar a Estudar</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Entre no Modo Estudo e acesse todas as suas aulas e materiais.</p>
+            </div>
+            <Button size="lg" className="w-full sm:w-auto rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg">
+              <PlayCircle className="h-5 w-5 mr-2" /> Começar a Estudar
+            </Button>
+          </div>
+        </Link>
+
         <div className="mb-6">
           <GamificationBar data={gamData} badges={badges} />
+        </div>
+
+        <div className="mb-6">
+          <AchievementsCarousel
+            userId={user?.id}
+            xp={gamData.xp}
+            badges={badges}
+            lessonsCompleted={overallProgress.completed}
+            modulesCompleted={courseModules.filter((m) => {
+              const p = getModuleProgress(m.id);
+              return p.total > 0 && p.completed === p.total;
+            }).length}
+          />
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
