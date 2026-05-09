@@ -9,7 +9,6 @@ interface GamificationBarProps {
 
 export function GamificationBar({ data, badges }: GamificationBarProps) {
   const next = getNextLevel(data.xp);
-  const visibleBadges = badges.slice(0, 4);
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 animate-fade-up">
