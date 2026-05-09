@@ -15,10 +15,11 @@ import { InstallBanner } from "@/components/pwa/InstallPrompt";
 import { ModuleCard } from "@/components/course/ModuleCard";
 import { OverallProgress } from "@/components/course/OverallProgress";
 import { GamificationBar } from "@/components/course/GamificationBar";
+import { AchievementsCarousel } from "@/components/course/AchievementsCarousel";
 import { DailyChallenge } from "@/components/course/DailyChallenge";
 import { RewardPopup } from "@/components/course/RewardPopup";
 import { Link } from "@tanstack/react-router";
-import { LogOut, GraduationCap, Stethoscope, ClipboardList, User, Bot, Notebook, BookOpen, ShoppingBag, Shield } from "lucide-react";
+import { LogOut, GraduationCap, Stethoscope, ClipboardList, User, Bot, Notebook, BookOpen, ShoppingBag, Shield, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import modIntroImg from "@/assets/hero-massage-dark.jpg";
