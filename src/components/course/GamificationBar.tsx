@@ -1,8 +1,6 @@
 import { Star, Trophy, Zap, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { GamificationData, Badge } from "@/hooks/use-gamification";
 import { getNextLevel } from "@/hooks/use-gamification";
-import { AchievementsDialog } from "./AchievementsDialog";
 
 interface GamificationBarProps {
   data: GamificationData;
