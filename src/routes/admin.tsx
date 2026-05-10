@@ -179,6 +179,8 @@ function AdminDashboard() {
     { key: "pending", label: "Aguardando Aprovação", icon: <Clock className="h-4 w-4" /> },
     { key: "content", label: "Conteúdos", icon: <BookOpen className="h-4 w-4" /> },
     { key: "courses", label: "Cursos", icon: <ShoppingBag className="h-4 w-4" /> },
+    { key: "home_layout", label: "Layout da Home", icon: <LayoutGrid className="h-4 w-4" /> },
+    { key: "notes", label: "Anotações dos Alunos", icon: <StickyNote className="h-4 w-4" /> },
     { key: "diagnostics", label: "Diagnóstico Push", icon: <Bell className="h-4 w-4" /> },
   ];
 
