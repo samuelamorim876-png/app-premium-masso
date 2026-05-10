@@ -226,6 +226,104 @@ function AdminDashboard() {
   );
 }
 
+/* ==================== PUSH DIAGNOSTICS TAB ==================== */
+function PushDiagnosticsTab({ userId }: { userId?: string }) {
+  const fetchDiag = useServerFn(getAdminPushDiagnostics);
+  const sendTest = useServerFn(sendTestAdminPush);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await fetchDiag();
+      setData(res);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao carregar diagnóstico");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  const handleTest = async () => {
+    setSending(true);
+    try {
+      await sendTest();
+      toast.success("Notificação de teste enviada");
+      setTimeout(load, 1500);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao enviar teste");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading && !data) return <div className="text-muted-foreground">Carregando diagnóstico...</div>;
+  if (!data) return <div className="text-muted-foreground">Sem dados.</div>;
+  if (!data.allowed) return <div className="text-destructive">Acesso restrito ao administrador principal.</div>;
+
+  const Stat = ({ label, value, ok }: { label: string; value: string; ok?: boolean }) => (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className={`mt-1 text-sm font-medium ${ok === false ? "text-destructive" : ok ? "text-primary" : "text-foreground"}`}>{value}</div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <Button onClick={handleTest} disabled={sending}>
+          <Bell className="mr-2 h-4 w-4" />
+          {sending ? "Enviando..." : "Testar Push Notification Agora"}
+        </Button>
+        <Button variant="outline" onClick={load} disabled={loading}>Atualizar</Button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Stat label="Firebase/FCM" value={data.firebaseConnected ? "Conectado" : "Não conectado"} ok={data.firebaseConnected} />
+        <Stat label="Inscrições" value={String(data.subscriptionCount)} ok={data.subscriptionCount > 0} />
+        <Stat label="Admin marcado" value={data.adminMarked ? "Sim" : "Não"} ok={data.adminMarked} />
+        <Stat label="Permissão" value={data.latestSubscription?.permission_status ?? "—"} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="text-xs text-muted-foreground mb-1">Última enviada</div>
+          <div className="text-sm">
+            {data.latestSent ? `${data.latestSent.title ?? "(sem título)"} — ${data.latestSent.status} — ${new Date(data.latestSent.created_at).toLocaleString()}` : "Nenhuma"}
+          </div>
+        </div>
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="text-xs text-muted-foreground mb-1">Última recebida</div>
+          <div className="text-sm">
+            {data.latestReceived ? `${data.latestReceived.title ?? "(sem título)"} — ${new Date(data.latestReceived.created_at).toLocaleString()}` : "Nenhuma"}
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-4">
+        <div className="text-sm font-medium mb-2">Logs recentes</div>
+        <div className="space-y-1 max-h-80 overflow-auto text-xs">
+          {(data.logs ?? []).map((log: any) => (
+            <div key={log.id} className="flex justify-between gap-2 border-b border-border/50 py-1">
+              <span className="truncate">{log.notification_type} · {log.title ?? "—"}</span>
+              <span className={log.status === "sent" || log.status === "received" ? "text-primary" : "text-destructive"}>{log.status}</span>
+              <span className="text-muted-foreground">{new Date(log.created_at).toLocaleTimeString()}</span>
+            </div>
+          ))}
+          {(!data.logs || data.logs.length === 0) && <div className="text-muted-foreground">Sem logs ainda.</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ==================== STUDENTS TAB ==================== */
 const PRINCIPAL_ADMIN_EMAIL = "pastororxiamorim@gmail.com";
 
