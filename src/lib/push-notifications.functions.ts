@@ -9,7 +9,7 @@ type PushInvokeResult = {
   sent: number;
   attempted?: number;
   reason: string;
-  detail?: unknown;
+  detail?: {};
 };
 
 async function invokePushNotify(payload: Record<string, unknown>): Promise<PushInvokeResult> {
