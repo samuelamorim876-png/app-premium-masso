@@ -30,6 +30,12 @@ import {
   Clock,
   Bell,
   BellOff,
+  LayoutGrid,
+  StickyNote,
+  ArrowUp,
+  ArrowDown,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
 import { getAdminPushDiagnostics, markPushReceived, sendTestAdminPush } from "@/lib/push-notifications.functions";
