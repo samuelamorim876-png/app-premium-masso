@@ -228,6 +228,8 @@ function AdminDashboard() {
         {tab === "pending" && <PendingTab />}
         {tab === "content" && <ContentTab />}
         {tab === "courses" && <CoursesTab />}
+        {tab === "home_layout" && <HomeLayoutTab />}
+        {tab === "notes" && <StudentNotesTab />}
         {tab === "diagnostics" && <PushDiagnosticsTab userId={user?.id} />}
       </main>
     </div>
