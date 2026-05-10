@@ -233,137 +233,152 @@ function Dashboard() {
           <p className="mt-2 text-base text-muted-foreground">Continue de onde parou e avance no seu aprendizado.</p>
         </div>
 
-        {/* HERO CTA — Começar a Estudar */}
-        <Link
-          to="/estudar"
-          className="group mb-6 block overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/25 via-primary/10 to-transparent p-6 transition-all hover:border-primary/70 hover:shadow-[0_0_40px_-10px_oklch(0.65_0.18_260/0.5)] animate-fade-up"
-        >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/30 group-hover:scale-110 transition-transform">
-              <PlayCircle className="h-8 w-8 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary">Acesse seu curso aqui</p>
-              <h2 className="mt-1 font-heading text-xl sm:text-2xl font-bold text-foreground">Começar a Estudar</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Entre no Modo Estudo e acesse todas as suas aulas e materiais.</p>
-            </div>
-            <Button size="lg" className="w-full sm:w-auto rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg">
-              <PlayCircle className="h-5 w-5 mr-2" /> Começar a Estudar
-            </Button>
-          </div>
-        </Link>
-
-        <div className="mb-6">
-          <GamificationBar data={gamData} badges={badges} />
-        </div>
-
-        <div className="mb-6">
-          <AchievementsCarousel
-            userId={user?.id}
-            xp={gamData.xp}
-            badges={badges}
-            lessonsCompleted={overallProgress.completed}
-            modulesCompleted={courseModules.filter((m) => {
-              const p = getModuleProgress(m.id);
-              return p.total > 0 && p.completed === p.total;
-            }).length}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-          <Link to="/assistente" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
-            <Bot className="h-5 w-5 text-primary shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Assistente IA</p>
-              <p className="text-[10px] text-muted-foreground">Tire dúvidas do curso</p>
-            </div>
-          </Link>
-          <Link to="/simulador" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
-            <Stethoscope className="h-5 w-5 text-primary shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Simulador</p>
-              <p className="text-[10px] text-muted-foreground">Pratique atendimentos</p>
-            </div>
-          </Link>
-          <Link to="/protocolos" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
-            <ClipboardList className="h-5 w-5 text-primary shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Protocolos</p>
-              <p className="text-[10px] text-muted-foreground">Planos de atendimento</p>
-            </div>
-          </Link>
-          <Link to="/indicacoes" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
-            <BookOpen className="h-5 w-5 text-primary shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Leitura</p>
-              <p className="text-[10px] text-muted-foreground">Indicações e contraindicações</p>
-            </div>
-          </Link>
-          <Link to="/anotacoes" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
-            <Notebook className="h-5 w-5 text-primary shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Anotações</p>
-              <p className="text-[10px] text-muted-foreground">Seu caderno digital</p>
-            </div>
-          </Link>
-          <Link to="/cursos" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
-            <ShoppingBag className="h-5 w-5 text-primary shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Nossos Cursos</p>
-              <p className="text-[10px] text-muted-foreground">Veja todos os cursos</p>
-            </div>
-          </Link>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-[1fr_320px] mb-8">
-          <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
-            <OverallProgress {...overallProgress} />
-          </div>
-          <div className="animate-fade-up" style={{ animationDelay: "150ms" }}>
-            <DailyChallenge userId={user?.id ?? ""} onComplete={() => addPoints(25)} />
-          </div>
-        </div>
-
-        <div className="mb-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
-          <h2 className="font-heading text-xl font-bold text-foreground">Todos os Módulos</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{courseModules.length} módulos disponíveis</p>
-        </div>
-
-        <div className="-mx-4 sm:-mx-6">
-          <div className="flex gap-4 overflow-x-auto px-4 sm:px-6 pb-4 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: "none" }}>
-            {courseModules.map((mod, i) => {
-              const unlocked = isModuleUnlocked(i);
-              const daysLeft = daysUntilUnlock(i);
-              const img = getModuleImage(mod.title);
-              const card = (
-                <ModuleCard
-                  module={mod}
-                  index={i}
-                  unlocked={unlocked}
-                  progress={getModuleProgress(mod.id)}
-                  onOpen={() => {}}
-                  daysLeft={daysLeft}
-                  image={img}
-                />
-              );
-              return (
-                <div
-                  key={mod.id}
-                  className="w-[160px] sm:w-[180px] md:w-[200px] flex-shrink-0 snap-start animate-fade-up"
-                  style={{ animationDelay: `${(i + 3) * 60}ms` }}
-                >
-                  {unlocked ? (
-                    <Link to="/modulo/$moduleId" params={{ moduleId: mod.id }} className="block">
-                      {card}
-                    </Link>
-                  ) : (
-                    card
-                  )}
+        {(() => {
+          const blocks: Record<string, JSX.Element> = {
+            hero_cta: (
+              <Link
+                key="hero_cta"
+                to="/estudar"
+                className="group mb-6 block overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/25 via-primary/10 to-transparent p-6 transition-all hover:border-primary/70 hover:shadow-[0_0_40px_-10px_oklch(0.65_0.18_260/0.5)] animate-fade-up"
+              >
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/30 group-hover:scale-110 transition-transform">
+                    <PlayCircle className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">Acesse seu curso aqui</p>
+                    <h2 className="mt-1 font-heading text-xl sm:text-2xl font-bold text-foreground">Começar a Estudar</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">Entre no Modo Estudo e acesse todas as suas aulas e materiais.</p>
+                  </div>
+                  <Button size="lg" className="w-full sm:w-auto rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg">
+                    <PlayCircle className="h-5 w-5 mr-2" /> Começar a Estudar
+                  </Button>
                 </div>
-              );
-            })}
-          </div>
-        </div>
+              </Link>
+            ),
+            gamification: (
+              <div key="gamification" className="mb-6">
+                <GamificationBar data={gamData} badges={badges} />
+              </div>
+            ),
+            achievements: (
+              <div key="achievements" className="mb-6">
+                <AchievementsCarousel
+                  userId={user?.id}
+                  xp={gamData.xp}
+                  badges={badges}
+                  lessonsCompleted={overallProgress.completed}
+                  modulesCompleted={courseModules.filter((m) => {
+                    const p = getModuleProgress(m.id);
+                    return p.total > 0 && p.completed === p.total;
+                  }).length}
+                />
+              </div>
+            ),
+            quick_links: (
+              <div key="quick_links" className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                <Link to="/assistente" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+                  <Bot className="h-5 w-5 text-primary shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Assistente IA</p>
+                    <p className="text-[10px] text-muted-foreground">Tire dúvidas do curso</p>
+                  </div>
+                </Link>
+                <Link to="/simulador" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+                  <Stethoscope className="h-5 w-5 text-primary shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Simulador</p>
+                    <p className="text-[10px] text-muted-foreground">Pratique atendimentos</p>
+                  </div>
+                </Link>
+                <Link to="/protocolos" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+                  <ClipboardList className="h-5 w-5 text-primary shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Protocolos</p>
+                    <p className="text-[10px] text-muted-foreground">Planos de atendimento</p>
+                  </div>
+                </Link>
+                <Link to="/indicacoes" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+                  <BookOpen className="h-5 w-5 text-primary shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Leitura</p>
+                    <p className="text-[10px] text-muted-foreground">Indicações e contraindicações</p>
+                  </div>
+                </Link>
+                <Link to="/anotacoes" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+                  <Notebook className="h-5 w-5 text-primary shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Anotações</p>
+                    <p className="text-[10px] text-muted-foreground">Seu caderno digital</p>
+                  </div>
+                </Link>
+                <Link to="/cursos" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
+                  <ShoppingBag className="h-5 w-5 text-primary shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Nossos Cursos</p>
+                    <p className="text-[10px] text-muted-foreground">Veja todos os cursos</p>
+                  </div>
+                </Link>
+              </div>
+            ),
+            progress_challenge: (
+              <div key="progress_challenge" className="grid gap-6 md:grid-cols-[1fr_320px] mb-8">
+                <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
+                  <OverallProgress {...overallProgress} />
+                </div>
+                <div className="animate-fade-up" style={{ animationDelay: "150ms" }}>
+                  <DailyChallenge userId={user?.id ?? ""} onComplete={() => addPoints(25)} />
+                </div>
+              </div>
+            ),
+            modules: (
+              <div key="modules">
+                <div className="mb-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
+                  <h2 className="font-heading text-xl font-bold text-foreground">Todos os Módulos</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{courseModules.length} módulos disponíveis</p>
+                </div>
+                <div className="-mx-4 sm:-mx-6">
+                  <div className="flex gap-4 overflow-x-auto px-4 sm:px-6 pb-4 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+                    {courseModules.map((mod, i) => {
+                      const unlocked = isModuleUnlocked(i);
+                      const daysLeft = daysUntilUnlock(i);
+                      const img = getModuleImage(mod.title);
+                      const card = (
+                        <ModuleCard
+                          module={mod}
+                          index={i}
+                          unlocked={unlocked}
+                          progress={getModuleProgress(mod.id)}
+                          onOpen={() => {}}
+                          daysLeft={daysLeft}
+                          image={img}
+                        />
+                      );
+                      return (
+                        <div
+                          key={mod.id}
+                          className="w-[160px] sm:w-[180px] md:w-[200px] flex-shrink-0 snap-start animate-fade-up"
+                          style={{ animationDelay: `${(i + 3) * 60}ms` }}
+                        >
+                          {unlocked ? (
+                            <Link to="/modulo/$moduleId" params={{ moduleId: mod.id }} className="block">
+                              {card}
+                            </Link>
+                          ) : (
+                            card
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ),
+          };
+          return sections
+            .filter((s) => s.visible && blocks[s.section_key])
+            .map((s) => blocks[s.section_key]);
+        })()}
       </main>
     </div>
   );
