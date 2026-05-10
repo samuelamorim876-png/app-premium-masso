@@ -244,20 +244,38 @@ function PushDiagnosticsTab({ userId }: { userId?: string }) {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
 
+  const describeError = async (e: unknown): Promise<string> => {
+    if (e instanceof Response) {
+      try {
+        const txt = await e.text();
+        return `${e.status} ${e.statusText}${txt ? ` — ${txt}` : ""}`;
+      } catch {
+        return `${e.status} ${e.statusText || "Erro de rede"}`;
+      }
+    }
+    if (e instanceof Error) return e.message;
+    return "Erro desconhecido";
+  };
+
   const load = async () => {
     setLoading(true);
     try {
       const res = await fetchDiag();
       setData(res);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Erro ao carregar diagnóstico");
+    } catch (e: unknown) {
+      const msg = await describeError(e);
+      console.warn("[diagnostics] load failed:", msg, e);
+      toast.error(`Não foi possível carregar o diagnóstico: ${msg}`);
+      setData({ allowed: false, reason: "fetch_failed" });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (userId) load();
+    if (userId) {
+      load().catch((err) => console.warn("[diagnostics] unhandled:", err));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
@@ -266,9 +284,12 @@ function PushDiagnosticsTab({ userId }: { userId?: string }) {
     try {
       await sendTest();
       toast.success("Notificação de teste enviada");
-      setTimeout(load, 1500);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Falha ao enviar teste");
+      setTimeout(() => {
+        load().catch((err) => console.warn("[diagnostics] unhandled:", err));
+      }, 1500);
+    } catch (e: unknown) {
+      const msg = await describeError(e);
+      toast.error(`Falha ao enviar teste: ${msg}`);
     } finally {
       setSending(false);
     }
