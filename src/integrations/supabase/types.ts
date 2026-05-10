@@ -168,6 +168,27 @@ export type Database = {
         }
         Relationships: []
       }
+      home_section_order: {
+        Row: {
+          section_key: string
+          sort_order: number
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          section_key: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          section_key?: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       lesson_notes: {
         Row: {
           content: string
