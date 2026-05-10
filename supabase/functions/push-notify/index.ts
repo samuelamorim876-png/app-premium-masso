@@ -223,9 +223,9 @@ Deno.serve(async (req) => {
   }
   
   const body = await req.json();
-  const { name, email, type } = body;
-  
-  if (type !== "access_request") {
+  const { name, email, type, title: customTitle, message: customMessage } = body;
+
+  if (type !== "access_request" && type !== "test") {
     return new Response(JSON.stringify({ error: "Unknown notification type" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
