@@ -31,7 +31,7 @@ export async function fetchFcmToken(): Promise<{ token: string | null; error?: s
   if (!fb.vapidKey) return { token: null, error: "missing_vapid_key" };
   try {
     // Make sure the FCM service worker is registered at /firebase-messaging-sw.js
-    const swReg = await navigator.serviceWorker.register("/firebase-messaging-sw.js", { scope: "/firebase-cloud-messaging-push-scope" });
+    const swReg = await navigator.serviceWorker.register("/api/firebase-messaging-sw", { scope: "/firebase-cloud-messaging-push-scope" });
     const token = await getToken(fb.messaging, { vapidKey: fb.vapidKey, serviceWorkerRegistration: swReg });
     if (!token) return { token: null, error: "no_token_returned" };
     console.info("[fcm] Token gerado:", token.slice(0, 24) + "…");
