@@ -127,7 +127,7 @@ export const getAdminPushDiagnostics = createServerFn({ method: "GET" })
         .eq("user_id", adminUserId)
         .eq("role", "admin"),
       (supabaseAdmin.from("push_subscriptions") as any)
-        .select("id,user_id,endpoint,p256dh,auth_key,created_at,device_info,permission_status,fcm_endpoint,last_saved_at,last_received_at,last_error")
+        .select("id,user_id,endpoint,fcm_token,platform,device_label,created_at,device_info,permission_status,fcm_endpoint,last_saved_at,last_received_at,last_error")
         .eq("user_id", adminUserId)
         .order("last_saved_at", { ascending: false }),
       (supabaseAdmin.from("push_notification_logs") as any)
@@ -142,13 +142,16 @@ export const getAdminPushDiagnostics = createServerFn({ method: "GET" })
     const latestSubscription = subscriptions[0] ?? null;
     const latestSent = logs.find((log: any) => log.status === "sent" || log.status === "accepted") ?? logs[0] ?? null;
     const latestReceived = logs.find((log: any) => log.status === "received") ?? null;
+    const fcmConfigured = !!process.env.FIREBASE_SERVICE_ACCOUNT_JSON && !!process.env.FIREBASE_WEB_CONFIG_JSON;
 
     return {
       allowed: true as const,
       principalAdminEmail: PRINCIPAL_ADMIN_EMAIL,
       adminUserId,
       adminMarked: (roleRes.data ?? []).length > 0,
-      firebaseConnected: subscriptions.some((sub: any) => sub.fcm_endpoint),
+      firebaseConnected: fcmConfigured && subscriptions.some((sub: any) => sub.fcm_token),
+      fcmConfigured,
+      tokensCount: subscriptions.filter((s: any) => s.fcm_token).length,
       subscriptionCount: subscriptions.length,
       latestSubscription,
       latestSent,
