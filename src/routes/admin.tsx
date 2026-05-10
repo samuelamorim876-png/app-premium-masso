@@ -32,6 +32,9 @@ import {
   BellOff,
 } from "lucide-react";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
+import { sendTestAdminPush } from "@/server/push-notifications.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { useAdminStudentMonitoring } from "@/hooks/use-admin-student-monitoring";
 
 export const Route = createFileRoute("/admin")({
@@ -152,8 +155,9 @@ function AdminDashboard() {
             <Shield className="h-5 w-5 text-primary" />
             <span className="text-sm font-bold text-foreground">Painel Admin</span>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
             <ClientOnly fallback={null}>
+              <TestPushButton />
               <PushToggle userId={user?.id} />
             </ClientOnly>
           </div>
