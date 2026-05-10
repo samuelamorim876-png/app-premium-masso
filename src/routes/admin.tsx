@@ -30,6 +30,12 @@ import {
   Clock,
   Bell,
   BellOff,
+  LayoutGrid,
+  StickyNote,
+  ArrowUp,
+  ArrowDown,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
 import { getAdminPushDiagnostics, markPushReceived, sendTestAdminPush } from "@/lib/push-notifications.functions";
@@ -42,7 +48,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "students" | "pending" | "content" | "courses" | "diagnostics";
+type Tab = "students" | "pending" | "content" | "courses" | "diagnostics" | "home_layout" | "notes";
 
 interface Profile {
   id: string;
@@ -173,6 +179,8 @@ function AdminDashboard() {
     { key: "pending", label: "Aguardando Aprovação", icon: <Clock className="h-4 w-4" /> },
     { key: "content", label: "Conteúdos", icon: <BookOpen className="h-4 w-4" /> },
     { key: "courses", label: "Cursos", icon: <ShoppingBag className="h-4 w-4" /> },
+    { key: "home_layout", label: "Layout da Home", icon: <LayoutGrid className="h-4 w-4" /> },
+    { key: "notes", label: "Anotações dos Alunos", icon: <StickyNote className="h-4 w-4" /> },
     { key: "diagnostics", label: "Diagnóstico Push", icon: <Bell className="h-4 w-4" /> },
   ];
 
@@ -220,6 +228,8 @@ function AdminDashboard() {
         {tab === "pending" && <PendingTab />}
         {tab === "content" && <ContentTab />}
         {tab === "courses" && <CoursesTab />}
+        {tab === "home_layout" && <HomeLayoutTab />}
+        {tab === "notes" && <StudentNotesTab />}
         {tab === "diagnostics" && <PushDiagnosticsTab userId={user?.id} />}
       </main>
     </div>
@@ -1003,6 +1013,248 @@ function CourseForm({ initial, nextOrder, onClose, onSaved }: {
         <Button size="sm" onClick={save} disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button>
         <Button size="sm" variant="outline" onClick={onClose}>Cancelar</Button>
       </div>
+    </div>
+  );
+}
+
+/* ==================== HOME LAYOUT TAB ==================== */
+import { useHomeSections, persistSectionOrder, SECTION_LABELS, type HomeSection } from "@/hooks/use-home-sections";
+
+function HomeLayoutTab() {
+  const { sections, loading, reload } = useHomeSections();
+  const [items, setItems] = useState<HomeSection[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setItems(sections);
+  }, [sections]);
+
+  const move = (idx: number, dir: -1 | 1) => {
+    const next = [...items];
+    const target = idx + dir;
+    if (target < 0 || target >= next.length) return;
+    [next[idx], next[target]] = [next[target], next[idx]];
+    setItems(next);
+  };
+
+  const toggleVisible = (idx: number) => {
+    const next = [...items];
+    next[idx] = { ...next[idx], visible: !next[idx].visible };
+    setItems(next);
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await persistSectionOrder(items);
+      toast.success("Layout salvo! Os alunos verão a nova ordem.");
+      reload();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao salvar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <p className="text-sm text-muted-foreground">Carregando...</p>;
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-bold text-foreground">Organizar Tela Inicial</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Reordene as seções da home usando as setas. Clique no olho para mostrar/esconder.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        {items.map((s, idx) => (
+          <div
+            key={s.section_key}
+            className={`flex items-center gap-3 rounded-xl border border-border bg-card p-3 ${
+              !s.visible ? "opacity-50" : ""
+            }`}
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+              {idx + 1}
+            </span>
+            <div className="flex-1">
+              <p className="font-medium text-foreground">{SECTION_LABELS[s.section_key] ?? s.section_key}</p>
+              <p className="text-xs text-muted-foreground">{s.section_key}</p>
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => toggleVisible(idx)} title={s.visible ? "Esconder" : "Mostrar"}>
+              {s.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => move(idx, -1)} disabled={idx === 0}>
+              <ArrowUp className="h-4 w-4" />
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => move(idx, 1)} disabled={idx === items.length - 1}>
+              <ArrowDown className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      <Button onClick={save} disabled={saving} className="w-full sm:w-auto">
+        {saving ? "Salvando..." : "Salvar nova ordem"}
+      </Button>
+    </div>
+  );
+}
+
+/* ==================== STUDENT NOTES TAB ==================== */
+interface AdminNote {
+  id: string;
+  user_id: string;
+  lesson_id: string;
+  content: string;
+  updated_at: string;
+  profile?: { name: string; email: string | null };
+  lesson?: { title: string; module_title: string | null };
+}
+
+function StudentNotesTab() {
+  const [notes, setNotes] = useState<AdminNote[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterStudent, setFilterStudent] = useState("");
+  const [filterLesson, setFilterLesson] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+
+  const load = async () => {
+    setLoading(true);
+    const { data: rawNotes } = await supabase
+      .from("lesson_notes")
+      .select("id, user_id, lesson_id, content, updated_at")
+      .order("updated_at", { ascending: false })
+      .limit(500);
+
+    if (!rawNotes || rawNotes.length === 0) {
+      setNotes([]);
+      setLoading(false);
+      return;
+    }
+
+    const userIds = Array.from(new Set(rawNotes.map((n) => n.user_id)));
+    const lessonIds = Array.from(new Set(rawNotes.map((n) => n.lesson_id).filter(Boolean)));
+
+    const [{ data: profiles }, { data: lessons }] = await Promise.all([
+      supabase.from("profiles").select("id, name, email").in("id", userIds),
+      lessonIds.length > 0
+        ? supabase
+            .from("managed_lessons")
+            .select("id, title, module_id")
+            .in("id", lessonIds.filter((id) => /^[0-9a-f-]{36}$/i.test(id)))
+        : Promise.resolve({ data: [] as any[] }),
+    ]);
+
+    const moduleIds = Array.from(new Set((lessons ?? []).map((l: any) => l.module_id)));
+    const { data: modules } = moduleIds.length
+      ? await supabase.from("managed_modules").select("id, title").in("id", moduleIds)
+      : { data: [] as any[] };
+
+    const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+    const moduleMap = new Map((modules ?? []).map((m: any) => [m.id, m.title]));
+    const lessonMap = new Map(
+      (lessons ?? []).map((l: any) => [l.id, { title: l.title, module_title: moduleMap.get(l.module_id) ?? null }]),
+    );
+
+    setNotes(
+      rawNotes.map((n) => ({
+        ...n,
+        profile: profileMap.get(n.user_id) as any,
+        lesson: lessonMap.get(n.lesson_id) as any,
+      })),
+    );
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+    const ch = supabase
+      .channel("admin_lesson_notes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "lesson_notes" }, () => load())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, []);
+
+  const filtered = notes.filter((n) => {
+    if (filterStudent) {
+      const q = filterStudent.toLowerCase();
+      const name = (n.profile?.name ?? "").toLowerCase();
+      const email = (n.profile?.email ?? "").toLowerCase();
+      if (!name.includes(q) && !email.includes(q)) return false;
+    }
+    if (filterLesson) {
+      const q = filterLesson.toLowerCase();
+      const lt = (n.lesson?.title ?? "").toLowerCase();
+      const mt = (n.lesson?.module_title ?? "").toLowerCase();
+      if (!lt.includes(q) && !mt.includes(q) && !n.lesson_id.toLowerCase().includes(q)) return false;
+    }
+    if (filterDate) {
+      if (!n.updated_at.startsWith(filterDate)) return false;
+    }
+    return true;
+  });
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-bold text-foreground">Anotações dos Alunos</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Visualização administrativa — atualizada em tempo real. {filtered.length} anotação(ões).
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <Input
+          placeholder="Filtrar por aluno (nome ou email)"
+          value={filterStudent}
+          onChange={(e) => setFilterStudent(e.target.value)}
+        />
+        <Input
+          placeholder="Filtrar por módulo ou aula"
+          value={filterLesson}
+          onChange={(e) => setFilterLesson(e.target.value)}
+        />
+        <Input type="date" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+      </div>
+
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Carregando anotações...</p>
+      ) : filtered.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Nenhuma anotação encontrada.</p>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((n) => (
+            <div key={n.id} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                <div>
+                  <p className="font-semibold text-foreground">{n.profile?.name || "Aluno"}</p>
+                  <p className="text-xs text-muted-foreground">{n.profile?.email}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(n.updated_at).toLocaleString("pt-BR")}
+                  </p>
+                  {n.lesson?.module_title && (
+                    <p className="text-xs text-primary mt-1">
+                      {n.lesson.module_title} • {n.lesson?.title}
+                    </p>
+                  )}
+                  {!n.lesson?.title && (
+                    <p className="text-xs text-muted-foreground mt-1">Aula: {n.lesson_id}</p>
+                  )}
+                </div>
+              </div>
+              <p className="whitespace-pre-wrap text-sm text-foreground/90 border-t border-border pt-3">
+                {n.content || <span className="italic text-muted-foreground">(vazia)</span>}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
