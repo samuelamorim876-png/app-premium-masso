@@ -181,6 +181,7 @@ function Dashboard() {
   const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading } = useProgress(user?.id, courseModules);
   const { data: gamData, badges, showReward, addPoints, awardCustomBadge } = useGamification(user?.id);
   useDailyLogin(user?.id, addPoints, awardCustomBadge);
+  const { sections } = useHomeSections();
 
   if (loading || modulesLoading) {
     return (
