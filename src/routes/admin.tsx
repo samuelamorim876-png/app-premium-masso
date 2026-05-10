@@ -32,7 +32,7 @@ import {
   BellOff,
 } from "lucide-react";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
-import { sendTestAdminPush } from "@/server/push-notifications.functions";
+import { getAdminPushDiagnostics, markPushReceived, sendTestAdminPush } from "@/lib/push-notifications.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { useAdminStudentMonitoring } from "@/hooks/use-admin-student-monitoring";
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "students" | "pending" | "content" | "courses";
+type Tab = "students" | "pending" | "content" | "courses" | "diagnostics";
 
 interface Profile {
   id: string;
@@ -142,7 +142,7 @@ function TestPushButton() {
       onClick={async () => {
         setSending(true);
         try {
-          const result = await sendTest();
+          const result = (await sendTest()) as any;
           if (result.sent > 0) {
             toast.success(`Notificação de teste enviada (${result.sent}).`);
           } else {
@@ -173,6 +173,7 @@ function AdminDashboard() {
     { key: "pending", label: "Aguardando Aprovação", icon: <Clock className="h-4 w-4" /> },
     { key: "content", label: "Conteúdos", icon: <BookOpen className="h-4 w-4" /> },
     { key: "courses", label: "Cursos", icon: <ShoppingBag className="h-4 w-4" /> },
+    { key: "diagnostics", label: "Diagnóstico Push", icon: <Bell className="h-4 w-4" /> },
   ];
 
   return (
@@ -219,6 +220,7 @@ function AdminDashboard() {
         {tab === "pending" && <PendingTab />}
         {tab === "content" && <ContentTab />}
         {tab === "courses" && <CoursesTab />}
+        {tab === "diagnostics" && <PushDiagnosticsTab userId={user?.id} />}
       </main>
     </div>
   );

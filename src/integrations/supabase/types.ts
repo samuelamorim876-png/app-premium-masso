@@ -359,29 +359,95 @@ export type Database = {
         }
         Relationships: []
       }
+      push_notification_logs: {
+        Row: {
+          body: string
+          created_at: string
+          error_message: string | null
+          id: string
+          metadata: Json
+          notification_type: string
+          provider: string
+          provider_response: string | null
+          provider_status: number | null
+          status: string
+          target_endpoint: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json
+          notification_type: string
+          provider?: string
+          provider_response?: string | null
+          provider_status?: number | null
+          status?: string
+          target_endpoint?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json
+          notification_type?: string
+          provider?: string
+          provider_response?: string | null
+          provider_status?: number | null
+          status?: string
+          target_endpoint?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth_key: string
           created_at: string
+          device_info: Json
           endpoint: string
+          fcm_endpoint: boolean
           id: string
+          last_error: string | null
+          last_received_at: string | null
+          last_saved_at: string
           p256dh: string
+          permission_status: string
           user_id: string
         }
         Insert: {
           auth_key: string
           created_at?: string
+          device_info?: Json
           endpoint: string
+          fcm_endpoint?: boolean
           id?: string
+          last_error?: string | null
+          last_received_at?: string | null
+          last_saved_at?: string
           p256dh: string
+          permission_status?: string
           user_id: string
         }
         Update: {
           auth_key?: string
           created_at?: string
+          device_info?: Json
           endpoint?: string
+          fcm_endpoint?: boolean
           id?: string
+          last_error?: string | null
+          last_received_at?: string | null
+          last_saved_at?: string
           p256dh?: string
+          permission_status?: string
           user_id?: string
         }
         Relationships: []

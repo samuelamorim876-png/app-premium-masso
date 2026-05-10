@@ -20,9 +20,19 @@ self.addEventListener("push", (event) => {
     renotify: true,
   };
 
-  event.waitUntil(
-    self.registration.showNotification(data.title || "Notificação", options)
-  );
+  event.waitUntil((async () => {
+    const subscription = await self.registration.pushManager.getSubscription().catch(() => null);
+    const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    clients.forEach((client) => {
+      client.postMessage({
+        type: "PUSH_RECEIVED",
+        endpoint: subscription?.endpoint,
+        notificationId: data.data?.notificationId,
+        receivedAt: new Date().toISOString(),
+      });
+    });
+    await self.registration.showNotification(data.title || "Notificação", options);
+  })());
 });
 
 self.addEventListener("notificationclick", (event) => {
