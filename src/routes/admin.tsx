@@ -32,6 +32,9 @@ import {
   BellOff,
 } from "lucide-react";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
+import { sendTestAdminPush } from "@/server/push-notifications.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { useAdminStudentMonitoring } from "@/hooks/use-admin-student-monitoring";
 
 export const Route = createFileRoute("/admin")({
@@ -128,6 +131,39 @@ function PushToggle({ userId }: { userId: string | undefined }) {
   );
 }
 
+function TestPushButton() {
+  const sendTest = useServerFn(sendTestAdminPush);
+  const [sending, setSending] = useState(false);
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      disabled={sending}
+      onClick={async () => {
+        setSending(true);
+        try {
+          const result = await sendTest();
+          if (result.sent > 0) {
+            toast.success(`Notificação de teste enviada (${result.sent}).`);
+          } else {
+            toast.error(
+              `Falha ao enviar (${result.reason}). Ative as notificações no botão do sino e tente novamente.`
+            );
+          }
+        } catch (e: any) {
+          toast.error(e?.message ?? "Erro ao enviar teste.");
+        } finally {
+          setSending(false);
+        }
+      }}
+      className="text-xs text-muted-foreground hover:text-foreground"
+      title="Enviar notificação de teste para você"
+    >
+      {sending ? "Enviando..." : "Testar push"}
+    </Button>
+  );
+}
+
 function AdminDashboard() {
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("students");
@@ -152,8 +188,9 @@ function AdminDashboard() {
             <Shield className="h-5 w-5 text-primary" />
             <span className="text-sm font-bold text-foreground">Painel Admin</span>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
             <ClientOnly fallback={null}>
+              <TestPushButton />
               <PushToggle userId={user?.id} />
             </ClientOnly>
           </div>

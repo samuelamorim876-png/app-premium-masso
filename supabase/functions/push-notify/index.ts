@@ -223,9 +223,9 @@ Deno.serve(async (req) => {
   }
   
   const body = await req.json();
-  const { name, email, type } = body;
-  
-  if (type !== "access_request") {
+  const { name, email, type, title: customTitle, message: customMessage } = body;
+
+  if (type !== "access_request" && type !== "test") {
     return new Response(JSON.stringify({ error: "Unknown notification type" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
@@ -262,13 +262,23 @@ Deno.serve(async (req) => {
     });
   }
   
-  const payload = JSON.stringify({
-    title: "Novo pedido de acesso",
-    body: `${name} (${email}) solicitou acesso ao aplicativo.`,
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
-    data: { url: "/admin" },
-  });
+  const payload = JSON.stringify(
+    type === "test"
+      ? {
+          title: customTitle || "Notificação de teste",
+          body: customMessage || "As notificações de admin estão funcionando.",
+          icon: "/icon-192.png",
+          badge: "/icon-192.png",
+          data: { url: "/admin" },
+        }
+      : {
+          title: "Novo pedido de acesso",
+          body: `${name} (${email}) solicitou acesso ao aplicativo.`,
+          icon: "/icon-192.png",
+          badge: "/icon-192.png",
+          data: { url: "/admin" },
+        }
+  );
   
   const results: { endpoint: string; status: number }[] = [];
   
