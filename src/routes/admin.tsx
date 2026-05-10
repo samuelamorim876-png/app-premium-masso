@@ -42,7 +42,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "students" | "pending" | "content" | "courses" | "diagnostics";
+type Tab = "students" | "pending" | "content" | "courses" | "diagnostics" | "home_layout" | "notes";
 
 interface Profile {
   id: string;
