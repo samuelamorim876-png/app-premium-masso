@@ -163,6 +163,8 @@ function TestPushButton() {
     </Button>
   );
 }
+
+function AdminDashboard() {
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("students");
 
