@@ -21,6 +21,7 @@ import { Route as AnotacoesRouteImport } from './routes/anotacoes'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ModuloModuleIdRouteImport } from './routes/modulo.$moduleId'
+import { Route as ApiFirebaseMessagingSwRouteImport } from './routes/api/firebase-messaging-sw'
 
 const SimuladorRoute = SimuladorRouteImport.update({
   id: '/simulador',
@@ -82,6 +83,11 @@ const ModuloModuleIdRoute = ModuloModuleIdRouteImport.update({
   path: '/modulo/$moduleId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFirebaseMessagingSwRoute = ApiFirebaseMessagingSwRouteImport.update({
+  id: '/api/firebase-messaging-sw',
+  path: '/api/firebase-messaging-sw',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/protocolos': typeof ProtocolosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/simulador': typeof SimuladorRoute
+  '/api/firebase-messaging-sw': typeof ApiFirebaseMessagingSwRoute
   '/modulo/$moduleId': typeof ModuloModuleIdRoute
 }
 export interface FileRoutesByTo {
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/protocolos': typeof ProtocolosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/simulador': typeof SimuladorRoute
+  '/api/firebase-messaging-sw': typeof ApiFirebaseMessagingSwRoute
   '/modulo/$moduleId': typeof ModuloModuleIdRoute
 }
 export interface FileRoutesById {
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/protocolos': typeof ProtocolosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/simulador': typeof SimuladorRoute
+  '/api/firebase-messaging-sw': typeof ApiFirebaseMessagingSwRoute
   '/modulo/$moduleId': typeof ModuloModuleIdRoute
 }
 export interface FileRouteTypes {
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/protocolos'
     | '/reset-password'
     | '/simulador'
+    | '/api/firebase-messaging-sw'
     | '/modulo/$moduleId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/protocolos'
     | '/reset-password'
     | '/simulador'
+    | '/api/firebase-messaging-sw'
     | '/modulo/$moduleId'
   id:
     | '__root__'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/protocolos'
     | '/reset-password'
     | '/simulador'
+    | '/api/firebase-messaging-sw'
     | '/modulo/$moduleId'
   fileRoutesById: FileRoutesById
 }
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   ProtocolosRoute: typeof ProtocolosRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SimuladorRoute: typeof SimuladorRoute
+  ApiFirebaseMessagingSwRoute: typeof ApiFirebaseMessagingSwRoute
   ModuloModuleIdRoute: typeof ModuloModuleIdRoute
 }
 
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ModuloModuleIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/firebase-messaging-sw': {
+      id: '/api/firebase-messaging-sw'
+      path: '/api/firebase-messaging-sw'
+      fullPath: '/api/firebase-messaging-sw'
+      preLoaderRoute: typeof ApiFirebaseMessagingSwRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -287,6 +307,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProtocolosRoute: ProtocolosRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SimuladorRoute: SimuladorRoute,
+  ApiFirebaseMessagingSwRoute: ApiFirebaseMessagingSwRoute,
   ModuloModuleIdRoute: ModuloModuleIdRoute,
 }
 export const routeTree = rootRouteImport
