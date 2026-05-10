@@ -412,42 +412,51 @@ export type Database = {
           auth_key: string
           created_at: string
           device_info: Json
+          device_label: string | null
           endpoint: string
           fcm_endpoint: boolean
+          fcm_token: string | null
           id: string
           last_error: string | null
           last_received_at: string | null
           last_saved_at: string
           p256dh: string
           permission_status: string
+          platform: string
           user_id: string
         }
         Insert: {
           auth_key: string
           created_at?: string
           device_info?: Json
+          device_label?: string | null
           endpoint: string
           fcm_endpoint?: boolean
+          fcm_token?: string | null
           id?: string
           last_error?: string | null
           last_received_at?: string | null
           last_saved_at?: string
           p256dh: string
           permission_status?: string
+          platform?: string
           user_id: string
         }
         Update: {
           auth_key?: string
           created_at?: string
           device_info?: Json
+          device_label?: string | null
           endpoint?: string
           fcm_endpoint?: boolean
+          fcm_token?: string | null
           id?: string
           last_error?: string | null
           last_received_at?: string | null
           last_saved_at?: string
           p256dh?: string
           permission_status?: string
+          platform?: string
           user_id?: string
         }
         Relationships: []
