@@ -234,7 +234,7 @@ function Dashboard() {
         </div>
 
         {(() => {
-          const blocks: Record<string, JSX.Element> = {
+          const blocks: Record<string, React.ReactNode> = {
             hero_cta: (
               <Link
                 key="hero_cta"
