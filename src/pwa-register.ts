@@ -1,8 +1,4 @@
-// PWA service worker registration guard
-// Only allows SW in production, outside iframes and preview hosts
-// VitePWA handles actual registration via its generated module
-
-export function registerPWA() {
+export async function registerPWA() {
   if (typeof window === "undefined") return;
   if (!("serviceWorker" in navigator)) return;
 
@@ -21,9 +17,16 @@ export function registerPWA() {
     window.location.hostname.includes("preview--");
 
   if (isPreviewHost || isInIframe) {
-    // Unregister any service workers in preview/iframe contexts
     navigator.serviceWorker.getRegistrations().then((registrations) => {
       registrations.forEach((r) => r.unregister());
     });
+    return;
+  }
+
+  try {
+    const existing = await navigator.serviceWorker.getRegistration();
+    if (!existing) await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+  } catch (error) {
+    console.error("[push] Erro ao registrar service worker", error);
   }
 }
