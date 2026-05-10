@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useAdmin } from "@/hooks/use-admin";
 import { useAuth } from "@/hooks/use-auth";
+import { useHomeSections } from "@/hooks/use-home-sections";
 import { useProgress } from "@/hooks/use-progress";
 import { useGamification } from "@/hooks/use-gamification";
 import { useManagedModules } from "@/hooks/use-managed-modules";
