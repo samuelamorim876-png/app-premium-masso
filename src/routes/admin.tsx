@@ -131,7 +131,38 @@ function PushToggle({ userId }: { userId: string | undefined }) {
   );
 }
 
-function AdminDashboard() {
+function TestPushButton() {
+  const sendTest = useServerFn(sendTestAdminPush);
+  const [sending, setSending] = useState(false);
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      disabled={sending}
+      onClick={async () => {
+        setSending(true);
+        try {
+          const result = await sendTest();
+          if (result.sent > 0) {
+            toast.success(`Notificação de teste enviada (${result.sent}).`);
+          } else {
+            toast.error(
+              `Falha ao enviar (${result.reason}). Ative as notificações no botão do sino e tente novamente.`
+            );
+          }
+        } catch (e: any) {
+          toast.error(e?.message ?? "Erro ao enviar teste.");
+        } finally {
+          setSending(false);
+        }
+      }}
+      className="text-xs text-muted-foreground hover:text-foreground"
+      title="Enviar notificação de teste para você"
+    >
+      {sending ? "Enviando..." : "Testar push"}
+    </Button>
+  );
+}
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("students");
 
