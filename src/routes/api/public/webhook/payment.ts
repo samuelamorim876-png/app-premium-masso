@@ -83,6 +83,10 @@ function verifySignature(rawBody: string, headers: Headers): boolean {
   const secret = process.env.PAYMENT_WEBHOOK_SECRET;
   if (!secret) return true; // sem secret configurada, não valida (modo aberto)
 
+  // Aceita X-Mivvo-Token igual ao segredo (header oficial Mivvo)
+  const mivvo = headers.get("x-mivvo-token");
+  if (mivvo && mivvo === secret) return true;
+
   // Aceita: x-webhook-secret igual ao segredo (modo simples)
   const direct = headers.get("x-webhook-secret");
   if (direct && direct === secret) return true;
