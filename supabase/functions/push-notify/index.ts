@@ -92,6 +92,32 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
+  // Send Telegram notification (independent of FCM)
+  if (type === "access_request" || type === "test") {
+    const tgToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    const tgChatId = Deno.env.get("TELEGRAM_CHAT_ID");
+    if (tgToken && tgChatId) {
+      try {
+        const now = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+        const text =
+          type === "test"
+            ? `🔔 *Teste de notificação*\nEnviado em: ${now}`
+            : `🆕 *Nova solicitação de acesso*\n\n*Nome:* ${name ?? "—"}\n*Email:* ${email ?? "—"}\n*Data:* ${now}\n*Status:* Pendente`;
+        const tgRes = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: tgChatId, text, parse_mode: "Markdown" }),
+        });
+        const tgBody = await tgRes.text();
+        console.log("[telegram] status", tgRes.status, tgBody.slice(0, 300));
+      } catch (err) {
+        console.error("[telegram] erro:", err);
+      }
+    } else {
+      console.warn("[telegram] TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID ausente");
+    }
+  }
+
   // Find the principal admin
   const { data: adminProfile } = await supabase
     .from("profiles")
