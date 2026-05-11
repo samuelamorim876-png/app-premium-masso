@@ -44,14 +44,17 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
         email: cleanEmail,
         desired_password: password,
       });
-    setSubmitting(false);
     if (dbError) {
+      setSubmitting(false);
       setError("Erro ao enviar solicitação. Tente novamente.");
       return;
     }
-    sendAccessRequestPush({ data: { requestId, name: cleanName, email: cleanEmail } }).catch((err) => {
-      console.error("Erro ao enviar notificação push:", err);
-    });
+    try {
+      await sendAccessRequestPush({ data: { requestId, name: cleanName, email: cleanEmail } });
+    } catch (err) {
+      console.error("Erro ao enviar notificação:", err);
+    }
+    setSubmitting(false);
     setSuccess(true);
   };
 
