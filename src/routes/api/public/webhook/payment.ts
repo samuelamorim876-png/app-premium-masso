@@ -167,12 +167,23 @@ async function handle(request: Request) {
   }
 
   const headers = request.headers;
+  const headersDump: Record<string, string> = {};
+  for (const [k, v] of headers.entries()) {
+    headersDump[k] = k.toLowerCase().includes("token") || k.toLowerCase().includes("secret") || k.toLowerCase().includes("signature") || k.toLowerCase().includes("auth")
+      ? `${v.slice(0, 6)}…(${v.length})`
+      : v;
+  }
+  console.info("[mivvo-webhook] headers recebidos:", headersDump);
+  console.info("[mivvo-webhook] MIVVO_WEBHOOK_TOKEN configurado:", !!process.env.MIVVO_WEBHOOK_TOKEN);
+
   const provider = extractProvider(payload, headers);
   const eventType = extractEventType(payload, headers);
   const email = extractEmail(payload);
 
   // Validação de segurança
-  if (!verifySignature(rawBody, headers)) {
+  const auth = verifySignature(rawBody, headers);
+  if (!auth.ok) {
+    console.warn("[mivvo-webhook] auth falhou:", auth.reason);
     await supabaseAdmin.from("payment_webhook_logs").insert({
       provider,
       event_type: eventType,
@@ -180,10 +191,18 @@ async function handle(request: Request) {
       action: "rejected",
       status: "unauthorized",
       raw_payload: payload,
-      error_message: "Token inválido ou ausente (X-Mivvo-Token)",
+      error_message: `Token inválido ou ausente (X-Mivvo-Token) — ${auth.reason}`,
     });
     return new Response(
-      JSON.stringify({ ok: false, error: "unauthorized", message: "X-Mivvo-Token inválido ou ausente" }),
+      JSON.stringify({
+        ok: false,
+        error: "unauthorized",
+        message: "X-Mivvo-Token inválido ou ausente",
+        reason: auth.reason,
+        received_headers: Object.keys(headersDump),
+        mivvo_token_present: !!getMivvoToken(headers),
+        env_token_configured: !!process.env.MIVVO_WEBHOOK_TOKEN,
+      }),
       { status: 401, headers: { "Content-Type": "application/json", ...CORS } }
     );
   }
