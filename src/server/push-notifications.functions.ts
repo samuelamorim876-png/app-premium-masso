@@ -1,4 +1,5 @@
 export {
+  submitAccessRequestAndNotify,
   sendAccessRequestPush,
   sendTestAdminPush,
   getAdminPushDiagnostics,
