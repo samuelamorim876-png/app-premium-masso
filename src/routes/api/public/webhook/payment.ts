@@ -81,11 +81,21 @@ function extractProvider(payload: any, headers: Headers): string {
 
 function verifySignature(rawBody: string, headers: Headers): boolean {
   const secret = process.env.PAYMENT_WEBHOOK_SECRET;
-  if (!secret) return true; // sem secret configurada, não valida (modo aberto)
+  const mivvoToken = process.env.MIVVO_WEBHOOK_TOKEN;
 
-  // Aceita X-Mivvo-Token igual ao segredo (header oficial Mivvo)
-  const mivvo = headers.get("x-mivvo-token");
-  if (mivvo && mivvo === secret) return true;
+  // Aceita X-Mivvo-Token comparando com MIVVO_WEBHOOK_TOKEN (trim + case-insensitive)
+  const mivvoHeader = headers.get("x-mivvo-token");
+  if (mivvoToken && mivvoHeader) {
+    if (mivvoHeader.trim().toLowerCase() === mivvoToken.trim().toLowerCase()) return true;
+  }
+
+  if (!secret) {
+    // se nem PAYMENT_WEBHOOK_SECRET nem MIVVO_WEBHOOK_TOKEN bateram, rejeita
+    return mivvoToken ? false : true;
+  }
+
+  // Compatibilidade: X-Mivvo-Token também pode bater com PAYMENT_WEBHOOK_SECRET
+  if (mivvoHeader && mivvoHeader.trim().toLowerCase() === secret.trim().toLowerCase()) return true;
 
   // Aceita: x-webhook-secret igual ao segredo (modo simples)
   const direct = headers.get("x-webhook-secret");
