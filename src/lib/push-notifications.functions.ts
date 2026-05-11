@@ -71,27 +71,79 @@ async function isPrincipalAdmin(userId: string) {
   return !!role && (profile?.email ?? "").toLowerCase() === PRINCIPAL_ADMIN_EMAIL;
 }
 
+function normalizeTelegramToken(raw: string) {
+  const cleaned = raw.trim().replace(/^['"]|['"]$/g, "");
+  const match = cleaned.match(/\d{6,}:[A-Za-z0-9_-]{20,}/);
+  return (match?.[0] ?? cleaned.replace(/^bot/i, "")).trim();
+}
+
 async function sendTelegram(text: string): Promise<{ ok: boolean; status?: number; body?: string; reason?: string }> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const token = normalizeTelegramToken(process.env.TELEGRAM_BOT_TOKEN ?? "");
+  const chatId = (process.env.TELEGRAM_CHAT_ID ?? "").trim().replace(/^['"]|['"]$/g, "");
   if (!token || !chatId) {
     console.warn("[telegram] TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID ausentes");
     return { ok: false, reason: "missing_telegram_env" };
   }
   try {
+    console.info("[telegram] 4. API Telegram será chamada", { tokenLength: token.length, chatIdLength: chatId.length });
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
+      body: JSON.stringify({ chat_id: chatId, text }),
     });
     const body = await res.text();
-    console.info("[telegram] response", res.status, body.slice(0, 300));
-    return { ok: res.ok, status: res.status, body: body.slice(0, 500) };
+    console.info("[telegram] 5. API Telegram respondeu", { status: res.status, body: body.slice(0, 300) });
+    return { ok: res.ok, status: res.status, body: body.slice(0, 500), reason: res.ok ? "sent" : "telegram_api_failed" };
   } catch (err) {
     console.error("[telegram] fetch error", err);
     return { ok: false, reason: "fetch_error" };
   }
 }
+
+export const submitAccessRequestAndNotify = createServerFn({ method: "POST" })
+  .inputValidator((data) =>
+    z
+      .object({
+        name: z.string().trim().min(1).max(120),
+        email: z.string().trim().email().max(180),
+        password: z.string().min(6).max(120),
+      })
+      .parse(data)
+  )
+  .handler(async ({ data }) => {
+    console.info("[access-request] 2. Função automática iniciada", { email: data.email });
+    const { data: request, error } = await supabaseAdmin
+      .from("access_requests")
+      .insert({
+        name: data.name,
+        email: data.email,
+        desired_password: data.password,
+        status: "pending",
+      })
+      .select("id,status,created_at")
+      .single();
+
+    if (error || !request) {
+      console.error("[access-request] Erro ao salvar solicitação", error);
+      return { ok: false as const, reason: "insert_failed", error: error?.message ?? "unknown_error" };
+    }
+
+    console.info("[access-request] 3. Usuário salvo no banco com status pending", {
+      requestId: request.id,
+      status: request.status,
+    });
+
+    const text = `🆕 Nova solicitação de acesso\n\nNome: ${data.name}\nEmail: ${data.email}\nStatus: Pendente`;
+    const telegram = await sendTelegram(text);
+    console.info("[access-request] 6. Fluxo automático finalizado", {
+      requestId: request.id,
+      telegramOk: telegram.ok,
+      telegramStatus: telegram.status,
+      telegramReason: telegram.reason,
+    });
+
+    return { ok: true as const, requestId: request.id, status: request.status, telegram };
+  });
 
 export const sendAccessRequestPush = createServerFn({ method: "POST" })
   .inputValidator((data) =>

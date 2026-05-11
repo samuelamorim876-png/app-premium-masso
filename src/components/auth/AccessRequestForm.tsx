@@ -2,16 +2,9 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
-import { sendAccessRequestPush } from "@/lib/push-notifications.functions";
+import { submitAccessRequestAndNotify } from "@/lib/push-notifications.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle } from "lucide-react";
-
-function createRequestId() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
-  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
-    (Number(c) ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4)))).toString(16)
-  );
-}
 
 export function AccessRequestForm({ onBack }: { onBack: () => void }) {
   const [name, setName] = useState("");
@@ -20,6 +13,7 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const submitAccessRequest = useServerFn(submitAccessRequestAndNotify);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -35,24 +29,23 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
     setSubmitting(true);
     const cleanName = name.trim();
     const cleanEmail = email.trim();
-    const requestId = createRequestId();
-    const { error: dbError } = await supabase
-      .from("access_requests")
-      .insert({
-        id: requestId,
-        name: cleanName,
-        email: cleanEmail,
-        desired_password: password,
-      });
-    if (dbError) {
-      setSubmitting(false);
-      setError("Erro ao enviar solicitação. Tente novamente.");
-      return;
-    }
     try {
-      await sendAccessRequestPush({ data: { requestId, name: cleanName, email: cleanEmail } });
+      console.info("[access-request] 1. Usuário clicou em Solicitar acesso", { email: cleanEmail });
+      const result = await submitAccessRequest({ data: { name: cleanName, email: cleanEmail, password } });
+      console.info("[access-request] Resultado do fluxo automático", result);
+      if (!result.ok) {
+        setError("Erro ao enviar solicitação. Tente novamente.");
+        setSubmitting(false);
+        return;
+      }
+      if (!result.telegram.ok) {
+        console.error("[access-request] Telegram não confirmou envio", result.telegram);
+      }
     } catch (err) {
-      console.error("Erro ao enviar notificação:", err);
+      console.error("[access-request] Erro silencioso capturado no frontend:", err);
+      setError("Erro ao enviar solicitação. Tente novamente.");
+      setSubmitting(false);
+      return;
     }
     setSubmitting(false);
     setSuccess(true);
