@@ -79,46 +79,67 @@ function extractProvider(payload: any, headers: Headers): string {
   return (payload?.provider || headers.get("x-provider") || "unknown").toString();
 }
 
-function verifySignature(rawBody: string, headers: Headers): boolean {
+function findHeaderCaseInsensitive(headers: Headers, name: string): string | null {
+  const target = name.toLowerCase();
+  for (const [k, v] of headers.entries()) {
+    if (k.toLowerCase() === target) return v;
+  }
+  return null;
+}
+
+function getMivvoToken(headers: Headers): string | null {
+  // Tenta variações: x-mivvo-token, mivvo-token, authorization: Bearer ...
+  return (
+    findHeaderCaseInsensitive(headers, "x-mivvo-token") ||
+    findHeaderCaseInsensitive(headers, "mivvo-token") ||
+    findHeaderCaseInsensitive(headers, "x-mivvo-webhook-token") ||
+    null
+  );
+}
+
+function verifySignature(rawBody: string, headers: Headers): { ok: boolean; reason?: string } {
   const secret = process.env.PAYMENT_WEBHOOK_SECRET;
   const mivvoToken = process.env.MIVVO_WEBHOOK_TOKEN;
+  const mivvoHeader = getMivvoToken(headers);
 
-  // Aceita X-Mivvo-Token comparando com MIVVO_WEBHOOK_TOKEN (trim + case-insensitive)
-  const mivvoHeader = headers.get("x-mivvo-token");
-  if (mivvoToken && mivvoHeader) {
-    if (mivvoHeader.trim().toLowerCase() === mivvoToken.trim().toLowerCase()) return true;
+  if (mivvoToken) {
+    if (!mivvoHeader) return { ok: false, reason: "missing_x_mivvo_token_header" };
+    if (mivvoHeader.trim().toLowerCase() === mivvoToken.trim().toLowerCase()) return { ok: true };
+    // ainda tenta secret abaixo
   }
 
-  if (!secret) {
-    // se nem PAYMENT_WEBHOOK_SECRET nem MIVVO_WEBHOOK_TOKEN bateram, rejeita
-    return mivvoToken ? false : true;
+  if (mivvoHeader && secret && mivvoHeader.trim().toLowerCase() === secret.trim().toLowerCase()) {
+    return { ok: true };
   }
 
-  // Compatibilidade: X-Mivvo-Token também pode bater com PAYMENT_WEBHOOK_SECRET
-  if (mivvoHeader && mivvoHeader.trim().toLowerCase() === secret.trim().toLowerCase()) return true;
+  if (secret) {
+    const direct = findHeaderCaseInsensitive(headers, "x-webhook-secret");
+    if (direct && direct.trim() === secret.trim()) return { ok: true };
 
-  // Aceita: x-webhook-secret igual ao segredo (modo simples)
-  const direct = headers.get("x-webhook-secret");
-  if (direct && direct === secret) return true;
+    const sig =
+      findHeaderCaseInsensitive(headers, "x-webhook-signature") ||
+      findHeaderCaseInsensitive(headers, "x-signature") ||
+      findHeaderCaseInsensitive(headers, "x-hub-signature-256")?.replace(/^sha256=/, "");
 
-  // Ou HMAC SHA-256 em x-webhook-signature / x-signature / x-hub-signature-256
-  const sig =
-    headers.get("x-webhook-signature") ||
-    headers.get("x-signature") ||
-    headers.get("x-hub-signature-256")?.replace(/^sha256=/, "");
-
-  if (sig) {
-    const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-    try {
-      const a = Buffer.from(sig);
-      const b = Buffer.from(expected);
-      if (a.length === b.length && timingSafeEqual(a, b)) return true;
-    } catch {
-      /* ignore */
+    if (sig) {
+      const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
+      try {
+        const a = Buffer.from(sig);
+        const b = Buffer.from(expected);
+        if (a.length === b.length && timingSafeEqual(a, b)) return { ok: true };
+      } catch {
+        /* ignore */
+      }
+      return { ok: false, reason: "signature_mismatch" };
     }
   }
 
-  return false;
+  if (!mivvoToken && !secret) {
+    // nenhuma config — modo aberto
+    return { ok: true };
+  }
+
+  return { ok: false, reason: mivvoHeader ? "token_mismatch" : "no_credentials_provided" };
 }
 
 async function sendTelegram(text: string) {
