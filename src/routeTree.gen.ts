@@ -22,6 +22,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ModuloModuleIdRouteImport } from './routes/modulo.$moduleId'
 import { Route as ApiFirebaseMessagingSwRouteImport } from './routes/api/firebase-messaging-sw'
+import { Route as ApiPublicWebhookPaymentRouteImport } from './routes/api/public/webhook/payment'
 
 const SimuladorRoute = SimuladorRouteImport.update({
   id: '/simulador',
@@ -88,6 +89,11 @@ const ApiFirebaseMessagingSwRoute = ApiFirebaseMessagingSwRouteImport.update({
   path: '/api/firebase-messaging-sw',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhookPaymentRoute = ApiPublicWebhookPaymentRouteImport.update({
+  id: '/api/public/webhook/payment',
+  path: '/api/public/webhook/payment',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/simulador': typeof SimuladorRoute
   '/api/firebase-messaging-sw': typeof ApiFirebaseMessagingSwRoute
   '/modulo/$moduleId': typeof ModuloModuleIdRoute
+  '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/simulador': typeof SimuladorRoute
   '/api/firebase-messaging-sw': typeof ApiFirebaseMessagingSwRoute
   '/modulo/$moduleId': typeof ModuloModuleIdRoute
+  '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/simulador': typeof SimuladorRoute
   '/api/firebase-messaging-sw': typeof ApiFirebaseMessagingSwRoute
   '/modulo/$moduleId': typeof ModuloModuleIdRoute
+  '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/simulador'
     | '/api/firebase-messaging-sw'
     | '/modulo/$moduleId'
+    | '/api/public/webhook/payment'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/simulador'
     | '/api/firebase-messaging-sw'
     | '/modulo/$moduleId'
+    | '/api/public/webhook/payment'
   id:
     | '__root__'
     | '/'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/simulador'
     | '/api/firebase-messaging-sw'
     | '/modulo/$moduleId'
+    | '/api/public/webhook/payment'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,6 +209,7 @@ export interface RootRouteChildren {
   SimuladorRoute: typeof SimuladorRoute
   ApiFirebaseMessagingSwRoute: typeof ApiFirebaseMessagingSwRoute
   ModuloModuleIdRoute: typeof ModuloModuleIdRoute
+  ApiPublicWebhookPaymentRoute: typeof ApiPublicWebhookPaymentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFirebaseMessagingSwRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhook/payment': {
+      id: '/api/public/webhook/payment'
+      path: '/api/public/webhook/payment'
+      fullPath: '/api/public/webhook/payment'
+      preLoaderRoute: typeof ApiPublicWebhookPaymentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -309,6 +329,7 @@ const rootRouteChildren: RootRouteChildren = {
   SimuladorRoute: SimuladorRoute,
   ApiFirebaseMessagingSwRoute: ApiFirebaseMessagingSwRoute,
   ModuloModuleIdRoute: ModuloModuleIdRoute,
+  ApiPublicWebhookPaymentRoute: ApiPublicWebhookPaymentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
