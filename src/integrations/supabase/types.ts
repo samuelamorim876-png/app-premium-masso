@@ -350,6 +350,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_webhook_logs: {
+        Row: {
+          action: string | null
+          created_at: string
+          email: string | null
+          error_message: string | null
+          event_type: string | null
+          id: string
+          provider: string | null
+          raw_payload: Json
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string
+          email?: string | null
+          error_message?: string | null
+          event_type?: string | null
+          id?: string
+          provider?: string | null
+          raw_payload?: Json
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string | null
+          created_at?: string
+          email?: string | null
+          error_message?: string | null
+          event_type?: string | null
+          id?: string
+          provider?: string | null
+          raw_payload?: Json
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
