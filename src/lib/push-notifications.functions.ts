@@ -71,8 +71,14 @@ async function isPrincipalAdmin(userId: string) {
   return !!role && (profile?.email ?? "").toLowerCase() === PRINCIPAL_ADMIN_EMAIL;
 }
 
+function normalizeTelegramToken(raw: string) {
+  const cleaned = raw.trim().replace(/^['"]|['"]$/g, "");
+  const match = cleaned.match(/\d{6,}:[A-Za-z0-9_-]{20,}/);
+  return (match?.[0] ?? cleaned.replace(/^bot/i, "")).trim();
+}
+
 async function sendTelegram(text: string): Promise<{ ok: boolean; status?: number; body?: string; reason?: string }> {
-  const token = (process.env.TELEGRAM_BOT_TOKEN ?? "").trim().replace(/^bot/i, "").replace(/^['"]|['"]$/g, "");
+  const token = normalizeTelegramToken(process.env.TELEGRAM_BOT_TOKEN ?? "");
   const chatId = (process.env.TELEGRAM_CHAT_ID ?? "").trim().replace(/^['"]|['"]$/g, "");
   if (!token || !chatId) {
     console.warn("[telegram] TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID ausentes");
@@ -87,7 +93,7 @@ async function sendTelegram(text: string): Promise<{ ok: boolean; status?: numbe
     });
     const body = await res.text();
     console.info("[telegram] 5. API Telegram respondeu", { status: res.status, body: body.slice(0, 300) });
-    return { ok: res.ok, status: res.status, body: body.slice(0, 500) };
+    return { ok: res.ok, status: res.status, body: body.slice(0, 500), reason: res.ok ? "sent" : "telegram_api_failed" };
   } catch (err) {
     console.error("[telegram] fetch error", err);
     return { ok: false, reason: "fetch_error" };
