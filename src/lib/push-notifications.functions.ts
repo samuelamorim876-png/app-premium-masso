@@ -72,14 +72,14 @@ async function isPrincipalAdmin(userId: string) {
 }
 
 async function sendTelegram(text: string): Promise<{ ok: boolean; status?: number; body?: string; reason?: string }> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const token = (process.env.TELEGRAM_BOT_TOKEN ?? "").trim().replace(/^bot/i, "").replace(/^['"]|['"]$/g, "");
+  const chatId = (process.env.TELEGRAM_CHAT_ID ?? "").trim().replace(/^['"]|['"]$/g, "");
   if (!token || !chatId) {
     console.warn("[telegram] TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID ausentes");
     return { ok: false, reason: "missing_telegram_env" };
   }
   try {
-    console.info("[telegram] 4. API Telegram será chamada");
+    console.info("[telegram] 4. API Telegram será chamada", { tokenLength: token.length, chatIdLength: chatId.length });
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
