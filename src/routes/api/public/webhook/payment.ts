@@ -149,9 +149,12 @@ async function handle(request: Request) {
       action: "rejected",
       status: "unauthorized",
       raw_payload: payload,
-      error_message: "Assinatura inválida ou ausente",
+      error_message: "Token inválido ou ausente (X-Mivvo-Token)",
     });
-    return new Response("Unauthorized", { status: 401 });
+    return new Response(
+      JSON.stringify({ ok: false, error: "unauthorized", message: "X-Mivvo-Token inválido ou ausente" }),
+      { status: 401, headers: { "Content-Type": "application/json", ...CORS } }
+    );
   }
 
   const shouldBlock = BLOCK_EVENTS.has(eventType) || /refund|cancel|chargeback|estorno|reversal|dispute/i.test(eventType);
@@ -202,21 +205,30 @@ async function handle(request: Request) {
     error_message: errorMessage,
   });
 
-  return new Response(JSON.stringify({ received: true, action }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({ ok: true, received: true, event: eventType, provider, email, action }),
+    { status: 200, headers: { "Content-Type": "application/json", ...CORS } }
+  );
 }
+
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Mivvo-Token, X-Webhook-Secret, X-Webhook-Signature, X-Hub-Signature-256, X-Signature",
+  "Access-Control-Max-Age": "86400",
+};
 
 export const Route = createFileRoute("/api/public/webhook/payment")({
   server: {
     handlers: {
+      OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => handle(request),
       GET: async () =>
-        new Response(JSON.stringify({ status: "ok", endpoint: "payment-webhook" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
+        new Response(
+          JSON.stringify({ ok: true, status: "online", endpoint: "payment-webhook", methods: ["POST"] }),
+          { status: 200, headers: { "Content-Type": "application/json", ...CORS } }
+        ),
     },
   },
 });
+
