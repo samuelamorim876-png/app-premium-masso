@@ -71,6 +71,28 @@ async function isPrincipalAdmin(userId: string) {
   return !!role && (profile?.email ?? "").toLowerCase() === PRINCIPAL_ADMIN_EMAIL;
 }
 
+async function sendTelegram(text: string): Promise<{ ok: boolean; status?: number; body?: string; reason?: string }> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) {
+    console.warn("[telegram] TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID ausentes");
+    return { ok: false, reason: "missing_telegram_env" };
+  }
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
+    });
+    const body = await res.text();
+    console.info("[telegram] response", res.status, body.slice(0, 300));
+    return { ok: res.ok, status: res.status, body: body.slice(0, 500) };
+  } catch (err) {
+    console.error("[telegram] fetch error", err);
+    return { ok: false, reason: "fetch_error" };
+  }
+}
+
 export const sendAccessRequestPush = createServerFn({ method: "POST" })
   .inputValidator((data) =>
     z
@@ -82,12 +104,28 @@ export const sendAccessRequestPush = createServerFn({ method: "POST" })
       .parse(data)
   )
   .handler(async ({ data }) => {
-    return invokePushNotify({
-      type: "access_request",
-      requestId: data.requestId,
-      name: data.name,
-      email: data.email,
-    });
+    const now = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+    const text = `🆕 *Nova solicitação de acesso*\n\n*Nome:* ${data.name}\n*Email:* ${data.email}\n*Data:* ${now}\n*Status:* Pendente`;
+    const [pushResult, telegramResult] = await Promise.all([
+      invokePushNotify({
+        type: "access_request",
+        requestId: data.requestId,
+        name: data.name,
+        email: data.email,
+      }),
+      sendTelegram(text),
+    ]);
+    return { ...pushResult, telegram: telegramResult };
+  });
+
+export const sendTelegramTest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    if (!(await isPrincipalAdmin(context.userId))) {
+      return { ok: false, reason: "not_principal_admin" as const };
+    }
+    const now = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+    return sendTelegram(`🔔 *Teste de notificação*\nEnviado em: ${now}`);
   });
 
 export const sendTestAdminPush = createServerFn({ method: "POST" })
