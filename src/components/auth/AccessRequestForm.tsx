@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { submitAccessRequestAndNotify } from "@/lib/push-notifications.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle } from "lucide-react";
 
 export function AccessRequestForm({ onBack }: { onBack: () => void }) {
@@ -12,6 +13,7 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const submitAccessRequest = useServerFn(submitAccessRequestAndNotify);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -29,7 +31,7 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
     const cleanEmail = email.trim();
     try {
       console.info("[access-request] 1. Usuário clicou em Solicitar acesso", { email: cleanEmail });
-      const result = await submitAccessRequestAndNotify({ data: { name: cleanName, email: cleanEmail, password } });
+      const result = await submitAccessRequest({ data: { name: cleanName, email: cleanEmail, password } });
       console.info("[access-request] Resultado do fluxo automático", result);
       if (!result.ok) {
         setError("Erro ao enviar solicitação. Tente novamente.");
