@@ -67,6 +67,37 @@ function InfoContent({ content }: { content: string }) {
   );
 }
 
+function buildCleanVideoUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace("www.", "");
+    let videoId = "";
+    if (host === "youtu.be") {
+      videoId = u.pathname.slice(1);
+    } else if (host.includes("youtube.com") || host.includes("youtube-nocookie.com")) {
+      if (u.pathname.startsWith("/embed/")) {
+        videoId = u.pathname.split("/embed/")[1].split("/")[0];
+      } else {
+        videoId = u.searchParams.get("v") || "";
+      }
+    }
+    if (videoId) {
+      const params = new URLSearchParams({
+        modestbranding: "1",
+        rel: "0",
+        showinfo: "0",
+        iv_load_policy: "3",
+        controls: "1",
+        fs: "1",
+        playsinline: "1",
+        color: "white",
+      });
+      return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+    }
+  } catch {}
+  return url;
+}
+
 export function LessonPlayer({ lesson, moduleName, isCompleted, onToggle }: LessonPlayerProps) {
   const isPdf = lesson.type === "pdf";
   const isInfo = lesson.type === "info";
