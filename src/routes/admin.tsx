@@ -42,6 +42,7 @@ import { getAdminPushDiagnostics, markPushReceived, sendTestAdminPush } from "@/
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { useAdminStudentMonitoring } from "@/hooks/use-admin-student-monitoring";
+import { BuyersTab } from "@/components/admin/BuyersTab";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Painel Administrativo — Massoterapia" }] }),
