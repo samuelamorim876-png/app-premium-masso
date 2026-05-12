@@ -14,7 +14,7 @@ interface ModuleCardProps {
 export function ModuleCard({ module, index, unlocked, progress, onOpen, daysLeft, image }: ModuleCardProps) {
   const isComplete = progress.percent === 100;
   const isTimeLocked = !unlocked && daysLeft != null && daysLeft > 0;
-  const hasVideo = module.lessons.some((l) => l.type === "video");
+  
 
   return (
     <button
