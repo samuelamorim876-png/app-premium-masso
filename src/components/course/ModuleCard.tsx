@@ -1,5 +1,5 @@
 import type { Module } from "@/data/course-data";
-import { Lock, CheckCircle2, Clock, Play, FileText } from "lucide-react";
+import { Lock, CheckCircle2, Clock } from "lucide-react";
 
 interface ModuleCardProps {
   module: Module;
@@ -14,7 +14,7 @@ interface ModuleCardProps {
 export function ModuleCard({ module, index, unlocked, progress, onOpen, daysLeft, image }: ModuleCardProps) {
   const isComplete = progress.percent === 100;
   const isTimeLocked = !unlocked && daysLeft != null && daysLeft > 0;
-  const hasVideo = module.lessons.some((l) => l.type === "video");
+  
 
   return (
     <button
@@ -67,9 +67,6 @@ export function ModuleCard({ module, index, unlocked, progress, onOpen, daysLeft
             isComplete ? "bg-success/20 text-success" : "bg-black/50 text-white/80"
           }`}>
             {isComplete ? <><CheckCircle2 className="h-3 w-3" /> ✓</> : `${index + 1}`}
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-lg bg-black/50 px-2 py-1 text-[9px] font-medium text-white/60 uppercase tracking-wider backdrop-blur-md">
-            {hasVideo ? <Play className="h-2.5 w-2.5" /> : <FileText className="h-2.5 w-2.5" />}
           </span>
         </div>
 
