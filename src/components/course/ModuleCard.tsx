@@ -68,9 +68,6 @@ export function ModuleCard({ module, index, unlocked, progress, onOpen, daysLeft
           }`}>
             {isComplete ? <><CheckCircle2 className="h-3 w-3" /> ✓</> : `${index + 1}`}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-lg bg-black/50 px-2 py-1 text-[9px] font-medium text-white/60 uppercase tracking-wider backdrop-blur-md">
-            {hasVideo ? <Play className="h-2.5 w-2.5" /> : <FileText className="h-2.5 w-2.5" />}
-          </span>
         </div>
 
         {/* Bottom content */}
