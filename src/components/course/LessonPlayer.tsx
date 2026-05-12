@@ -106,10 +106,10 @@ export function LessonPlayer({ lesson, moduleName, isCompleted, onToggle }: Less
           )}
         </div>
       ) : (
-        <div className="aspect-video w-full overflow-hidden rounded-2xl bg-card border border-border shadow-xl shadow-black/20">
+        <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black border border-border shadow-xl shadow-black/20">
           {lesson.url && lesson.url !== "..." ? (
             <iframe
-              src={lesson.url}
+              src={buildCleanVideoUrl(lesson.url)}
               className="h-full w-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
