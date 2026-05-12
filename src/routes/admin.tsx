@@ -228,6 +228,7 @@ function AdminDashboard() {
 
         {tab === "students" && <StudentsTab />}
         {tab === "pending" && <PendingTab />}
+        {tab === "buyers" && <BuyersTab />}
         {tab === "content" && <ContentTab />}
         {tab === "courses" && <CoursesTab />}
         {tab === "home_layout" && <HomeLayoutTab />}
