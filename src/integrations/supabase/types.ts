@@ -350,6 +350,36 @@ export type Database = {
         }
         Relationships: []
       }
+      official_buyers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          id: string
+          name: string | null
+          notes: string | null
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          source?: string | null
+        }
+        Relationships: []
+      }
       payment_webhook_logs: {
         Row: {
           action: string | null
@@ -739,6 +769,24 @@ export type Database = {
           },
         ]
       }
+      verification_settings: {
+        Row: {
+          auto_block_unverified: boolean
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          auto_block_unverified?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          auto_block_unverified?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -755,6 +803,7 @@ export type Database = {
         Args: { _seconds: number; _user_id: string }
         Returns: undefined
       }
+      is_official_buyer: { Args: { _email: string }; Returns: boolean }
       redeem_xp_discount: {
         Args: { _course_id: string }
         Returns: {

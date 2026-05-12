@@ -85,9 +85,12 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
   return (
     <div>
       <h2 className="font-heading text-2xl font-bold text-foreground mb-2">Solicitar Acesso</h2>
-      <p className="text-sm text-muted-foreground mb-6">
+      <p className="text-sm text-muted-foreground mb-4">
         Preencha seus dados para solicitar acesso ao aplicativo.
       </p>
+      <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+        ⚠️ <strong>Importante:</strong> utilize o <strong>mesmo e-mail usado na compra</strong> para evitar perda de acesso ao aplicativo.
+      </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="req-name">Nome completo</Label>

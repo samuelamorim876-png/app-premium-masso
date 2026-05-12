@@ -42,13 +42,14 @@ import { getAdminPushDiagnostics, markPushReceived, sendTestAdminPush } from "@/
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { useAdminStudentMonitoring } from "@/hooks/use-admin-student-monitoring";
+import { BuyersTab } from "@/components/admin/BuyersTab";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Painel Administrativo — Massoterapia" }] }),
   component: AdminPage,
 });
 
-type Tab = "students" | "pending" | "content" | "courses" | "diagnostics" | "home_layout" | "notes";
+type Tab = "students" | "pending" | "buyers" | "content" | "courses" | "diagnostics" | "home_layout" | "notes";
 
 interface Profile {
   id: string;
@@ -177,6 +178,7 @@ function AdminDashboard() {
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: "students", label: "Alunos", icon: <Users className="h-4 w-4" /> },
     { key: "pending", label: "Aguardando Aprovação", icon: <Clock className="h-4 w-4" /> },
+    { key: "buyers", label: "Compradores Oficiais", icon: <Shield className="h-4 w-4" /> },
     { key: "content", label: "Conteúdos", icon: <BookOpen className="h-4 w-4" /> },
     { key: "courses", label: "Cursos", icon: <ShoppingBag className="h-4 w-4" /> },
     { key: "home_layout", label: "Layout da Home", icon: <LayoutGrid className="h-4 w-4" /> },
@@ -226,6 +228,7 @@ function AdminDashboard() {
 
         {tab === "students" && <StudentsTab />}
         {tab === "pending" && <PendingTab />}
+        {tab === "buyers" && <BuyersTab />}
         {tab === "content" && <ContentTab />}
         {tab === "courses" && <CoursesTab />}
         {tab === "home_layout" && <HomeLayoutTab />}
