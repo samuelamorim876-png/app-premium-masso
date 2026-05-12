@@ -1,5 +1,5 @@
 import type { Module } from "@/data/course-data";
-import { Lock, CheckCircle2, Clock, Play, FileText } from "lucide-react";
+import { Lock, CheckCircle2, Clock } from "lucide-react";
 
 interface ModuleCardProps {
   module: Module;
