@@ -689,14 +689,19 @@ function ContentTab() {
         </Button>
       </div>
 
-      {showModForm && (
-        <ModuleForm
-          initial={editMod}
-          nextOrder={modules.length}
-          onClose={() => { setShowModForm(false); setEditMod(null); }}
-          onSaved={fetchAll}
-        />
-      )}
+      <Dialog open={showModForm} onOpenChange={(o) => { if (!o) { setShowModForm(false); setEditMod(null); } }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editMod ? "Editar Módulo" : "Novo Módulo"}</DialogTitle>
+          </DialogHeader>
+          <ModuleForm
+            initial={editMod}
+            nextOrder={modules.length}
+            onClose={() => { setShowModForm(false); setEditMod(null); }}
+            onSaved={fetchAll}
+          />
+        </DialogContent>
+      </Dialog>
 
       {loadingData ? (
         <div className="text-center py-8 text-muted-foreground">Carregando...</div>
