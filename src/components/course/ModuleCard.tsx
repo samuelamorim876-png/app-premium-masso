@@ -49,12 +49,16 @@ export function ModuleCard({ module, index, unlocked, progress, onOpen, daysLeft
         {!unlocked && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
             <div className="flex flex-col items-center gap-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/30 backdrop-blur-md border border-white/10">
-                <Lock className="h-5 w-5 text-foreground/80" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 backdrop-blur-md border border-primary/30">
+                <Clock className="h-5 w-5 text-primary" />
               </div>
               {isTimeLocked && (
-                <span className="flex items-center gap-1 rounded-full bg-primary/20 px-3 py-1 text-[10px] font-medium text-primary backdrop-blur-md">
-                  <Clock className="h-3 w-3" /> {daysLeft} dia{daysLeft! > 1 ? "s" : ""}
+                <span className="rounded-full bg-primary/20 px-3 py-1 text-[10px] font-semibold text-primary backdrop-blur-md text-center max-w-[140px] leading-tight">
+                  {daysLeft! >= 2
+                    ? `Disponível em ${daysLeft} dias`
+                    : daysLeft === 1
+                      ? "Liberado em 1 dia"
+                      : "Liberado em breve"}
                 </span>
               )}
             </div>
