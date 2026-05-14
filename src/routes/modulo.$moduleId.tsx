@@ -33,7 +33,7 @@ function ModulePage() {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin } = useAdmin(user?.id);
   const { modules: courseModules, loading: modulesLoading, refetch } = useManagedModules();
-  const { isLessonCompleted, toggleLesson, getModuleProgress, isModuleUnlocked } = useProgress(user?.id, courseModules);
+  const { isLessonCompleted, toggleLesson, getModuleProgress, isModuleUnlocked, getUnlockInfo } = useProgress(user?.id, courseModules);
   const { showReward, addPoints, awardBadge } = useGamification(user?.id);
 
   const moduleIndex = courseModules.findIndex((m) => m.id === moduleId);
@@ -102,14 +102,33 @@ function ModulePage() {
 
   const unlocked = isModuleUnlocked(moduleIndex);
   if (!unlocked) {
+    const info = getUnlockInfo(moduleIndex);
+    const isTimeLocked = info.kind === "days_after_purchase";
+    const title = isTimeLocked ? "Liberação programada" : "Módulo bloqueado";
+    const message = isTimeLocked
+      ? (info.label ?? "Este módulo será liberado em breve.")
+      : "Conclua o módulo anterior para desbloquear este conteúdo.";
+    const subtitle = isTimeLocked
+      ? "Este conteúdo faz parte de uma liberação automática programada pelo curso. Não é um erro — basta aguardar."
+      : null;
+    const dateStr = info.unlockDate
+      ? info.unlockDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
+      : null;
+
     return (
       <div className="flex min-h-screen items-center justify-center px-4 bg-background">
         <div className="text-center max-w-sm animate-scale-in">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-muted">
-            <span className="text-4xl">🔒</span>
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20">
+            <span className="text-4xl">{isTimeLocked ? "⏳" : "🔒"}</span>
           </div>
-          <h2 className="font-heading text-xl font-bold text-foreground">Módulo bloqueado</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Conclua o módulo anterior para desbloquear este conteúdo.</p>
+          <h2 className="font-heading text-xl font-bold text-foreground">{title}</h2>
+          <p className="mt-2 text-base font-semibold text-primary">{message}</p>
+          {subtitle && <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>}
+          {dateStr && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Disponível a partir de <span className="font-medium text-foreground">{dateStr}</span>
+            </p>
+          )}
           <Link to="/">
             <Button variant="outline" className="mt-6 rounded-xl">Voltar ao dashboard</Button>
           </Link>
