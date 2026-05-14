@@ -158,5 +158,5 @@ export function useProgress(userId: string | undefined, modules?: Module[]) {
     return { completed: completed.size, total: totalLessons, percent };
   })();
 
-  return { completed, loading, toggleLesson, isLessonCompleted, getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress };
+  return { completed, loading, toggleLesson, isLessonCompleted, getModuleProgress, isModuleUnlocked, daysUntilUnlock, getUnlockInfo, overallProgress };
 }
