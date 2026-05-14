@@ -101,11 +101,62 @@ export function useProgress(userId: string | undefined, modules?: Module[]) {
     [purchasedAt, mods]
   );
 
+  const getUnlockInfo = useCallback(
+    (moduleIndex: number): {
+      kind: "immediate" | "days_after_purchase" | "after_previous";
+      unlocked: boolean;
+      unlockDate?: Date;
+      daysLeft?: number;
+      hoursLeft?: number;
+      label?: string;
+    } => {
+      const mod = mods[moduleIndex];
+      if (!mod) return { kind: "immediate", unlocked: false };
+      const rule = mod.unlock;
+
+      if (rule.kind === "immediate") return { kind: "immediate", unlocked: true };
+
+      if (rule.kind === "after_previous") {
+        if (moduleIndex === 0) return { kind: "after_previous", unlocked: true };
+        const prev = mods[moduleIndex - 1];
+        const unlocked = prev.lessons.every((l) => completed.has(l.id));
+        return { kind: "after_previous", unlocked };
+      }
+
+      // days_after_purchase
+      if (!purchasedAt) {
+        return { kind: "days_after_purchase", unlocked: false, label: `Liberado ${rule.days} dias após a compra` };
+      }
+      const unlockDate = new Date(purchasedAt.getTime() + rule.days * 24 * 60 * 60 * 1000);
+      const diff = unlockDate.getTime() - Date.now();
+      if (diff <= 0) return { kind: "days_after_purchase", unlocked: true, unlockDate };
+
+      const totalHours = Math.floor(diff / (60 * 60 * 1000));
+      const daysLeft = Math.floor(totalHours / 24);
+      const hoursLeft = totalHours % 24;
+
+      let label: string;
+      if (daysLeft >= 2) {
+        label = `Disponível em ${daysLeft} dias`;
+      } else if (daysLeft === 1) {
+        label = hoursLeft > 0 ? `Liberado em 1 dia e ${hoursLeft}h` : "Liberado em 1 dia";
+      } else if (totalHours >= 1) {
+        label = `Liberado em ${totalHours}h`;
+      } else {
+        const minutes = Math.max(1, Math.ceil(diff / (60 * 1000)));
+        label = `Liberado em ${minutes} min`;
+      }
+
+      return { kind: "days_after_purchase", unlocked: false, unlockDate, daysLeft, hoursLeft, label };
+    },
+    [completed, purchasedAt, mods]
+  );
+
   const overallProgress = (() => {
     const totalLessons = mods.reduce((a, m) => a + m.lessons.length, 0);
     const percent = totalLessons === 0 ? 0 : Math.round((completed.size / totalLessons) * 100);
     return { completed: completed.size, total: totalLessons, percent };
   })();
 
-  return { completed, loading, toggleLesson, isLessonCompleted, getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress };
+  return { completed, loading, toggleLesson, isLessonCompleted, getModuleProgress, isModuleUnlocked, daysUntilUnlock, getUnlockInfo, overallProgress };
 }
