@@ -9,6 +9,7 @@ import { deleteAuthUser } from "@/server/delete-user.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   ArrowLeft,
   Users,
@@ -688,14 +689,19 @@ function ContentTab() {
         </Button>
       </div>
 
-      {showModForm && (
-        <ModuleForm
-          initial={editMod}
-          nextOrder={modules.length}
-          onClose={() => { setShowModForm(false); setEditMod(null); }}
-          onSaved={fetchAll}
-        />
-      )}
+      <Dialog open={showModForm} onOpenChange={(o) => { if (!o) { setShowModForm(false); setEditMod(null); } }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editMod ? "Editar Módulo" : "Novo Módulo"}</DialogTitle>
+          </DialogHeader>
+          <ModuleForm
+            initial={editMod}
+            nextOrder={modules.length}
+            onClose={() => { setShowModForm(false); setEditMod(null); }}
+            onSaved={fetchAll}
+          />
+        </DialogContent>
+      </Dialog>
 
       {loadingData ? (
         <div className="text-center py-8 text-muted-foreground">Carregando...</div>
@@ -807,38 +813,69 @@ function ModuleForm({ initial, nextOrder, onClose, onSaved }: {
   const save = async () => {
     if (!title.trim()) return;
     setSaving(true);
-    if (initial) {
-      await supabase.from("managed_modules").update({
-        title: title.trim(),
-        description: description.trim(),
-        image_url: imageUrl.trim() || null,
-        days_to_unlock: parseInt(daysToUnlock) || 0,
-      }).eq("id", initial.id);
-    } else {
-      await supabase.from("managed_modules").insert({
-        title: title.trim(),
-        description: description.trim(),
-        image_url: imageUrl.trim() || null,
-        sort_order: nextOrder,
-        days_to_unlock: parseInt(daysToUnlock) || 0,
-      });
-    }
+    const payload = {
+      title: title.trim(),
+      description: description.trim(),
+      image_url: imageUrl.trim() || null,
+      days_to_unlock: parseInt(daysToUnlock) || 0,
+    };
+    const res = initial
+      ? await supabase.from("managed_modules").update(payload).eq("id", initial.id)
+      : await supabase.from("managed_modules").insert({ ...payload, sort_order: nextOrder });
     setSaving(false);
+    if (res.error) {
+      toast.error("Erro ao salvar módulo", { description: res.error.message });
+      return;
+    }
+    toast.success(initial ? "Módulo atualizado" : "Módulo criado");
     onSaved();
     onClose();
   };
 
   return (
-    <div className="rounded-xl border border-primary/30 bg-card p-4 mb-4 space-y-3">
-      <h3 className="font-semibold text-foreground">{initial ? "Editar Módulo" : "Novo Módulo"}</h3>
-      <Input placeholder="Título do módulo" value={title} onChange={(e) => setTitle(e.target.value)} />
-      <Textarea placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
-      <Input placeholder="URL da imagem (opcional)" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
-      <Input placeholder="Dias para liberar" type="number" value={daysToUnlock} onChange={(e) => setDaysToUnlock(e.target.value)} />
-      <div className="flex gap-2">
-        <Button size="sm" onClick={save} disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button>
-        <Button size="sm" variant="outline" onClick={onClose}>Cancelar</Button>
+    <div className="space-y-3">
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Título do módulo</label>
+        <Input placeholder="Ex: Módulo 5 — Anatomia" value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Descrição</label>
+        <Textarea placeholder="Descrição do módulo" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">URL da imagem (capa)</label>
+        <Input placeholder="https://..." value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Liberar após X dias da compra</label>
+        <Input type="number" min="0" value={daysToUnlock} onChange={(e) => setDaysToUnlock(e.target.value)} />
+        <p className="text-[11px] text-muted-foreground">
+          0 = liberado imediatamente. Ex: 7 = libera 7 dias após a data da compra do aluno.
+        </p>
+        <div className="flex flex-wrap gap-2 pt-1">
+          <Button size="sm" variant="outline" type="button" onClick={() => setDaysToUnlock("0")}>
+            Liberar agora
+          </Button>
+          <Button size="sm" variant="outline" type="button" onClick={() => setDaysToUnlock("7")}>
+            7 dias
+          </Button>
+          <Button size="sm" variant="outline" type="button" onClick={() => setDaysToUnlock("14")}>
+            14 dias
+          </Button>
+          <Button size="sm" variant="outline" type="button" onClick={() => setDaysToUnlock("30")}>
+            30 dias
+          </Button>
+          <Button size="sm" variant="outline" type="button" onClick={() => setDaysToUnlock("9999")}>
+            Bloquear
+          </Button>
+        </div>
+      </div>
+      <DialogFooter className="gap-2 sm:gap-2">
+        <Button size="sm" variant="outline" onClick={onClose} disabled={saving}>Cancelar</Button>
+        <Button size="sm" onClick={save} disabled={saving || !title.trim()}>
+          {saving ? "Salvando..." : "Salvar"}
+        </Button>
+      </DialogFooter>
     </div>
   );
 }
