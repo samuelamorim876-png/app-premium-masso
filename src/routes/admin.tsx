@@ -835,16 +835,49 @@ function ModuleForm({ initial, nextOrder, onClose, onSaved }: {
   };
 
   return (
-    <div className="rounded-xl border border-primary/30 bg-card p-4 mb-4 space-y-3">
-      <h3 className="font-semibold text-foreground">{initial ? "Editar Módulo" : "Novo Módulo"}</h3>
-      <Input placeholder="Título do módulo" value={title} onChange={(e) => setTitle(e.target.value)} />
-      <Textarea placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
-      <Input placeholder="URL da imagem (opcional)" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
-      <Input placeholder="Dias para liberar" type="number" value={daysToUnlock} onChange={(e) => setDaysToUnlock(e.target.value)} />
-      <div className="flex gap-2">
-        <Button size="sm" onClick={save} disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button>
-        <Button size="sm" variant="outline" onClick={onClose}>Cancelar</Button>
+    <div className="space-y-3">
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Título do módulo</label>
+        <Input placeholder="Ex: Módulo 5 — Anatomia" value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Descrição</label>
+        <Textarea placeholder="Descrição do módulo" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">URL da imagem (capa)</label>
+        <Input placeholder="https://..." value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Liberar após X dias da compra</label>
+        <Input type="number" min="0" value={daysToUnlock} onChange={(e) => setDaysToUnlock(e.target.value)} />
+        <p className="text-[11px] text-muted-foreground">
+          0 = liberado imediatamente. Ex: 7 = libera 7 dias após a data da compra do aluno.
+        </p>
+        <div className="flex flex-wrap gap-2 pt-1">
+          <Button size="sm" variant="outline" type="button" onClick={() => setDaysToUnlock("0")}>
+            Liberar agora
+          </Button>
+          <Button size="sm" variant="outline" type="button" onClick={() => setDaysToUnlock("7")}>
+            7 dias
+          </Button>
+          <Button size="sm" variant="outline" type="button" onClick={() => setDaysToUnlock("14")}>
+            14 dias
+          </Button>
+          <Button size="sm" variant="outline" type="button" onClick={() => setDaysToUnlock("30")}>
+            30 dias
+          </Button>
+          <Button size="sm" variant="outline" type="button" onClick={() => setDaysToUnlock("9999")}>
+            Bloquear
+          </Button>
+        </div>
+      </div>
+      <DialogFooter className="gap-2 sm:gap-2">
+        <Button size="sm" variant="outline" onClick={onClose} disabled={saving}>Cancelar</Button>
+        <Button size="sm" onClick={save} disabled={saving || !title.trim()}>
+          {saving ? "Salvando..." : "Salvar"}
+        </Button>
+      </DialogFooter>
     </div>
   );
 }
