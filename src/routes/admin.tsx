@@ -813,23 +813,21 @@ function ModuleForm({ initial, nextOrder, onClose, onSaved }: {
   const save = async () => {
     if (!title.trim()) return;
     setSaving(true);
-    if (initial) {
-      await supabase.from("managed_modules").update({
-        title: title.trim(),
-        description: description.trim(),
-        image_url: imageUrl.trim() || null,
-        days_to_unlock: parseInt(daysToUnlock) || 0,
-      }).eq("id", initial.id);
-    } else {
-      await supabase.from("managed_modules").insert({
-        title: title.trim(),
-        description: description.trim(),
-        image_url: imageUrl.trim() || null,
-        sort_order: nextOrder,
-        days_to_unlock: parseInt(daysToUnlock) || 0,
-      });
-    }
+    const payload = {
+      title: title.trim(),
+      description: description.trim(),
+      image_url: imageUrl.trim() || null,
+      days_to_unlock: parseInt(daysToUnlock) || 0,
+    };
+    const res = initial
+      ? await supabase.from("managed_modules").update(payload).eq("id", initial.id)
+      : await supabase.from("managed_modules").insert({ ...payload, sort_order: nextOrder });
     setSaving(false);
+    if (res.error) {
+      toast.error("Erro ao salvar módulo", { description: res.error.message });
+      return;
+    }
+    toast.success(initial ? "Módulo atualizado" : "Módulo criado");
     onSaved();
     onClose();
   };
