@@ -1,9 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const PRINCIPAL_ADMIN_EMAIL = "pastororxiamorim@gmail.com";
+
+async function getSupabaseAdmin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
 
 type PushInvokeResult = {
   sent: number;
@@ -58,6 +62,7 @@ async function invokePushNotify(payload: Record<string, unknown>): Promise<PushI
 }
 
 async function isPrincipalAdmin(userId: string) {
+  const supabaseAdmin = await getSupabaseAdmin();
   const [{ data: role }, { data: profile }] = await Promise.all([
     supabaseAdmin
       .from("user_roles")
@@ -113,6 +118,7 @@ export const submitAccessRequestAndNotify = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     console.info("[access-request] 2. Função automática iniciada", { email: data.email });
     try {
+      const supabaseAdmin = await getSupabaseAdmin();
       // Retry insert up to 2x for transient DB/network blips
       let request: { id: string; status: string; created_at: string } | null = null;
       let lastError: any = null;
