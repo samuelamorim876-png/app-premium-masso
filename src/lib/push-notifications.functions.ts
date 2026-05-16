@@ -245,6 +245,8 @@ export const getAdminPushDiagnostics = createServerFn({ method: "GET" })
       return { allowed: false as const, reason: "not_principal_admin" as const };
     }
 
+    const supabaseAdmin = await getSupabaseAdmin();
+
     const { data: adminProfile } = await supabaseAdmin
       .from("profiles")
       .select("id,email,name")
@@ -309,6 +311,7 @@ export const markPushReceived = createServerFn({ method: "POST" })
       return { ok: false, reason: "not_principal_admin" as const };
     }
 
+    const supabaseAdmin = await getSupabaseAdmin();
     const now = new Date().toISOString();
     if (data.endpoint) {
       await (supabaseAdmin.from("push_subscriptions") as any)
