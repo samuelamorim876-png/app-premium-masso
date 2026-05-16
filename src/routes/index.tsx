@@ -11,7 +11,7 @@ import { useStudentPresence } from "@/hooks/use-student-activity";
 import { useDailyLogin } from "@/hooks/use-daily-login";
 import heroImage from "@/assets/hero-massage-dark.jpg";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { AccessRequestForm } from "@/components/auth/AccessRequestForm";
+import { SafeAccessRequestForm } from "@/components/auth/SafeAccessRequestForm";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { InstallBanner } from "@/components/pwa/InstallPrompt";
 import { ModuleCard } from "@/components/course/ModuleCard";
@@ -86,10 +86,14 @@ function AuthPage() {
   const [logoutMessage, setLogoutMessage] = useState("");
 
   useEffect(() => {
-    const msg = sessionStorage.getItem("auth_logout_message");
-    if (msg) {
-      setLogoutMessage(msg);
-      sessionStorage.removeItem("auth_logout_message");
+    try {
+      const msg = sessionStorage.getItem("auth_logout_message");
+      if (msg) {
+        setLogoutMessage(msg);
+        sessionStorage.removeItem("auth_logout_message");
+      }
+    } catch (error) {
+      console.warn("[auth] sessionStorage indisponível", error);
     }
   }, []);
 
@@ -167,7 +171,7 @@ function AuthPage() {
             </>
           )}
           {view === "forgot" && <ForgotPasswordForm onReset={resetPassword} onSwitchToLogin={() => setView("login")} />}
-          {view === "request" && <AccessRequestForm onBack={() => setView("login")} />}
+          {view === "request" && <SafeAccessRequestForm onBack={() => setView("login")} />}
         </div>
       </div>
     </div>
@@ -388,6 +392,7 @@ function Dashboard() {
 function Index() {
   const { user, loading } = useAuth();
 
+  if (!user) return <AuthPage />;
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -395,7 +400,5 @@ function Index() {
       </div>
     );
   }
-
-  if (!user) return <AuthPage />;
   return <Dashboard />;
 }

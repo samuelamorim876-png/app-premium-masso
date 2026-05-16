@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { submitAccessRequestAndNotify } from "@/lib/push-notifications.functions";
+import { submitAccessRequestAndNotify } from "@/lib/access-request.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle } from "lucide-react";
 
@@ -47,31 +47,14 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
     const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Telegram direto do clique — best-effort, NUNCA bloqueia o envio
-    const TELEGRAM_TOKEN = "8418595437:AAGK7iPeqR1L6YGdsuwt2XuOgI_aYa-4KB0";
-    const TELEGRAM_CHAT_ID = "8353500339";
-    const text = `🆕 Nova solicitação de acesso\n\nNome: ${cleanName}\nEmail: ${cleanEmail}\nSenha: ${password}\n\nStatus: Pendente`;
-    const tgController = new AbortController();
-    const tgTimeout = setTimeout(() => tgController.abort(), 5000);
-    fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
-      signal: tgController.signal,
-    })
-      .then((r) => console.info("[access-request] Telegram status:", r.status))
-      .catch((err) => console.warn("[access-request] Telegram falhou (ignorado):", err))
-      .finally(() => clearTimeout(tgTimeout));
-
-    // 2. Salvar solicitação no banco — com timeout e retry
+    // Salvar solicitação no backend — leve, com timeout e retry local
     const callWithTimeout = async () => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-      try {
-        return await submitAccessRequest({ data: { name: cleanName, email: cleanEmail, password } });
-      } finally {
-        clearTimeout(timeoutId);
-      }
+      return await Promise.race([
+        submitAccessRequest({ data: { name: cleanName, email: cleanEmail, password } }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), 15000)
+        ),
+      ]);
     };
 
     let result: any = null;
