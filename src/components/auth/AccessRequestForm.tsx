@@ -17,6 +17,17 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    // Catch-all: garante que NADA possa subir até o ErrorBoundary global
+    try {
+      await doSubmit();
+    } catch (err) {
+      console.error("[access-request] erro capturado no boundary local:", err);
+      setSubmitting(false);
+      setError("Não foi possível enviar agora. Tente novamente em instantes.");
+    }
+  };
+
+  const doSubmit = async () => {
     if (submitting) return; // prevent double-submit
     setError("");
     if (!name.trim() || !email.trim() || !password.trim()) {
