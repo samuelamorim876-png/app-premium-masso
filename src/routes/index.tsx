@@ -392,6 +392,7 @@ function Dashboard() {
 function Index() {
   const { user, loading } = useAuth();
 
+  if (!user) return <AuthPage />;
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -399,7 +400,5 @@ function Index() {
       </div>
     );
   }
-
-  if (!user) return <AuthPage />;
   return <Dashboard />;
 }
