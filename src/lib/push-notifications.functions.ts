@@ -112,37 +112,74 @@ export const submitAccessRequestAndNotify = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     console.info("[access-request] 2. Função automática iniciada", { email: data.email });
-    const { data: request, error } = await supabaseAdmin
-      .from("access_requests")
-      .insert({
-        name: data.name,
-        email: data.email,
-        desired_password: data.password,
-        status: "pending",
-      })
-      .select("id,status,created_at")
-      .single();
+    try {
+      // Retry insert up to 2x for transient DB/network blips
+      let request: { id: string; status: string; created_at: string } | null = null;
+      let lastError: any = null;
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const { data: row, error } = await supabaseAdmin
+            .from("access_requests")
+            .insert({
+              name: data.name,
+              email: data.email,
+              desired_password: data.password,
+              status: "pending",
+            })
+            .select("id,status,created_at")
+            .single();
+          if (!error && row) {
+            request = row;
+            break;
+          }
+          lastError = error;
+          console.warn(`[access-request] insert attempt ${attempt} failed`, error);
+        } catch (e) {
+          lastError = e;
+          console.warn(`[access-request] insert attempt ${attempt} threw`, e);
+        }
+        if (attempt < 2) await new Promise((r) => setTimeout(r, 400));
+      }
 
-    if (error || !request) {
-      console.error("[access-request] Erro ao salvar solicitação", error);
-      return { ok: false as const, reason: "insert_failed", error: error?.message ?? "unknown_error" };
+      if (!request) {
+        console.error("[access-request] Erro ao salvar solicitação após retries", lastError);
+        return {
+          ok: false as const,
+          reason: "insert_failed",
+          error: lastError?.message ?? "Não foi possível salvar a solicitação no momento.",
+        };
+      }
+
+      console.info("[access-request] 3. Usuário salvo no banco com status pending", {
+        requestId: request.id,
+        status: request.status,
+      });
+
+      // Telegram is best-effort — never let it fail the request
+      let telegram: Awaited<ReturnType<typeof sendTelegram>> = { ok: false, reason: "skipped" };
+      try {
+        const text = `🆕 Nova solicitação de acesso\n\nNome: ${data.name}\nEmail: ${data.email}\nStatus: Pendente`;
+        telegram = await sendTelegram(text);
+      } catch (e) {
+        console.error("[access-request] telegram threw (ignored)", e);
+      }
+
+      console.info("[access-request] 6. Fluxo automático finalizado", {
+        requestId: request.id,
+        telegramOk: telegram.ok,
+      });
+
+      return { ok: true as const, requestId: request.id, status: request.status, telegram };
+    } catch (err) {
+      // Catastrophic fallback — never throw out of the serverFn, so the client
+      // always gets JSON (not a 500 HTML page → "Ocorreu um erro inesperado").
+      console.error("[access-request] Erro inesperado no handler", err);
+      return {
+        ok: false as const,
+        reason: "unexpected",
+        error: err instanceof Error ? err.message : "unknown",
+      };
     }
-
-    console.info("[access-request] 3. Usuário salvo no banco com status pending", {
-      requestId: request.id,
-      status: request.status,
-    });
-
-    const text = `🆕 Nova solicitação de acesso\n\nNome: ${data.name}\nEmail: ${data.email}\nStatus: Pendente`;
-    const telegram = await sendTelegram(text);
-    console.info("[access-request] 6. Fluxo automático finalizado", {
-      requestId: request.id,
-      telegramOk: telegram.ok,
-      telegramStatus: telegram.status,
-      telegramReason: telegram.reason,
-    });
-
-    return { ok: true as const, requestId: request.id, status: request.status, telegram };
   });
 
 export const sendAccessRequestPush = createServerFn({ method: "POST" })

