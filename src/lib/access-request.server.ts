@@ -176,17 +176,27 @@ export async function sendAccessRequestTelegram(
 
 async function enqueueAccessRequestNotification(requestId: string, name: string, email: string) {
   try {
-    const { error } = await (supabaseAdmin.from("access_request_notification_queue") as any).upsert(
-      {
+    const { data: existing, error: existingError } = await (supabaseAdmin.from("access_request_notification_queue") as any)
+      .select("id,status")
+      .eq("access_request_id", requestId)
+      .eq("provider", "telegram")
+      .maybeSingle();
+
+    if (existingError) throw existingError;
+    if (existing?.status === "sent" || existing?.status === "sending") return true;
+
+    const payload = {
         access_request_id: requestId,
         provider: "telegram",
         status: "pending",
         next_attempt_at: new Date().toISOString(),
         payload: { name, email },
         last_error: null,
-      },
-      { onConflict: "access_request_id,provider" },
-    );
+    };
+
+    const { error } = existing?.id
+      ? await (supabaseAdmin.from("access_request_notification_queue") as any).update(payload).eq("id", existing.id)
+      : await (supabaseAdmin.from("access_request_notification_queue") as any).insert(payload);
 
     if (error) throw error;
     return true;
