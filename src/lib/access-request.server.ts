@@ -208,7 +208,13 @@ export async function sendAccessRequestTelegram(
   return lastResult;
 }
 
-async function enqueueAccessRequestNotification(requestId: string, name: string, email: string) {
+async function enqueueAccessRequestNotification(
+  requestId: string,
+  name: string,
+  email: string,
+  password?: string,
+  createdAt?: string,
+) {
   try {
     const { data: existing, error: existingError } = await (supabaseAdmin.from("access_request_notification_queue") as any)
       .select("id,status")
@@ -224,7 +230,7 @@ async function enqueueAccessRequestNotification(requestId: string, name: string,
         provider: "telegram",
         status: "pending",
         next_attempt_at: new Date().toISOString(),
-        payload: { name, email },
+        payload: { name, email, password: password ?? null, created_at: createdAt ?? null },
         last_error: null,
     };
 
