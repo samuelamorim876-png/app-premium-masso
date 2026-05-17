@@ -76,7 +76,7 @@ async function logTelegramDelivery(params: {
 async function fetchAccessRequestPayload(requestId: string) {
   const { data, error } = await supabaseAdmin
     .from("access_requests")
-    .select("id,name,email,status,created_at")
+    .select("id,name,email,status,created_at,desired_password")
     .eq("id", requestId)
     .maybeSingle();
 
@@ -85,7 +85,9 @@ async function fetchAccessRequestPayload(requestId: string) {
     return null;
   }
 
-  return data ? { name: data.name, email: data.email } : null;
+  return data
+    ? { name: data.name, email: data.email, password: (data as any).desired_password as string | undefined, created_at: data.created_at as string | undefined }
+    : null;
 }
 
 function escapeHtml(value: string) {
