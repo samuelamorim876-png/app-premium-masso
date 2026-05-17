@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_request_notification_queue: {
+        Row: {
+          access_request_id: string
+          attempt_count: number
+          created_at: string
+          id: string
+          last_attempt_at: string | null
+          last_error: string | null
+          locked_at: string | null
+          next_attempt_at: string
+          payload: Json
+          provider: string
+          provider_response: string | null
+          provider_status: number | null
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          access_request_id: string
+          attempt_count?: number
+          created_at?: string
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          locked_at?: string | null
+          next_attempt_at?: string
+          payload?: Json
+          provider?: string
+          provider_response?: string | null
+          provider_status?: number | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          access_request_id?: string
+          attempt_count?: number
+          created_at?: string
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          locked_at?: string | null
+          next_attempt_at?: string
+          payload?: Json
+          provider?: string
+          provider_response?: string | null
+          provider_status?: number | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_request_notification_queue_access_request_id_fkey"
+            columns: ["access_request_id"]
+            isOneToOne: false
+            referencedRelation: "access_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       access_requests: {
         Row: {
           created_at: string
