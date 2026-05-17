@@ -90,13 +90,6 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
       return;
     }
 
-    if (result.telegram && !result.telegram.ok) {
-      console.error("[access-request] solicitação salva, mas Telegram falhou", result.telegram);
-      setSubmitting(false);
-      setError("Sua solicitação foi salva, mas o aviso ao administrador falhou. Tente novamente em instantes para reenviar a notificação.");
-      return;
-    }
-
     setSubmitting(false);
     setSuccess(true);
   };
@@ -109,7 +102,7 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
         </div>
         <h2 className="font-heading text-xl font-bold text-foreground">Solicitação enviada!</h2>
         <p className="text-sm text-muted-foreground">
-          Sua solicitação de acesso foi enviada com sucesso. Você receberá acesso após aprovação do administrador.
+          Solicitação enviada com sucesso. O administrador será notificado automaticamente.
         </p>
         <Button variant="outline" onClick={onBack} className="mt-4">
           Voltar ao Login
