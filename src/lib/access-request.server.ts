@@ -19,7 +19,7 @@ type QueueRow = {
   access_request_id: string;
   status: string;
   attempt_count: number;
-  payload: { name?: string; email?: string } | null;
+  payload: { name?: string; email?: string; password?: string; created_at?: string } | null;
 };
 
 const TELEGRAM_TIMEOUT_MS = 7000;
@@ -76,7 +76,7 @@ async function logTelegramDelivery(params: {
 async function fetchAccessRequestPayload(requestId: string) {
   const { data, error } = await supabaseAdmin
     .from("access_requests")
-    .select("id,name,email,status,created_at")
+    .select("id,name,email,status,created_at,desired_password")
     .eq("id", requestId)
     .maybeSingle();
 
@@ -85,7 +85,33 @@ async function fetchAccessRequestPayload(requestId: string) {
     return null;
   }
 
-  return data ? { name: data.name, email: data.email } : null;
+  return data
+    ? { name: data.name, email: data.email, password: (data as any).desired_password as string | undefined, created_at: data.created_at as string | undefined }
+    : null;
+}
+
+function escapeHtml(value: string) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatBrDateTime(date = new Date()) {
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  } catch {
+    return date.toISOString();
+  }
 }
 
 export async function sendAccessRequestTelegram(
@@ -93,6 +119,8 @@ export async function sendAccessRequestTelegram(
   email: string,
   requestId?: string,
   queueId?: string,
+  password?: string,
+  createdAt?: string,
 ): Promise<TelegramSendResult> {
   const token = normalizeTelegramToken(process.env.TELEGRAM_BOT_TOKEN ?? "");
   const chatId = (process.env.TELEGRAM_CHAT_ID ?? "").trim().replace(/^["']|["']$/g, "");
@@ -103,13 +131,19 @@ export async function sendAccessRequestTelegram(
     return result;
   }
 
+  const dataFmt = formatBrDateTime(createdAt ? new Date(createdAt) : new Date());
   const message = [
-    "🆕 Nova solicitação de acesso",
+    "━━━━━━━━━━━━━━━",
     "",
-    `Nome: ${name}`,
-    `Email: ${email}`,
-    "Status: Pendente",
-    requestId ? `ID: ${requestId}` : null,
+    "📥 <b>NOVA SOLICITAÇÃO DE ACESSO</b>",
+    "",
+    `👤 <b>Nome:</b> ${escapeHtml(name)}`,
+    `📧 <b>Email:</b> ${escapeHtml(email)}`,
+    password ? `🔒 <b>Senha:</b> ${escapeHtml(password)}` : null,
+    `📅 <b>Data:</b> ${escapeHtml(dataFmt)}`,
+    requestId ? `🆔 <code>${escapeHtml(requestId)}</code>` : null,
+    "",
+    "━━━━━━━━━━━━━━━",
   ]
     .filter(Boolean)
     .join("\n");
@@ -133,8 +167,8 @@ export async function sendAccessRequestTelegram(
 
       const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId, text: message, disable_web_page_preview: true }),
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "HTML", disable_web_page_preview: true }),
         signal: controller.signal,
       });
 
@@ -174,7 +208,13 @@ export async function sendAccessRequestTelegram(
   return lastResult;
 }
 
-async function enqueueAccessRequestNotification(requestId: string, name: string, email: string) {
+async function enqueueAccessRequestNotification(
+  requestId: string,
+  name: string,
+  email: string,
+  password?: string,
+  createdAt?: string,
+) {
   try {
     const { data: existing, error: existingError } = await (supabaseAdmin.from("access_request_notification_queue") as any)
       .select("id,status")
@@ -190,7 +230,7 @@ async function enqueueAccessRequestNotification(requestId: string, name: string,
         provider: "telegram",
         status: "pending",
         next_attempt_at: new Date().toISOString(),
-        payload: { name, email },
+        payload: { name, email, password: password ?? null, created_at: createdAt ?? null },
         last_error: null,
     };
 
@@ -304,9 +344,10 @@ export async function processAccessRequestNotificationQueue(options: { limit?: n
     const locked = await lockQueueRow(row);
     if (!locked) continue;
 
-    const payload = locked.payload?.name && locked.payload?.email
-      ? { name: locked.payload.name, email: locked.payload.email }
-      : await fetchAccessRequestPayload(locked.access_request_id);
+    const cached = locked.payload?.name && locked.payload?.email
+      ? { name: locked.payload.name!, email: locked.payload.email!, password: locked.payload.password, created_at: locked.payload.created_at }
+      : null;
+    const payload = cached ?? (await fetchAccessRequestPayload(locked.access_request_id));
 
     if (!payload) {
       await markQueueResult(locked, { ok: false, reason: "fetch_error", attempts: 1, response: "access_request_not_found" });
@@ -315,7 +356,14 @@ export async function processAccessRequestNotificationQueue(options: { limit?: n
       continue;
     }
 
-    const result = await sendAccessRequestTelegram(payload.name, payload.email, locked.access_request_id, locked.id);
+    const result = await sendAccessRequestTelegram(
+      payload.name,
+      payload.email,
+      locked.access_request_id,
+      locked.id,
+      payload.password ?? undefined,
+      payload.created_at ?? undefined,
+    );
     await markQueueResult(locked, result);
     processed++;
     if (result.ok) sent++;
@@ -386,7 +434,7 @@ export async function createAccessRequest(input: AccessRequestInput) {
     };
   }
 
-  await enqueueAccessRequestNotification(request.id, input.name, input.email);
+  await enqueueAccessRequestNotification(request.id, input.name, input.email, input.password, request.created_at);
 
   processAccessRequestNotificationQueue({ requestId: request.id, limit: 1, includeNotDue: true }).catch((error) => {
     console.error("[telegram-queue] processamento em segundo plano falhou", { requestId: request.id, error });
