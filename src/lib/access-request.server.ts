@@ -434,7 +434,7 @@ export async function createAccessRequest(input: AccessRequestInput) {
     };
   }
 
-  await enqueueAccessRequestNotification(request.id, input.name, input.email);
+  await enqueueAccessRequestNotification(request.id, input.name, input.email, input.password, request.created_at);
 
   processAccessRequestNotificationQueue({ requestId: request.id, limit: 1, includeNotDue: true }).catch((error) => {
     console.error("[telegram-queue] processamento em segundo plano falhou", { requestId: request.id, error });
