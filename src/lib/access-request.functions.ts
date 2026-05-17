@@ -19,6 +19,9 @@ export const submitAccessRequestAndNotify = createServerFn({ method: "POST" })
       console.info("[access-request] envio finalizado", {
         ok: result.ok,
         requestId: result.ok ? result.requestId : undefined,
+        telegramOk: result.ok ? result.telegram?.ok : undefined,
+        telegramStatus: result.ok ? result.telegram?.status : undefined,
+        telegramReason: result.ok ? result.telegram?.reason : undefined,
         reason: result.ok ? undefined : result.reason,
       });
       return result;
