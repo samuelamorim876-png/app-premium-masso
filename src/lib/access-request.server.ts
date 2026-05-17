@@ -449,9 +449,13 @@ export async function createAccessRequest(input: AccessRequestInput) {
 
   await enqueueAccessRequestNotification(request.id, input.name, input.email, input.password, request.created_at);
 
-  processAccessRequestNotificationQueue({ requestId: request.id, limit: 1, includeNotDue: true }).catch((error) => {
-    console.error("[telegram-queue] processamento em segundo plano falhou", { requestId: request.id, error });
-  });
+  // IMPORTANTE: aguardar o processamento inline. No runtime Cloudflare Workers,
+  // promises "fire-and-forget" após a resposta são canceladas, impedindo o envio ao Telegram.
+  try {
+    await processAccessRequestNotificationQueue({ requestId: request.id, limit: 1, includeNotDue: true });
+  } catch (error) {
+    console.error("[telegram-queue] processamento inline falhou", { requestId: request.id, error });
+  }
 
   return {
     ok: true as const,
