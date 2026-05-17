@@ -88,11 +88,37 @@ async function fetchAccessRequestPayload(requestId: string) {
   return data ? { name: data.name, email: data.email } : null;
 }
 
+function escapeHtml(value: string) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatBrDateTime(date = new Date()) {
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  } catch {
+    return date.toISOString();
+  }
+}
+
 export async function sendAccessRequestTelegram(
   name: string,
   email: string,
   requestId?: string,
   queueId?: string,
+  password?: string,
+  createdAt?: string,
 ): Promise<TelegramSendResult> {
   const token = normalizeTelegramToken(process.env.TELEGRAM_BOT_TOKEN ?? "");
   const chatId = (process.env.TELEGRAM_CHAT_ID ?? "").trim().replace(/^["']|["']$/g, "");
@@ -103,13 +129,19 @@ export async function sendAccessRequestTelegram(
     return result;
   }
 
+  const dataFmt = formatBrDateTime(createdAt ? new Date(createdAt) : new Date());
   const message = [
-    "🆕 Nova solicitação de acesso",
+    "━━━━━━━━━━━━━━━",
     "",
-    `Nome: ${name}`,
-    `Email: ${email}`,
-    "Status: Pendente",
-    requestId ? `ID: ${requestId}` : null,
+    "📥 <b>NOVA SOLICITAÇÃO DE ACESSO</b>",
+    "",
+    `👤 <b>Nome:</b> ${escapeHtml(name)}`,
+    `📧 <b>Email:</b> ${escapeHtml(email)}`,
+    password ? `🔒 <b>Senha:</b> ${escapeHtml(password)}` : null,
+    `📅 <b>Data:</b> ${escapeHtml(dataFmt)}`,
+    requestId ? `🆔 <code>${escapeHtml(requestId)}</code>` : null,
+    "",
+    "━━━━━━━━━━━━━━━",
   ]
     .filter(Boolean)
     .join("\n");
