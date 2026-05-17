@@ -19,7 +19,7 @@ type QueueRow = {
   access_request_id: string;
   status: string;
   attempt_count: number;
-  payload: { name?: string; email?: string } | null;
+  payload: { name?: string; email?: string; password?: string; created_at?: string } | null;
 };
 
 const TELEGRAM_TIMEOUT_MS = 7000;
