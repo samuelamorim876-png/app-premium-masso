@@ -165,8 +165,8 @@ export async function sendAccessRequestTelegram(
 
       const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId, text: message, disable_web_page_preview: true }),
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "HTML", disable_web_page_preview: true }),
         signal: controller.signal,
       });
 
