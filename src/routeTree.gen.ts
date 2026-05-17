@@ -23,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ModuloModuleIdRouteImport } from './routes/modulo.$moduleId'
 import { Route as ApiFirebaseMessagingSwRouteImport } from './routes/api/firebase-messaging-sw'
 import { Route as ApiPublicWebhookPaymentRouteImport } from './routes/api/public/webhook/payment'
+import { Route as ApiPublicAccessRequestNotificationsProcessRouteImport } from './routes/api/public/access-request-notifications/process'
 
 const SimuladorRoute = SimuladorRouteImport.update({
   id: '/simulador',
@@ -94,6 +95,12 @@ const ApiPublicWebhookPaymentRoute = ApiPublicWebhookPaymentRouteImport.update({
   path: '/api/public/webhook/payment',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAccessRequestNotificationsProcessRoute =
+  ApiPublicAccessRequestNotificationsProcessRouteImport.update({
+    id: '/api/public/access-request-notifications/process',
+    path: '/api/public/access-request-notifications/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/simulador': typeof SimuladorRoute
   '/api/firebase-messaging-sw': typeof ApiFirebaseMessagingSwRoute
   '/modulo/$moduleId': typeof ModuloModuleIdRoute
+  '/api/public/access-request-notifications/process': typeof ApiPublicAccessRequestNotificationsProcessRoute
   '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
 export interface FileRoutesByTo {
@@ -125,6 +133,7 @@ export interface FileRoutesByTo {
   '/simulador': typeof SimuladorRoute
   '/api/firebase-messaging-sw': typeof ApiFirebaseMessagingSwRoute
   '/modulo/$moduleId': typeof ModuloModuleIdRoute
+  '/api/public/access-request-notifications/process': typeof ApiPublicAccessRequestNotificationsProcessRoute
   '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
 export interface FileRoutesById {
@@ -142,6 +151,7 @@ export interface FileRoutesById {
   '/simulador': typeof SimuladorRoute
   '/api/firebase-messaging-sw': typeof ApiFirebaseMessagingSwRoute
   '/modulo/$moduleId': typeof ModuloModuleIdRoute
+  '/api/public/access-request-notifications/process': typeof ApiPublicAccessRequestNotificationsProcessRoute
   '/api/public/webhook/payment': typeof ApiPublicWebhookPaymentRoute
 }
 export interface FileRouteTypes {
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/simulador'
     | '/api/firebase-messaging-sw'
     | '/modulo/$moduleId'
+    | '/api/public/access-request-notifications/process'
     | '/api/public/webhook/payment'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/simulador'
     | '/api/firebase-messaging-sw'
     | '/modulo/$moduleId'
+    | '/api/public/access-request-notifications/process'
     | '/api/public/webhook/payment'
   id:
     | '__root__'
@@ -192,6 +204,7 @@ export interface FileRouteTypes {
     | '/simulador'
     | '/api/firebase-messaging-sw'
     | '/modulo/$moduleId'
+    | '/api/public/access-request-notifications/process'
     | '/api/public/webhook/payment'
   fileRoutesById: FileRoutesById
 }
@@ -209,6 +222,7 @@ export interface RootRouteChildren {
   SimuladorRoute: typeof SimuladorRoute
   ApiFirebaseMessagingSwRoute: typeof ApiFirebaseMessagingSwRoute
   ModuloModuleIdRoute: typeof ModuloModuleIdRoute
+  ApiPublicAccessRequestNotificationsProcessRoute: typeof ApiPublicAccessRequestNotificationsProcessRoute
   ApiPublicWebhookPaymentRoute: typeof ApiPublicWebhookPaymentRoute
 }
 
@@ -312,6 +326,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookPaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/access-request-notifications/process': {
+      id: '/api/public/access-request-notifications/process'
+      path: '/api/public/access-request-notifications/process'
+      fullPath: '/api/public/access-request-notifications/process'
+      preLoaderRoute: typeof ApiPublicAccessRequestNotificationsProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -329,8 +350,19 @@ const rootRouteChildren: RootRouteChildren = {
   SimuladorRoute: SimuladorRoute,
   ApiFirebaseMessagingSwRoute: ApiFirebaseMessagingSwRoute,
   ModuloModuleIdRoute: ModuloModuleIdRoute,
+  ApiPublicAccessRequestNotificationsProcessRoute:
+    ApiPublicAccessRequestNotificationsProcessRoute,
   ApiPublicWebhookPaymentRoute: ApiPublicWebhookPaymentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
