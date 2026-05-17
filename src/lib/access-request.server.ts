@@ -344,9 +344,10 @@ export async function processAccessRequestNotificationQueue(options: { limit?: n
     const locked = await lockQueueRow(row);
     if (!locked) continue;
 
-    const payload = locked.payload?.name && locked.payload?.email
-      ? { name: locked.payload.name, email: locked.payload.email }
-      : await fetchAccessRequestPayload(locked.access_request_id);
+    const cached = locked.payload?.name && locked.payload?.email
+      ? { name: locked.payload.name!, email: locked.payload.email!, password: locked.payload.password, created_at: locked.payload.created_at }
+      : null;
+    const payload = cached ?? (await fetchAccessRequestPayload(locked.access_request_id));
 
     if (!payload) {
       await markQueueResult(locked, { ok: false, reason: "fetch_error", attempts: 1, response: "access_request_not_found" });
@@ -355,7 +356,14 @@ export async function processAccessRequestNotificationQueue(options: { limit?: n
       continue;
     }
 
-    const result = await sendAccessRequestTelegram(payload.name, payload.email, locked.access_request_id, locked.id);
+    const result = await sendAccessRequestTelegram(
+      payload.name,
+      payload.email,
+      locked.access_request_id,
+      locked.id,
+      payload.password ?? undefined,
+      payload.created_at ?? undefined,
+    );
     await markQueueResult(locked, result);
     processed++;
     if (result.ok) sent++;
