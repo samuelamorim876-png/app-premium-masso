@@ -122,8 +122,21 @@ export async function sendAccessRequestTelegram(
   password?: string,
   createdAt?: string,
 ): Promise<TelegramSendResult> {
-  const token = normalizeTelegramToken(process.env.TELEGRAM_BOT_TOKEN ?? "");
-  const chatId = (process.env.TELEGRAM_CHAT_ID ?? "").trim().replace(/^["']|["']$/g, "");
+  const rawToken = process.env.TELEGRAM_BOT_TOKEN ?? "";
+  const rawChat = process.env.TELEGRAM_CHAT_ID ?? "";
+  const token = normalizeTelegramToken(rawToken);
+  const chatId = rawChat.trim().replace(/^["']|["']$/g, "");
+
+  console.info("[telegram] env diag", {
+    rawTokenLen: rawToken.length,
+    normTokenLen: token.length,
+    tokenHead: token.slice(0, 6),
+    tokenTail: token.slice(-4),
+    rawChatLen: rawChat.length,
+    normChatLen: chatId.length,
+    chatHead: chatId.slice(0, 4),
+    chatTail: chatId.slice(-4),
+  });
 
   if (!token || !chatId) {
     const result: TelegramSendResult = { ok: false, reason: "missing_telegram_env", attempts: 0 };
