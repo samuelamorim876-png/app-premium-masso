@@ -181,21 +181,15 @@ export function BuyersTab() {
 
   return (
     <div className="space-y-8">
-      {/* Settings */}
-      <div className="rounded-xl border border-border bg-card p-4 flex items-center justify-between gap-3">
-        <div>
-          <p className="font-semibold text-foreground flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-primary" />
-            Bloqueio automático de não verificados
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Quando ativado, novos usuários cujo e-mail não esteja na lista oficial são automaticamente desativados.
-          </p>
-        </div>
-        <Button onClick={toggleAutoBlock} variant={autoBlock ? "default" : "outline"}>
-          {autoBlock ? <Lock className="h-4 w-4 mr-2" /> : <Unlock className="h-4 w-4 mr-2" />}
-          {autoBlock ? "Ativado" : "Desativado"}
-        </Button>
+      {/* Info banner */}
+      <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+        <p className="font-semibold text-foreground flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          Verificação de compradores
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Todos os usuários recebem acesso imediato ao solicitar. Os e-mails que <strong>não estiverem</strong> na lista oficial abaixo aparecem destacados como <strong>“não verificados”</strong>. Use os botões para bloquear, remover ou manter cada conta manualmente — nada é bloqueado automaticamente.
+        </p>
       </div>
 
       {/* Alerts */}
