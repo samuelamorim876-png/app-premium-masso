@@ -8,6 +8,7 @@ type Profile = {
   premium_access: boolean;
   is_active: boolean;
   created_at: string;
+  desired_password: string | null;
 };
 
 type Engagement = {
