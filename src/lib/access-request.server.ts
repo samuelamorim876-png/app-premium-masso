@@ -457,10 +457,80 @@ export async function createAccessRequest(input: AccessRequestInput) {
     console.error("[telegram-queue] processamento inline falhou", { requestId: request.id, error });
   }
 
+  // ===== Auto-aprovação: cria a conta imediatamente para liberar acesso =====
+  let autoApproved = false;
+  let autoApprovedExisting = false;
+  try {
+    const email = input.email.toLowerCase().trim();
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: input.password,
+      email_confirm: true,
+      user_metadata: { name: input.name },
+    });
+
+    let userId: string | undefined = created?.user?.id;
+
+    if (createErr) {
+      // Provavelmente usuário já existe — tenta localizar e atualizar a senha
+      const msg = (createErr.message || "").toLowerCase();
+      if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
+        autoApprovedExisting = true;
+        // Procura via profiles (por email)
+        const { data: existingProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .ilike("email", email)
+          .maybeSingle();
+        userId = existingProfile?.id;
+        if (userId) {
+          await supabaseAdmin.auth.admin.updateUserById(userId, { password: input.password });
+        } else {
+          console.warn("[access-request] usuário existente sem profile mapeado", { email });
+        }
+      } else {
+        throw createErr;
+      }
+    }
+
+    if (userId) {
+      const { data: existingProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("id", userId)
+        .maybeSingle();
+
+      const profileData = {
+        id: userId,
+        name: input.name,
+        email,
+        is_active: true,
+        desired_password: input.password,
+      };
+
+      if (!existingProfile) {
+        await supabaseAdmin.from("profiles").insert(profileData);
+      } else {
+        await supabaseAdmin.from("profiles").update(profileData).eq("id", userId);
+      }
+
+      await supabaseAdmin
+        .from("access_requests")
+        .update({ status: "approved", reviewed_at: new Date().toISOString() })
+        .eq("id", request.id);
+
+      autoApproved = true;
+    }
+  } catch (error) {
+    console.error("[access-request] auto-aprovação falhou", { requestId: request.id, error });
+  }
+
   return {
     ok: true as const,
     requestId: request.id,
-    status: request.status,
+    status: autoApproved ? "approved" : request.status,
+    autoApproved,
+    autoApprovedExisting,
     notification: { queued: true, provider: "telegram" as const },
   };
 }

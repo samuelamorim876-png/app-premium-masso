@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { submitAccessRequestAndNotify } from "@/lib/access-request.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AccessRequestForm({ onBack }: { onBack: () => void }) {
   const [name, setName] = useState("");
@@ -92,6 +93,18 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
 
     setSubmitting(false);
     setSuccess(true);
+
+    // Auto-login imediato (acesso liberado automaticamente)
+    if (result.autoApproved) {
+      try {
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
+      } catch (err) {
+        console.warn("[access-request] auto-login falhou", err);
+      }
+    }
   };
 
   if (success) {
@@ -100,12 +113,12 @@ export function AccessRequestForm({ onBack }: { onBack: () => void }) {
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20">
           <CheckCircle className="h-7 w-7 text-emerald-400" />
         </div>
-        <h2 className="font-heading text-xl font-bold text-foreground">Solicitação enviada!</h2>
+        <h2 className="font-heading text-xl font-bold text-foreground">Acesso liberado!</h2>
         <p className="text-sm text-muted-foreground">
-          Solicitação enviada com sucesso. O administrador será notificado automaticamente.
+          Sua conta foi criada automaticamente. Você já pode entrar no aplicativo com o e-mail e a senha cadastrados.
         </p>
-        <Button variant="outline" onClick={onBack} className="mt-4">
-          Voltar ao Login
+        <Button onClick={onBack} className="mt-4">
+          Ir para o Login
         </Button>
       </div>
     );
