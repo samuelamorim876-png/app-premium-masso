@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { submitAccessRequestAndNotify } from "@/lib/access-request.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AccessRequestForm({ onBack }: { onBack: () => void }) {
   const [name, setName] = useState("");
