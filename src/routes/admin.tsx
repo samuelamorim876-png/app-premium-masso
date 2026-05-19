@@ -624,6 +624,43 @@ function StudentsTab() {
                         <span>Dias ativos: <strong className="text-foreground">{p.activeDays}</strong></span>
                       </div>
                     )}
+                    {isPrincipalAdmin && (
+                      <div className="mt-2 flex items-center gap-2 flex-wrap text-[11px]">
+                        <span className="text-muted-foreground">Senha:</span>
+                        {p.desired_password ? (
+                          <>
+                            <span className="font-mono bg-muted px-2 py-0.5 rounded text-foreground select-all">
+                              {revealed[p.id] ? p.desired_password : "••••••••"}
+                            </span>
+                            <button
+                              onClick={() => setRevealed((r) => ({ ...r, [p.id]: !r[p.id] }))}
+                              className="text-muted-foreground hover:text-foreground transition-colors"
+                              title={revealed[p.id] ? "Ocultar senha" : "Mostrar senha"}
+                            >
+                              {revealed[p.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                            </button>
+                            <button
+                              onClick={() => copyToClipboard(p.desired_password!, "Senha")}
+                              className="text-muted-foreground hover:text-foreground transition-colors text-[10px] underline"
+                            >
+                              Copiar
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground italic">não cadastrada</span>
+                        )}
+                        <button
+                          onClick={() => {
+                            setPwdEditing({ id: p.id, name: p.name || p.email || "Aluno" });
+                            setPwdValue("");
+                          }}
+                          className="text-primary hover:underline text-[10px] ml-1"
+                        >
+                          {p.desired_password ? "Alterar" : "Definir"}
+                        </button>
+                      </div>
+                    )}
+
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
