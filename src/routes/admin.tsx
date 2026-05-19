@@ -380,6 +380,19 @@ function StudentsTab() {
   const { students, loading: loadingData, refetch } = useAdminStudentMonitoring();
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const [addOpen, setAddOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newStudent, setNewStudent] = useState({
+    name: "",
+    email: "",
+    password: "",
+    premium: false,
+    markBuyer: true,
+  });
+  const [pwdEditing, setPwdEditing] = useState<{ id: string; name: string } | null>(null);
+  const [pwdValue, setPwdValue] = useState("");
+  const [pwdSaving, setPwdSaving] = useState(false);
 
   const isPrincipalAdmin = (user?.email || "").toLowerCase() === PRINCIPAL_ADMIN_EMAIL;
 
@@ -395,11 +408,66 @@ function StudentsTab() {
     if (!confirm("Tem certeza que deseja excluir este aluno? Isso removerá o acesso completamente.")) return;
     try {
       await deleteAuthUser({ data: { userId: id } });
-      alert("✅ Aluno excluído com sucesso.");
+      toast.success("Aluno excluído com sucesso.");
     } catch (err: any) {
-      alert(`❌ Erro ao excluir: ${err.message}`);
+      toast.error(`Erro ao excluir: ${err.message}`);
     }
     refetch();
+  };
+
+  const handleCreateStudent = async () => {
+    if (!newStudent.name.trim() || !newStudent.email.trim() || newStudent.password.length < 6) {
+      toast.error("Preencha nome, e-mail e uma senha de pelo menos 6 caracteres.");
+      return;
+    }
+    setCreating(true);
+    try {
+      await createStudentDirect({
+        data: {
+          name: newStudent.name.trim(),
+          email: newStudent.email.trim(),
+          password: newStudent.password,
+          premium: newStudent.premium,
+          markBuyer: newStudent.markBuyer,
+        },
+      });
+      toast.success(`Aluno ${newStudent.name} criado com sucesso!`);
+      setAddOpen(false);
+      setNewStudent({ name: "", email: "", password: "", premium: false, markBuyer: true });
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao criar aluno");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!pwdEditing || pwdValue.length < 6) {
+      toast.error("Senha precisa ter pelo menos 6 caracteres.");
+      return;
+    }
+    setPwdSaving(true);
+    try {
+      await updateStudentPassword({ data: { userId: pwdEditing.id, password: pwdValue } });
+      toast.success(`Senha de ${pwdEditing.name} atualizada.`);
+      setPwdEditing(null);
+      setPwdValue("");
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao atualizar senha");
+    } finally {
+      setPwdSaving(false);
+    }
+  };
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copiada!`);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
   };
 
   const filtered = students.filter(
@@ -418,8 +486,8 @@ function StudentsTab() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-4">
-        <div className="relative flex-1">
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por nome ou e-mail..."
@@ -428,8 +496,107 @@ function StudentsTab() {
             className="pl-10"
           />
         </div>
+        {isPrincipalAdmin && (
+          <Button onClick={() => setAddOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" /> Adicionar aluno
+          </Button>
+        )}
         <span className="text-xs text-muted-foreground whitespace-nowrap">{filtered.length} alunos</span>
       </div>
+
+      {/* Dialog: Adicionar aluno */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar novo aluno</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Nome</label>
+              <Input
+                value={newStudent.name}
+                onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
+                placeholder="Nome completo do aluno"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">E-mail</label>
+              <Input
+                type="email"
+                value={newStudent.email}
+                onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}
+                placeholder="email@aluno.com"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Senha (mínimo 6 caracteres)</label>
+              <Input
+                value={newStudent.password}
+                onChange={(e) => setNewStudent({ ...newStudent, password: e.target.value })}
+                placeholder="Senha que será repassada ao aluno"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                A senha ficará visível no painel para você poder repassar se o aluno esquecer.
+              </p>
+            </div>
+            <div className="flex items-center gap-4 flex-wrap">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newStudent.premium}
+                  onChange={(e) => setNewStudent({ ...newStudent, premium: e.target.checked })}
+                />
+                Acesso Premium
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newStudent.markBuyer}
+                  onChange={(e) => setNewStudent({ ...newStudent, markBuyer: e.target.checked })}
+                />
+                Marcar como comprador oficial
+              </label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setAddOpen(false)} disabled={creating}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateStudent} disabled={creating}>
+              {creating ? "Criando..." : "Criar aluno"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Atualizar senha */}
+      <Dialog open={!!pwdEditing} onOpenChange={(o) => !o && setPwdEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Definir nova senha — {pwdEditing?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Input
+              value={pwdValue}
+              onChange={(e) => setPwdValue(e.target.value)}
+              placeholder="Nova senha (mínimo 6 caracteres)"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              A nova senha será aplicada no login do aluno e ficará visível aqui no painel.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPwdEditing(null)} disabled={pwdSaving}>
+              Cancelar
+            </Button>
+            <Button onClick={handleUpdatePassword} disabled={pwdSaving}>
+              {pwdSaving ? "Salvando..." : "Atualizar senha"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
 
       {loadingData ? (
         <div className="text-center py-8 text-muted-foreground">Carregando...</div>
