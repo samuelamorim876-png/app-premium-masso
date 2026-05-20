@@ -17,19 +17,40 @@ export const approveAccessRequest = createServerFn({ method: "POST" })
       "@/integrations/supabase/client.server"
     );
 
+    const email = data.email.toLowerCase().trim();
+    let userId: string | undefined;
+
     const { data: authData, error: authError } =
       await supabaseAdmin.auth.admin.createUser({
-        email: data.email,
+        email,
         password: data.password,
         email_confirm: true,
         user_metadata: { name: data.name },
       });
 
     if (authError) {
-      throw new Error(`Erro ao criar usuário: ${authError.message}`);
+      const msg = (authError.message || "").toLowerCase();
+      const alreadyExists =
+        msg.includes("already") || msg.includes("registered") || msg.includes("exists");
+      if (!alreadyExists) {
+        throw new Error(`Erro ao criar usuário: ${authError.message}`);
+      }
+      const { data: existingProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .ilike("email", email)
+        .maybeSingle();
+      userId = existingProfile?.id;
+      if (!userId) {
+        throw new Error("Usuário já registrado, mas perfil não encontrado.");
+      }
+      const { error: updErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        password: data.password,
+      });
+      if (updErr) throw new Error(`Erro ao atualizar senha: ${updErr.message}`);
+    } else {
+      userId = authData.user.id;
     }
-
-    const userId = authData.user.id;
 
     const { data: existingProfile } = await supabaseAdmin
       .from("profiles")
