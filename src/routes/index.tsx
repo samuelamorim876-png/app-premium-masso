@@ -183,7 +183,19 @@ function Dashboard() {
   useStudentPresence(user?.id);
   const { isAdmin } = useAdmin(user?.id);
   const { modules: courseModules, loading: modulesLoading } = useManagedModules();
-  const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading } = useProgress(user?.id, courseModules);
+  const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading, purchasedAt } = useProgress(user?.id, courseModules);
+
+  // Módulo de certificado — localizado dinamicamente pelo título (independe da ordem)
+  const certificateModule = React.useMemo(() => {
+    const norm = (s: string) =>
+      s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    return courseModules.find((m) => norm(m.title).includes("certific"));
+  }, [courseModules]);
+
+  const certificateReady = React.useMemo(() => {
+    if (!certificateModule || !purchasedAt) return false;
+    return Date.now() >= purchasedAt.getTime() + 10 * 24 * 60 * 60 * 1000;
+  }, [certificateModule, purchasedAt]);
   const { data: gamData, badges, showReward, addPoints, awardCustomBadge } = useGamification(user?.id);
   useDailyLogin(user?.id, addPoints, awardCustomBadge);
   const { sections } = useHomeSections();
@@ -237,6 +249,29 @@ function Dashboard() {
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">Meu Curso</h1>
           <p className="mt-2 text-base text-muted-foreground">Continue de onde parou e avance no seu aprendizado.</p>
         </div>
+
+        {certificateReady && certificateModule && (
+          <div className="mb-6 overflow-hidden rounded-2xl border border-success/40 bg-gradient-to-br from-success/20 via-success/5 to-transparent p-6 animate-fade-up">
+            <h2 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
+              🎉 Parabéns pela sua dedicação!
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Você já pode solicitar seu Certificado de Conclusão. Clique no botão abaixo para
+              visualizar as instruções e enviar sua solicitação.
+            </p>
+            <Link
+              to="/modulo/$moduleId"
+              params={{ moduleId: certificateModule.id }}
+              className="mt-4 inline-block"
+            >
+              <Button size="lg" className="rounded-xl shadow-lg">
+                📜 Solicitar Certificado
+              </Button>
+            </Link>
+          </div>
+        )}
+
+
 
         {(() => {
           const blocks: Record<string, React.ReactNode> = {
