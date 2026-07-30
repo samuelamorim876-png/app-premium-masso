@@ -18,7 +18,7 @@ import {
   Unlock,
 } from "lucide-react";
 import { toast } from "sonner";
-import { deleteAuthUser } from "@/server/delete-user.functions";
+import { deleteAuthUser } from "@/lib/delete-user.functions";
 
 interface Buyer {
   id: string;
