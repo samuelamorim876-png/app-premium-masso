@@ -183,7 +183,19 @@ function Dashboard() {
   useStudentPresence(user?.id);
   const { isAdmin } = useAdmin(user?.id);
   const { modules: courseModules, loading: modulesLoading } = useManagedModules();
-  const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading } = useProgress(user?.id, courseModules);
+  const { getModuleProgress, isModuleUnlocked, daysUntilUnlock, overallProgress, loading, purchasedAt } = useProgress(user?.id, courseModules);
+
+  // Módulo de certificado — localizado dinamicamente pelo título (independe da ordem)
+  const certificateModule = React.useMemo(() => {
+    const norm = (s: string) =>
+      s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    return courseModules.find((m) => norm(m.title).includes("certific"));
+  }, [courseModules]);
+
+  const certificateReady = React.useMemo(() => {
+    if (!certificateModule || !purchasedAt) return false;
+    return Date.now() >= purchasedAt.getTime() + 10 * 24 * 60 * 60 * 1000;
+  }, [certificateModule, purchasedAt]);
   const { data: gamData, badges, showReward, addPoints, awardCustomBadge } = useGamification(user?.id);
   useDailyLogin(user?.id, addPoints, awardCustomBadge);
   const { sections } = useHomeSections();
