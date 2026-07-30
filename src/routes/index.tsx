@@ -250,6 +250,29 @@ function Dashboard() {
           <p className="mt-2 text-base text-muted-foreground">Continue de onde parou e avance no seu aprendizado.</p>
         </div>
 
+        {certificateReady && certificateModule && (
+          <div className="mb-6 overflow-hidden rounded-2xl border border-success/40 bg-gradient-to-br from-success/20 via-success/5 to-transparent p-6 animate-fade-up">
+            <h2 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
+              🎉 Parabéns pela sua dedicação!
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Você já pode solicitar seu Certificado de Conclusão. Clique no botão abaixo para
+              visualizar as instruções e enviar sua solicitação.
+            </p>
+            <Link
+              to="/modulo/$moduleId"
+              params={{ moduleId: certificateModule.id }}
+              className="mt-4 inline-block"
+            >
+              <Button size="lg" className="rounded-xl shadow-lg">
+                📜 Solicitar Certificado
+              </Button>
+            </Link>
+          </div>
+        )}
+
+
+
         {(() => {
           const blocks: Record<string, React.ReactNode> = {
             hero_cta: (
