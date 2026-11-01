@@ -9,65 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SimuladorRouteImport } from './routes/simulador'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as ProtocolosRouteImport } from './routes/protocolos'
-import { Route as PerfilRouteImport } from './routes/perfil'
-import { Route as IndicacoesRouteImport } from './routes/indicacoes'
-import { Route as EstudarRouteImport } from './routes/estudar'
-import { Route as CursosRouteImport } from './routes/cursos'
-import { Route as AssistenteRouteImport } from './routes/assistente'
-import { Route as AnotacoesRouteImport } from './routes/anotacoes'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ModuloModuleIdRouteImport } from './routes/modulo.$moduleId'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AnotacoesRouteImport } from './routes/anotacoes'
+import { Route as AssistenteRouteImport } from './routes/assistente'
+import { Route as CursosRouteImport } from './routes/cursos'
+import { Route as EstudarRouteImport } from './routes/estudar'
+import { Route as IndicacoesRouteImport } from './routes/indicacoes'
+import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as ProtocolosRouteImport } from './routes/protocolos'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SimuladorRouteImport } from './routes/simulador'
 import { Route as ApiFirebaseMessagingSwRouteImport } from './routes/api/firebase-messaging-sw'
-import { Route as ApiPublicWebhookPaymentRouteImport } from './routes/api/public/webhook/payment'
+import { Route as ModuloModuleIdRouteImport } from './routes/modulo.$moduleId'
 import { Route as ApiPublicAccessRequestNotificationsProcessRouteImport } from './routes/api/public/access-request-notifications/process'
+import { Route as ApiPublicWebhookPaymentRouteImport } from './routes/api/public/webhook/payment'
 
-const SimuladorRoute = SimuladorRouteImport.update({
-  id: '/simulador',
-  path: '/simulador',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProtocolosRoute = ProtocolosRouteImport.update({
-  id: '/protocolos',
-  path: '/protocolos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PerfilRoute = PerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndicacoesRoute = IndicacoesRouteImport.update({
-  id: '/indicacoes',
-  path: '/indicacoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EstudarRoute = EstudarRouteImport.update({
-  id: '/estudar',
-  path: '/estudar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CursosRoute = CursosRouteImport.update({
-  id: '/cursos',
-  path: '/cursos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AssistenteRoute = AssistenteRouteImport.update({
-  id: '/assistente',
-  path: '/assistente',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AnotacoesRoute = AnotacoesRouteImport.update({
-  id: '/anotacoes',
-  path: '/anotacoes',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -75,14 +35,49 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AnotacoesRoute = AnotacoesRouteImport.update({
+  id: '/anotacoes',
+  path: '/anotacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ModuloModuleIdRoute = ModuloModuleIdRouteImport.update({
-  id: '/modulo/$moduleId',
-  path: '/modulo/$moduleId',
+const AssistenteRoute = AssistenteRouteImport.update({
+  id: '/assistente',
+  path: '/assistente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CursosRoute = CursosRouteImport.update({
+  id: '/cursos',
+  path: '/cursos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstudarRoute = EstudarRouteImport.update({
+  id: '/estudar',
+  path: '/estudar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndicacoesRoute = IndicacoesRouteImport.update({
+  id: '/indicacoes',
+  path: '/indicacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtocolosRoute = ProtocolosRouteImport.update({
+  id: '/protocolos',
+  path: '/protocolos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SimuladorRoute = SimuladorRouteImport.update({
+  id: '/simulador',
+  path: '/simulador',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiFirebaseMessagingSwRoute = ApiFirebaseMessagingSwRouteImport.update({
@@ -90,9 +85,9 @@ const ApiFirebaseMessagingSwRoute = ApiFirebaseMessagingSwRouteImport.update({
   path: '/api/firebase-messaging-sw',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicWebhookPaymentRoute = ApiPublicWebhookPaymentRouteImport.update({
-  id: '/api/public/webhook/payment',
-  path: '/api/public/webhook/payment',
+const ModuloModuleIdRoute = ModuloModuleIdRouteImport.update({
+  id: '/modulo/$moduleId',
+  path: '/modulo/$moduleId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicAccessRequestNotificationsProcessRoute =
@@ -101,6 +96,11 @@ const ApiPublicAccessRequestNotificationsProcessRoute =
     path: '/api/public/access-request-notifications/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhookPaymentRoute = ApiPublicWebhookPaymentRouteImport.update({
+  id: '/api/public/webhook/payment',
+  path: '/api/public/webhook/payment',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -228,67 +228,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/simulador': {
-      id: '/simulador'
-      path: '/simulador'
-      fullPath: '/simulador'
-      preLoaderRoute: typeof SimuladorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/protocolos': {
-      id: '/protocolos'
-      path: '/protocolos'
-      fullPath: '/protocolos'
-      preLoaderRoute: typeof ProtocolosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/perfil': {
-      id: '/perfil'
-      path: '/perfil'
-      fullPath: '/perfil'
-      preLoaderRoute: typeof PerfilRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/indicacoes': {
-      id: '/indicacoes'
-      path: '/indicacoes'
-      fullPath: '/indicacoes'
-      preLoaderRoute: typeof IndicacoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/estudar': {
-      id: '/estudar'
-      path: '/estudar'
-      fullPath: '/estudar'
-      preLoaderRoute: typeof EstudarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cursos': {
-      id: '/cursos'
-      path: '/cursos'
-      fullPath: '/cursos'
-      preLoaderRoute: typeof CursosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/assistente': {
-      id: '/assistente'
-      path: '/assistente'
-      fullPath: '/assistente'
-      preLoaderRoute: typeof AssistenteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/anotacoes': {
-      id: '/anotacoes'
-      path: '/anotacoes'
-      fullPath: '/anotacoes'
-      preLoaderRoute: typeof AnotacoesRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -298,18 +242,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/anotacoes': {
+      id: '/anotacoes'
+      path: '/anotacoes'
+      fullPath: '/anotacoes'
+      preLoaderRoute: typeof AnotacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/modulo/$moduleId': {
-      id: '/modulo/$moduleId'
-      path: '/modulo/$moduleId'
-      fullPath: '/modulo/$moduleId'
-      preLoaderRoute: typeof ModuloModuleIdRouteImport
+    '/assistente': {
+      id: '/assistente'
+      path: '/assistente'
+      fullPath: '/assistente'
+      preLoaderRoute: typeof AssistenteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cursos': {
+      id: '/cursos'
+      path: '/cursos'
+      fullPath: '/cursos'
+      preLoaderRoute: typeof CursosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estudar': {
+      id: '/estudar'
+      path: '/estudar'
+      fullPath: '/estudar'
+      preLoaderRoute: typeof EstudarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/indicacoes': {
+      id: '/indicacoes'
+      path: '/indicacoes'
+      fullPath: '/indicacoes'
+      preLoaderRoute: typeof IndicacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/protocolos': {
+      id: '/protocolos'
+      path: '/protocolos'
+      fullPath: '/protocolos'
+      preLoaderRoute: typeof ProtocolosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/simulador': {
+      id: '/simulador'
+      path: '/simulador'
+      fullPath: '/simulador'
+      preLoaderRoute: typeof SimuladorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/firebase-messaging-sw': {
@@ -319,11 +312,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFirebaseMessagingSwRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/webhook/payment': {
-      id: '/api/public/webhook/payment'
-      path: '/api/public/webhook/payment'
-      fullPath: '/api/public/webhook/payment'
-      preLoaderRoute: typeof ApiPublicWebhookPaymentRouteImport
+    '/modulo/$moduleId': {
+      id: '/modulo/$moduleId'
+      path: '/modulo/$moduleId'
+      fullPath: '/modulo/$moduleId'
+      preLoaderRoute: typeof ModuloModuleIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/access-request-notifications/process': {
@@ -331,6 +324,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/access-request-notifications/process'
       fullPath: '/api/public/access-request-notifications/process'
       preLoaderRoute: typeof ApiPublicAccessRequestNotificationsProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/webhook/payment': {
+      id: '/api/public/webhook/payment'
+      path: '/api/public/webhook/payment'
+      fullPath: '/api/public/webhook/payment'
+      preLoaderRoute: typeof ApiPublicWebhookPaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
