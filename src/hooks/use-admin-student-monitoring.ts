@@ -104,16 +104,24 @@ export function useAdminStudentMonitoring() {
 
   useEffect(() => {
     fetchAll();
+    // Agrupa várias mudanças seguidas numa única recarga (evita recarregar tudo a cada evento).
+    let debounce: number | undefined;
+    const scheduleFetch = () => {
+      window.clearTimeout(debounce);
+      debounce = window.setTimeout(fetchAll, 5000);
+    };
+    // Presença/atividade (muito frequentes) são atualizadas pelo intervalo abaixo, sem tempo real.
     const channel = supabase
       .channel("admin-student-monitoring")
-      .on("postgres_changes", { event: "*", schema: "public", table: "student_engagement" }, fetchAll)
-      .on("postgres_changes", { event: "*", schema: "public", table: "student_activity_events" }, fetchAll)
-      .on("postgres_changes", { event: "*", schema: "public", table: "lesson_progress" }, fetchAll)
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, fetchAll)
+      .on("postgres_changes", { event: "*", schema: "public", table: "lesson_progress" }, scheduleFetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, scheduleFetch)
       .subscribe();
-    const interval = window.setInterval(fetchAll, 60000);
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") fetchAll();
+    }, 60000);
     return () => {
       window.clearInterval(interval);
+      window.clearTimeout(debounce);
       supabase.removeChannel(channel);
     };
   }, [fetchAll]);

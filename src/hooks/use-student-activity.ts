@@ -29,7 +29,7 @@ async function writeActivity(userId: string, input: ActivityInput) {
     supabase.from("student_engagement").upsert({
       user_id: userId,
       last_seen_at: now.toISOString(),
-      online_until: new Date(now.getTime() + 90000).toISOString(),
+      online_until: new Date(now.getTime() + 180000).toISOString(),
       current_path: path,
       current_module_id: moduleId,
       current_lesson_id: lessonId,
@@ -69,13 +69,13 @@ export function useStudentPresence(userId: string | undefined) {
       if (stopped || document.visibilityState === "hidden") return;
       const now = Date.now();
       const previous = lastTickRef.current ?? now;
-      const elapsed = Math.max(0, Math.min(120, Math.round((now - previous) / 1000)));
+      const elapsed = Math.max(0, Math.min(180, Math.round((now - previous) / 1000)));
       lastTickRef.current = now;
 
       await supabase.from("student_engagement").upsert({
         user_id: userId,
         last_seen_at: new Date(now).toISOString(),
-        online_until: new Date(now + 90000).toISOString(),
+        online_until: new Date(now + 180000).toISOString(),
         current_path: window.location.pathname,
       }, { onConflict: "user_id" }).then(async () => {
         if (elapsed > 0) {
@@ -93,7 +93,7 @@ export function useStudentPresence(userId: string | undefined) {
     };
 
     sendHeartbeat("session_start").catch(() => undefined);
-    const interval = window.setInterval(() => sendHeartbeat().catch(() => undefined), 30000);
+    const interval = window.setInterval(() => sendHeartbeat().catch(() => undefined), 120000);
     const onVisible = () => {
       lastTickRef.current = Date.now();
       sendHeartbeat(document.visibilityState === "visible" ? "session_resume" : "session_pause").catch(() => undefined);
