@@ -135,6 +135,8 @@ export function useAdminStudentMonitoring() {
       setModules((modulesRes.data as ManagedModule[]) || []);
       setLessons((lessonsRes.data as ManagedLesson[]) || []);
       lastFullAt.current = Date.now();
+    } catch (error) {
+      console.error("[admin-monitoring] falha ao carregar dados", error);
     } finally {
       fullInFlight.current = false;
       setLoading(false);
@@ -147,7 +149,7 @@ export function useAdminStudentMonitoring() {
     const newProgressQuery = since
       ? supabase.from("lesson_progress").select("user_id,lesson_id,completed_at").gte("completed_at", since).order("completed_at").limit(1000)
       : null;
-    const [, newProgressRes] = await Promise.all([fetchRecentActivity(), newProgressQuery]);
+    const [, newProgressRes] = await Promise.all([fetchRecentActivity().catch(() => undefined), newProgressQuery]);
     const newRows = (newProgressRes?.data as LessonProgress[] | undefined) || [];
     if (newRows.length) {
       setProgress((prev) => {
