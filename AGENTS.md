@@ -1,0 +1,2 @@
+- The course assistant answers from the local knowledge base in `src/data/knowledge-base.ts`; do not reintroduce AI model calls (owner wants zero AI running costs).
+- Student presence heartbeat runs every 2 minutes and admin monitoring refreshes on a 60s interval (no realtime on presence/activity tables) to keep database load low.
