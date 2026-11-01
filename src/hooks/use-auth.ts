@@ -19,7 +19,7 @@ type AuthStore = {
   listeners: Set<() => void>;
   initialized: boolean;
   loggingOut: boolean;
-  activeCheckTimer: ReturnType<typeof setInterval> | null;
+  activeCheckTimer: { stop: () => void } | null;
   safetyTimer: ReturnType<typeof setTimeout> | null;
   authSubscription: Subscription | null;
 };
