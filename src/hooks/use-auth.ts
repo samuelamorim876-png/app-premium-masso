@@ -209,7 +209,7 @@ function startProductionActiveMonitor() {
     onTick: () => void runActiveCheck(),
     onResume: () => void runActiveCheck(),
   });
-  store.activeCheckTimer = poller as unknown as ReturnType<typeof setInterval>;
+  store.activeCheckTimer = poller;
 
   supabase
     .channel("profile-status-singleton")
