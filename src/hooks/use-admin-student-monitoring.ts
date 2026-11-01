@@ -1,5 +1,29 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createVisibilityPoller } from "@/lib/visibility-poller";
+
+const PAGE_SIZE = 1000;
+
+/**
+ * Lê todas as linhas (o banco devolve no máximo 1000 por pedido).
+ * O 1º pedido já traz o total; as páginas restantes são buscadas em paralelo.
+ */
+async function fetchAllRows<T>(
+  page: (from: number, to: number, withCount: boolean) => PromiseLike<{ data: unknown; error: unknown; count?: number | null }>,
+): Promise<T[]> {
+  const first = await page(0, PAGE_SIZE - 1, true);
+  if (first.error) throw first.error;
+  const rows: T[] = [...((first.data as T[]) || [])];
+  const total = first.count ?? rows.length;
+  const starts: number[] = [];
+  for (let from = PAGE_SIZE; from < total; from += PAGE_SIZE) starts.push(from);
+  const rest = await Promise.all(starts.map((from) => page(from, from + PAGE_SIZE - 1, false)));
+  for (const res of rest) {
+    if (res.error) throw res.error;
+    rows.push(...((res.data as T[]) || []));
+  }
+  return rows;
+}
 
 type Profile = {
   id: string;
@@ -83,48 +107,104 @@ export function useAdminStudentMonitoring() {
   const [lessons, setLessons] = useState<ManagedLesson[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    const [profilesRes, engagementRes, eventsRes, progressRes, modulesRes, lessonsRes] = await Promise.all([
-      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-      supabase.from("student_engagement").select("*"),
+  const lastFullAt = useRef(0);
+  const lastProgressAt = useRef<string | null>(null);
+  const fullInFlight = useRef(false);
+
+  const fetchRecentActivity = useCallback(async () => {
+    const [engagementRows, eventsRes] = await Promise.all([
+      fetchAllRows<Engagement>((from, to, c) => supabase.from("student_engagement").select("*", c ? { count: "exact" } : undefined).order("user_id").range(from, to)),
       supabase.from("student_activity_events").select("*").order("created_at", { ascending: false }).limit(500),
-      supabase.from("lesson_progress").select("user_id,lesson_id,completed_at"),
-      supabase.from("managed_modules").select("id,title"),
-      supabase.from("managed_lessons").select("id,module_id,title,type"),
     ]);
-    setProfiles((profilesRes.data as Profile[]) || []);
-    setEngagement((engagementRes.data as Engagement[]) || []);
+    setEngagement(engagementRows);
     setEvents((eventsRes.data as ActivityEvent[]) || []);
-    setProgress((progressRes.data as LessonProgress[]) || []);
-    setModules((modulesRes.data as ManagedModule[]) || []);
-    setLessons((lessonsRes.data as ManagedLesson[]) || []);
-    setLoading(false);
   }, []);
+
+  // Recarga completa: inclui TODOS os registros de progresso (paginado de 1000 em 1000).
+  const fetchAll = useCallback(async (options?: { silent?: boolean }) => {
+    if (fullInFlight.current) return;
+    fullInFlight.current = true;
+    if (!options?.silent) setLoading(true);
+    try {
+      const [profileRows, progressRows, modulesRes, lessonsRes] = await Promise.all([
+        fetchAllRows<Profile>((from, to, c) => supabase.from("profiles").select("*", c ? { count: "exact" } : undefined).order("created_at", { ascending: false }).order("id").range(from, to)),
+        fetchAllRows<LessonProgress>((from, to, c) =>
+          supabase.from("lesson_progress").select("user_id,lesson_id,completed_at", c ? { count: "exact" } : undefined).order("completed_at").order("id").range(from, to),
+        ),
+        supabase.from("managed_modules").select("id,title"),
+        supabase.from("managed_lessons").select("id,module_id,title,type"),
+        fetchRecentActivity(),
+      ]);
+      setProfiles(profileRows);
+      setProgress(progressRows);
+      lastProgressAt.current = progressRows.length ? progressRows[progressRows.length - 1].completed_at : null;
+      setModules((modulesRes.data as ManagedModule[]) || []);
+      setLessons((lessonsRes.data as ManagedLesson[]) || []);
+      lastFullAt.current = Date.now();
+    } catch (error) {
+      console.error("[admin-monitoring] falha ao carregar dados", error);
+    } finally {
+      fullInFlight.current = false;
+      setLoading(false);
+    }
+  }, [fetchRecentActivity]);
+
+  // Atualização leve (a cada minuto): presença, atividades recentes e apenas as aulas concluídas desde a última leitura.
+  const fetchLight = useCallback(async () => {
+    const since = lastProgressAt.current;
+    const newProgressQuery = since
+      ? supabase.from("lesson_progress").select("user_id,lesson_id,completed_at").gte("completed_at", since).order("completed_at").limit(1000)
+      : null;
+    const [, newProgressRes] = await Promise.all([fetchRecentActivity().catch(() => undefined), newProgressQuery]);
+    const newRows = (newProgressRes?.data as LessonProgress[] | undefined) || [];
+    if (newRows.length) {
+      setProgress((prev) => {
+        const seen = new Set(prev.map((p) => `${p.user_id}:${p.lesson_id}`));
+        const additions = newRows.filter((row) => !seen.has(`${row.user_id}:${row.lesson_id}`));
+        return additions.length ? [...prev, ...additions] : prev;
+      });
+      lastProgressAt.current = newRows[newRows.length - 1].completed_at;
+    }
+  }, [fetchRecentActivity]);
 
   useEffect(() => {
     fetchAll();
-    // Agrupa várias mudanças seguidas numa única recarga (evita recarregar tudo a cada evento).
     let debounce: number | undefined;
+    let tick = 0;
+    // Mudanças em alunos (bloqueio/cadastro) com o painel visível: uma única recarga agrupada.
+    // Com o painel oculto não consulta nada; a recarga acontece ao voltar.
     const scheduleFetch = () => {
+      if (document.visibilityState === "hidden") {
+        lastFullAt.current = 0;
+        return;
+      }
       window.clearTimeout(debounce);
-      debounce = window.setTimeout(fetchAll, 5000);
+      debounce = window.setTimeout(() => fetchAll({ silent: true }), 5000);
     };
-    // Presença/atividade (muito frequentes) são atualizadas pelo intervalo abaixo, sem tempo real.
     const channel = supabase
       .channel("admin-student-monitoring")
-      .on("postgres_changes", { event: "*", schema: "public", table: "lesson_progress" }, scheduleFetch)
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, scheduleFetch)
       .subscribe();
-    const interval = window.setInterval(() => {
-      if (document.visibilityState === "visible") fetchAll();
-    }, 60000);
+    // Só atualiza com a aba do painel visível: leve a cada 1 min, completa a cada 5 min (pega aulas desmarcadas).
+    const poller = createVisibilityPoller({
+      intervalMs: 60000,
+      onTick: () => {
+        tick += 1;
+        if (tick % 5 === 0) fetchAll({ silent: true });
+        else fetchLight();
+      },
+      onResume: () => {
+        tick = 0;
+        if (Date.now() - lastFullAt.current > 60000) fetchAll({ silent: true });
+        else fetchLight();
+      },
+    });
     return () => {
-      window.clearInterval(interval);
+      poller.stop();
       window.clearTimeout(debounce);
       supabase.removeChannel(channel);
     };
-  }, [fetchAll]);
+  }, [fetchAll, fetchLight]);
 
   const students = useMemo<StudentMonitoring[]>(() => {
     const engagementByUser = new Map(engagement.map((e) => [e.user_id, e]));
