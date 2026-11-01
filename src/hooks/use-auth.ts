@@ -1,5 +1,6 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { createVisibilityPoller } from "@/lib/visibility-poller";
 import type { Subscription, User } from "@supabase/supabase-js";
 
 interface AuthUser {
@@ -182,17 +183,33 @@ function validateActiveInBackground(user: User, options?: { quiet?: boolean }) {
   }, 0);
 }
 
+let activeCheckInFlight = false;
+
+async function runActiveCheck() {
+  const currentUser = store.state.user;
+  if (!currentUser || activeCheckInFlight) return;
+  activeCheckInFlight = true;
+  try {
+    const active = await checkActive(currentUser.id);
+    if (!active && store.state.user?.id === currentUser.id) {
+      await forceLogout("Seu acesso foi desativado ou removido pelo administrador.");
+    }
+  } finally {
+    activeCheckInFlight = false;
+  }
+}
+
 function startProductionActiveMonitor() {
   if (isPreviewEnv() || store.activeCheckTimer) return;
 
-  store.activeCheckTimer = setInterval(async () => {
-    const currentUser = store.state.user;
-    if (!currentUser) return;
-    const active = await checkActive(currentUser.id);
-    if (!active) {
-      await forceLogout("Seu acesso foi desativado ou removido pelo administrador.");
-    }
-  }, 300000); // o bloqueio imediato chega pelo canal em tempo real abaixo; isto é só uma checagem de segurança
+  // Checagem de segurança a cada 5 min SOMENTE com o app visível; pausa ao minimizar/trocar de aba
+  // e verifica de novo imediatamente quando o aluno volta. O bloqueio imediato chega pelo canal em tempo real abaixo.
+  const poller = createVisibilityPoller({
+    intervalMs: 300000,
+    onTick: () => void runActiveCheck(),
+    onResume: () => void runActiveCheck(),
+  });
+  store.activeCheckTimer = poller as unknown as ReturnType<typeof setInterval>;
 
   supabase
     .channel("profile-status-singleton")
