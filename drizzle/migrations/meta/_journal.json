@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793549985758,
+      "tag": "0000_remove_dead_access_request_trigger",
+      "breakpoints": true
+    }
+  ]
+}

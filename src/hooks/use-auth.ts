@@ -92,6 +92,41 @@ function getServerSnapshot(): AuthState {
   return SERVER_SNAPSHOT;
 }
 
+function isNetworkError(message: string | undefined): boolean {
+  if (!message) return false;
+  const m = message.toLowerCase();
+  return m.includes("failed to fetch") || m.includes("networkerror") || m.includes("load failed") || m.includes("network request failed") || m.includes("fetch failed");
+}
+
+const NETWORK_ERROR_MESSAGE =
+  "Não foi possível conectar ao servidor agora. Verifique sua internet e tente novamente em alguns segundos.";
+
+function translateAuthError(message: string): string {
+  const m = message.toLowerCase();
+  if (isNetworkError(message)) return NETWORK_ERROR_MESSAGE;
+  if (m.includes("invalid login credentials")) return "E-mail ou senha incorretos.";
+  if (m.includes("email not confirmed")) return "Seu e-mail ainda não foi confirmado.";
+  if (m.includes("too many requests") || m.includes("rate limit")) return "Muitas tentativas seguidas. Aguarde um minuto e tente novamente.";
+  return message;
+}
+
+async function signInWithRetry(email: string, password: string) {
+  // O servidor pode levar alguns segundos para responder ao "acordar"; tenta de novo antes de falhar.
+  const delays = [0, 2000, 5000];
+  let last: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>> | null = null;
+  for (const delay of delays) {
+    if (delay) await new Promise((r) => setTimeout(r, delay));
+    try {
+      last = await supabase.auth.signInWithPassword({ email, password });
+      if (!last.error || !isNetworkError(last.error.message)) return last;
+    } catch (err) {
+      if (!(err instanceof Error) || !isNetworkError(err.message)) throw err;
+    }
+  }
+  if (last) return last;
+  throw new Error(NETWORK_ERROR_MESSAGE);
+}
+
 function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
@@ -157,7 +192,7 @@ function startProductionActiveMonitor() {
     if (!active) {
       await forceLogout("Seu acesso foi desativado ou removido pelo administrador.");
     }
-  }, 60000);
+  }, 300000); // o bloqueio imediato chega pelo canal em tempo real abaixo; isto é só uma checagem de segurança
 
   supabase
     .channel("profile-status-singleton")
@@ -231,14 +266,14 @@ export function useAuth() {
     try {
       setState({ loading: true });
       const { error, data } = await withTimeout(
-        supabase.auth.signInWithPassword({ email, password }),
-        LOGIN_TIMEOUT_MS,
+        signInWithRetry(email, password),
+        LOGIN_TIMEOUT_MS + 7000,
         "O login demorou demais para responder. Tente novamente."
       );
 
       if (error) {
         setState({ user: null, loading: false });
-        return error.message;
+        return translateAuthError(error.message);
       }
 
       if (data.user) {
@@ -259,7 +294,7 @@ export function useAuth() {
       return null;
     } catch (error) {
       setState({ loading: false });
-      return error instanceof Error ? error.message : "Não foi possível entrar. Tente novamente.";
+      return error instanceof Error ? translateAuthError(error.message) : "Não foi possível entrar. Tente novamente.";
     }
   }, []);
 

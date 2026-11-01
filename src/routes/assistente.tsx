@@ -5,7 +5,7 @@ import { ArrowLeft, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/assistente")({
-  head: () => ({ meta: [{ title: "Assistente IA — Massoterapia" }] }),
+  head: () => ({ meta: [{ title: "Assistente do Curso — Massoterapia" }] }),
   component: AssistentePage,
 });
 

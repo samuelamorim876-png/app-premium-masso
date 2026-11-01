@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
+import { buildLocalAnswer } from "@/data/knowledge-base";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -14,74 +15,12 @@ interface AIChatProps {
   floating?: boolean;
 }
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/course-ai`;
-
-async function streamChat({
-  messages,
-  lessonContext,
-  onDelta,
-  onDone,
-  signal,
-}: {
-  messages: Msg[];
-  lessonContext?: AIChatProps["lessonContext"];
-  onDelta: (t: string) => void;
-  onDone: () => void;
-  signal?: AbortSignal;
-}) {
-  const resp = await fetch(CHAT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-    },
-    body: JSON.stringify({ messages, lessonContext }),
-    signal,
-  });
-  if (!resp.ok || !resp.body) {
-    const errBody = await resp.json().catch(() => ({}));
-    throw new Error((errBody as any).error || "Erro ao conectar com o assistente.");
-  }
-
-  const reader = resp.body.getReader();
-  const decoder = new TextDecoder();
-  let buf = "";
-  let done = false;
-
-  while (!done) {
-    const { done: rd, value } = await reader.read();
-    if (rd) break;
-    buf += decoder.decode(value, { stream: true });
-
-    let idx: number;
-    while ((idx = buf.indexOf("\n")) !== -1) {
-      let line = buf.slice(0, idx);
-      buf = buf.slice(idx + 1);
-      if (line.endsWith("\r")) line = line.slice(0, -1);
-      if (line.startsWith(":") || line.trim() === "") continue;
-      if (!line.startsWith("data: ")) continue;
-      const json = line.slice(6).trim();
-      if (json === "[DONE]") { done = true; break; }
-      try {
-        const parsed = JSON.parse(json);
-        const c = parsed.choices?.[0]?.delta?.content as string | undefined;
-        if (c) onDelta(c);
-      } catch {
-        buf = line + "\n" + buf;
-        break;
-      }
-    }
-  }
-  onDone();
-}
-
 export function AIChat({ lessonContext, floating = false }: AIChatProps) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -95,34 +34,12 @@ export function AIChat({ lessonContext, floating = false }: AIChatProps) {
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
 
-    let assistantSoFar = "";
-    const upsert = (chunk: string) => {
-      assistantSoFar += chunk;
-      setMessages((prev) => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant")
-          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
-        return [...prev, { role: "assistant", content: assistantSoFar }];
-      });
-    };
-
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
-
-    try {
-      await streamChat({
-        messages: [...messages, userMsg],
-        lessonContext,
-        onDelta: upsert,
-        onDone: () => setLoading(false),
-        signal: ctrl.signal,
-      });
-    } catch (e: any) {
-      if (e.name !== "AbortError") {
-        setMessages((prev) => [...prev, { role: "assistant", content: `⚠️ ${e.message || "Erro ao processar."}` }]);
-      }
+    // Resposta local (sem IA, sem custo): pesquisa na base de conhecimento do curso.
+    const answer = buildLocalAnswer(text, lessonContext);
+    window.setTimeout(() => {
+      setMessages((prev) => [...prev, { role: "assistant", content: answer }]);
       setLoading(false);
-    }
+    }, 250);
   };
 
   const [showTooltip, setShowTooltip] = useState(true);
@@ -158,7 +75,7 @@ export function AIChat({ lessonContext, floating = false }: AIChatProps) {
         <div className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-primary" />
           <div>
-            <p className="text-sm font-semibold text-foreground">Assistente IA</p>
+            <p className="text-sm font-semibold text-foreground">Assistente do Curso</p>
             {lessonContext && (
               <p className="text-[10px] text-muted-foreground truncate max-w-[200px]">{lessonContext.lessonName}</p>
             )}
