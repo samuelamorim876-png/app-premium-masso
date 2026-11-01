@@ -237,7 +237,7 @@ function Dashboard() {
               </Button>
             </Link>
             <span className="text-sm text-muted-foreground hidden sm:inline">Olá, {user?.name}</span>
-            <Button variant="ghost" size="sm" onClick={logout} className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="sm" onClick={logout} aria-label="Sair" className="text-muted-foreground hover:text-foreground">
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
@@ -320,7 +320,7 @@ function Dashboard() {
                 <Link to="/assistente" className="rounded-xl border border-border bg-card p-4 flex items-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all">
                   <Bot className="h-5 w-5 text-primary shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Assistente IA</p>
+                    <p className="text-sm font-semibold text-foreground">Assistente do Curso</p>
                     <p className="text-[10px] text-muted-foreground">Tire dúvidas do curso</p>
                   </div>
                 </Link>
