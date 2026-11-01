@@ -4,17 +4,23 @@ import { createVisibilityPoller } from "@/lib/visibility-poller";
 
 const PAGE_SIZE = 1000;
 
-/** Lê todas as linhas em páginas de 1000 (o banco devolve no máximo 1000 por pedido). */
+/**
+ * Lê todas as linhas (o banco devolve no máximo 1000 por pedido).
+ * O 1º pedido já traz o total; as páginas restantes são buscadas em paralelo.
+ */
 async function fetchAllRows<T>(
-  page: (from: number, to: number) => PromiseLike<{ data: unknown; error: unknown }>,
+  page: (from: number, to: number, withCount: boolean) => PromiseLike<{ data: unknown; error: unknown; count?: number | null }>,
 ): Promise<T[]> {
-  const rows: T[] = [];
-  for (let from = 0; ; from += PAGE_SIZE) {
-    const { data, error } = await page(from, from + PAGE_SIZE - 1);
-    if (error) throw error;
-    const chunk = (data as T[]) || [];
-    rows.push(...chunk);
-    if (chunk.length < PAGE_SIZE) break;
+  const first = await page(0, PAGE_SIZE - 1, true);
+  if (first.error) throw first.error;
+  const rows: T[] = [...((first.data as T[]) || [])];
+  const total = first.count ?? rows.length;
+  const starts: number[] = [];
+  for (let from = PAGE_SIZE; from < total; from += PAGE_SIZE) starts.push(from);
+  const rest = await Promise.all(starts.map((from) => page(from, from + PAGE_SIZE - 1, false)));
+  for (const res of rest) {
+    if (res.error) throw res.error;
+    rows.push(...((res.data as T[]) || []));
   }
   return rows;
 }
@@ -107,7 +113,7 @@ export function useAdminStudentMonitoring() {
 
   const fetchRecentActivity = useCallback(async () => {
     const [engagementRows, eventsRes] = await Promise.all([
-      fetchAllRows<Engagement>((from, to) => supabase.from("student_engagement").select("*").order("user_id").range(from, to)),
+      fetchAllRows<Engagement>((from, to, c) => supabase.from("student_engagement").select("*", c ? { count: "exact" } : undefined).order("user_id").range(from, to)),
       supabase.from("student_activity_events").select("*").order("created_at", { ascending: false }).limit(500),
     ]);
     setEngagement(engagementRows);
@@ -121,9 +127,9 @@ export function useAdminStudentMonitoring() {
     if (!options?.silent) setLoading(true);
     try {
       const [profileRows, progressRows, modulesRes, lessonsRes] = await Promise.all([
-        fetchAllRows<Profile>((from, to) => supabase.from("profiles").select("*").order("created_at", { ascending: false }).order("id").range(from, to)),
-        fetchAllRows<LessonProgress>((from, to) =>
-          supabase.from("lesson_progress").select("user_id,lesson_id,completed_at").order("completed_at").order("id").range(from, to),
+        fetchAllRows<Profile>((from, to, c) => supabase.from("profiles").select("*", c ? { count: "exact" } : undefined).order("created_at", { ascending: false }).order("id").range(from, to)),
+        fetchAllRows<LessonProgress>((from, to, c) =>
+          supabase.from("lesson_progress").select("user_id,lesson_id,completed_at", c ? { count: "exact" } : undefined).order("completed_at").order("id").range(from, to),
         ),
         supabase.from("managed_modules").select("id,title"),
         supabase.from("managed_lessons").select("id,module_id,title,type"),
