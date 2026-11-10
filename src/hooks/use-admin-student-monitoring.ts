@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { createVisibilityPoller } from "@/lib/visibility-poller";
 
 const PAGE_SIZE = 1000;
 
@@ -149,62 +148,12 @@ export function useAdminStudentMonitoring() {
     }
   }, [fetchRecentActivity]);
 
-  // Atualização leve (a cada minuto): presença, atividades recentes e apenas as aulas concluídas desde a última leitura.
-  const fetchLight = useCallback(async () => {
-    const since = lastProgressAt.current;
-    const newProgressQuery = since
-      ? supabase.from("lesson_progress").select("user_id,lesson_id,completed_at").gte("completed_at", since).order("completed_at").limit(1000)
-      : null;
-    const [, newProgressRes] = await Promise.all([fetchRecentActivity().catch(() => undefined), newProgressQuery]);
-    const newRows = (newProgressRes?.data as LessonProgress[] | undefined) || [];
-    if (newRows.length) {
-      setProgress((prev) => {
-        const seen = new Set(prev.map((p) => `${p.user_id}:${p.lesson_id}`));
-        const additions = newRows.filter((row) => !seen.has(`${row.user_id}:${row.lesson_id}`));
-        return additions.length ? [...prev, ...additions] : prev;
-      });
-      lastProgressAt.current = newRows[newRows.length - 1].completed_at;
-    }
-  }, [fetchRecentActivity]);
-
+  // Painel sob demanda: carrega uma vez ao abrir a aba e só recarrega quando o
+  // administrador pedir (botão Atualizar) ou executar uma ação. Nenhum timer nem
+  // canal em tempo real fica aberto enquanto o painel está aberto.
   useEffect(() => {
     fetchAll();
-    let debounce: number | undefined;
-    let tick = 0;
-    // Mudanças em alunos (bloqueio/cadastro) com o painel visível: uma única recarga agrupada.
-    // Com o painel oculto não consulta nada; a recarga acontece ao voltar.
-    const scheduleFetch = () => {
-      if (document.visibilityState === "hidden") {
-        lastFullAt.current = 0;
-        return;
-      }
-      window.clearTimeout(debounce);
-      debounce = window.setTimeout(() => fetchAll({ silent: true }), 5000);
-    };
-    const channel = supabase
-      .channel("admin-student-monitoring")
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, scheduleFetch)
-      .subscribe();
-    // Só atualiza com a aba do painel visível: leve a cada 1 min, completa a cada 5 min (pega aulas desmarcadas).
-    const poller = createVisibilityPoller({
-      intervalMs: 60000,
-      onTick: () => {
-        tick += 1;
-        if (tick % 5 === 0) fetchAll({ silent: true });
-        else fetchLight();
-      },
-      onResume: () => {
-        tick = 0;
-        if (Date.now() - lastFullAt.current > 60000) fetchAll({ silent: true });
-        else fetchLight();
-      },
-    });
-    return () => {
-      poller.stop();
-      window.clearTimeout(debounce);
-      supabase.removeChannel(channel);
-    };
-  }, [fetchAll, fetchLight]);
+  }, [fetchAll]);
 
   const students = useMemo<StudentMonitoring[]>(() => {
     const engagementByUser = new Map(engagement.map((e) => [e.user_id, e]));

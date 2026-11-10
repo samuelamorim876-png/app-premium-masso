@@ -1433,15 +1433,9 @@ function StudentNotesTab() {
     setLoading(false);
   };
 
+  // Sob demanda: carrega ao abrir a aba e quando o admin clicar em Atualizar.
   useEffect(() => {
     load();
-    const ch = supabase
-      .channel("admin_lesson_notes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "lesson_notes" }, () => load())
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
   }, []);
 
   const filtered = notes.filter((n) => {

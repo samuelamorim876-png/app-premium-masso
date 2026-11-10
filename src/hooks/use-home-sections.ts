@@ -48,19 +48,9 @@ export function useHomeSections() {
     setLoading(false);
   }, []);
 
+  // Carrega uma vez ao abrir a tela; sem canal em tempo real permanente.
   useEffect(() => {
     load();
-    const ch = supabase
-      .channel("home_section_order")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "home_section_order" },
-        () => load(),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
   }, [load]);
 
   return { sections, loading, reload: load };
