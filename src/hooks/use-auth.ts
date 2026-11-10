@@ -1,6 +1,5 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { createVisibilityPoller } from "@/lib/visibility-poller";
 import type { Subscription, User } from "@supabase/supabase-js";
 
 interface AuthUser {
@@ -202,32 +201,13 @@ async function runActiveCheck() {
 function startProductionActiveMonitor() {
   if (isPreviewEnv() || store.activeCheckTimer) return;
 
-  // Checagem de segurança a cada 5 min SOMENTE com o app visível; pausa ao minimizar/trocar de aba
-  // e verifica de novo imediatamente quando o aluno volta. O bloqueio imediato chega pelo canal em tempo real abaixo.
-  const poller = createVisibilityPoller({
-    intervalMs: 300000,
-    onTick: () => void runActiveCheck(),
-    onResume: () => void runActiveCheck(),
-  });
-  store.activeCheckTimer = poller;
-
-  supabase
-    .channel("profile-status-singleton")
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, (payload) => {
-      const currentUser = store.state.user;
-      if (!currentUser) return;
-      if (payload.new && (payload.new as any).id === currentUser.id && (payload.new as any).is_active === false) {
-        forceLogout("Seu acesso foi desativado pelo administrador.");
-      }
-    })
-    .on("postgres_changes", { event: "DELETE", schema: "public", table: "profiles" }, (payload) => {
-      const currentUser = store.state.user;
-      if (!currentUser) return;
-      if (payload.old && (payload.old as any).id === currentUser.id) {
-        forceLogout("Seu acesso foi removido pelo administrador.");
-      }
-    })
-    .subscribe();
+  // Segurança sem consumo recorrente: o bloqueio é verificado no login, na abertura do app
+  // e sempre que o aluno volta para a aba. Nenhum timer nem canal em tempo real fica aberto.
+  const onVisible = () => {
+    if (document.visibilityState === "visible") void runActiveCheck();
+  };
+  document.addEventListener("visibilitychange", onVisible);
+  store.activeCheckTimer = { stop: () => document.removeEventListener("visibilitychange", onVisible) };
 }
 
 function initAuth() {

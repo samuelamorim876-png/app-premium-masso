@@ -7,7 +7,6 @@ import { useProgress } from "@/hooks/use-progress";
 import { useGamification } from "@/hooks/use-gamification";
 import { useLessonNotes } from "@/hooks/use-lesson-notes";
 import { useManagedModules } from "@/hooks/use-managed-modules";
-import { recordStudentActivity } from "@/hooks/use-student-activity";
 import { lessonCuriosities, lessonQuizzes } from "@/data/quiz-data";
 import { LessonRow } from "@/components/course/LessonRow";
 import { LessonPlayer } from "@/components/course/LessonPlayer";
@@ -49,18 +48,6 @@ function ModulePage() {
       contentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [activeLessonId]);
-
-  useEffect(() => {
-    if (!user || !mod || !activeLesson) return;
-    recordStudentActivity(user.id, {
-      eventType: activeLesson.type === "pdf" ? "pdf_access" : activeLesson.type === "video" ? "video_access" : "lesson_access",
-      moduleId: mod.id,
-      moduleTitle: mod.title,
-      lessonId: activeLesson.id,
-      lessonTitle: activeLesson.title,
-      lessonType: activeLesson.type,
-    });
-  }, [user, mod, activeLesson]);
 
   if (authLoading) {
     return (
@@ -145,14 +132,6 @@ function ModulePage() {
     const wasCompleted = isLessonCompleted(activeLesson.id);
     await toggleLesson(activeLesson.id);
     if (!wasCompleted) {
-      recordStudentActivity(user.id, {
-        eventType: "lesson_completed",
-        moduleId: mod.id,
-        moduleTitle: mod.title,
-        lessonId: activeLesson.id,
-        lessonTitle: activeLesson.title,
-        lessonType: activeLesson.type,
-      });
       await addPoints(10);
     }
     const updatedProgress = getModuleProgress(moduleId);
