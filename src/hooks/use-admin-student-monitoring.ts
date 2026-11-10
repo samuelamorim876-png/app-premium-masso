@@ -106,8 +106,6 @@ export function useAdminStudentMonitoring() {
   const [lessons, setLessons] = useState<ManagedLesson[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const lastFullAt = useRef(0);
-  const lastProgressAt = useRef<string | null>(null);
   const fullInFlight = useRef(false);
 
   const fetchRecentActivity = useCallback(async () => {
@@ -136,10 +134,8 @@ export function useAdminStudentMonitoring() {
       ]);
       setProfiles(profileRows);
       setProgress(progressRows);
-      lastProgressAt.current = progressRows.length ? progressRows[progressRows.length - 1].completed_at : null;
       setModules((modulesRes.data as ManagedModule[]) || []);
       setLessons((lessonsRes.data as ManagedLesson[]) || []);
-      lastFullAt.current = Date.now();
     } catch (error) {
       console.error("[admin-monitoring] falha ao carregar dados", error);
     } finally {
