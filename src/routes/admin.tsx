@@ -37,6 +37,7 @@ import {
   ArrowDown,
   Eye,
   EyeOff,
+  RefreshCw,
 } from "lucide-react";
 import { usePushSubscription } from "@/hooks/use-push-subscription";
 import { getAdminPushDiagnostics, markPushReceived, sendTestAdminPush } from "@/lib/push-notifications.functions";
@@ -501,6 +502,9 @@ function StudentsTab() {
             <Plus className="h-4 w-4" /> Adicionar aluno
           </Button>
         )}
+        <Button variant="outline" onClick={() => refetch()} disabled={loadingData} className="gap-2">
+          <RefreshCw className={`h-4 w-4 ${loadingData ? "animate-spin" : ""}`} /> Atualizar
+        </Button>
         <span className="text-xs text-muted-foreground whitespace-nowrap">{filtered.length} alunos</span>
       </div>
 
@@ -1433,15 +1437,9 @@ function StudentNotesTab() {
     setLoading(false);
   };
 
+  // Sob demanda: carrega ao abrir a aba e quando o admin clicar em Atualizar.
   useEffect(() => {
     load();
-    const ch = supabase
-      .channel("admin_lesson_notes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "lesson_notes" }, () => load())
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
   }, []);
 
   const filtered = notes.filter((n) => {
@@ -1465,11 +1463,16 @@ function StudentNotesTab() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-bold text-foreground">Anotações dos Alunos</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Visualização administrativa — atualizada em tempo real. {filtered.length} anotação(ões).
-        </p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-lg font-bold text-foreground">Anotações dos Alunos</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Visualização administrativa — carregada sob demanda. {filtered.length} anotação(ões).
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => { setLoading(true); load(); }} disabled={loading} className="gap-2">
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Atualizar
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">

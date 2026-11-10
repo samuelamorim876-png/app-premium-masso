@@ -1,4 +1,4 @@
 - The course assistant answers from the local knowledge base in `src/data/knowledge-base.ts`; do not reintroduce AI model calls (owner wants zero AI running costs).
-- Student presence heartbeat runs every 2 minutes and admin monitoring refreshes on a 60s interval (no realtime on presence/activity tables) to keep database load low.
-- Any recurring client-side database polling must use `createVisibilityPoller` (`src/lib/visibility-poller.ts`): no requests while the tab is hidden, immediate re-check on return — hidden tabs must not keep the database awake.
+- No recurring client-side database work: presence/activity tracking was removed (owner authorized it for cost); the admin panel and student block check load on demand only. Block checks run at login, app open, and tab return — never on timers or realtime channels. Do not reintroduce heartbeat, polling, or `postgres_changes` subscriptions without explicit owner approval.
+- Any future recurring client-side polling must use `createVisibilityPoller` (`src/lib/visibility-poller.ts`): no requests while the tab is hidden, immediate re-check on return — hidden tabs must not keep the database awake.
 - Admin reads of tables that can exceed 1000 rows must paginate (`fetchAllRows` in `use-admin-student-monitoring.ts`); the Data API silently caps responses at 1000 rows.
